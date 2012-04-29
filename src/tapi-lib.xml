@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<node name="/org/projectx/app">
+  <interface name="org.projectx.telephony">
+    <method name="service_request">
+      <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="telephony_service_requests_cb"/>
+      <!-- This parameter is used to identify the tapi service -->
+      <arg type="i" name="tapi_service" direction="in" />
+      <!-- This parameter is used to identify the tapi service function  -->
+      <arg type="i" name="tapi_service_function" direction="in" />
+      <!-- INPUT PARAMS FOR SERVICE FUNCTION  -->
+      <arg type="ay" name="service_func_input_param1" direction="in" />
+      <arg type="ay" name="service_func_input_param2" direction="in" />
+      <arg type="ay" name="service_func_input_param3" direction="in" />
+      <arg type="ay" name="service_func_input_param4" direction="in" /> <!-- connection name -->
+      <arg type="ay" name="service_func_input_param5" direction="in" /> <!-- security cookie -->
+      <!-- OUTPUT PARAMS FOR SERVICE FUNCTION  -->
+            <!-- here we are taking four output params , we may not need 4, for future uses -->
+      <arg type="ay" name="service_func_output_param1" direction="out" />
+      <arg type="ay" name="service_func_output_param2" direction="out" />
+      <arg type="ay" name="service_func_output_param3" direction="out" />
+      <arg type="ay" name="service_func_output_param4" direction="out" />
+      <!-- send error code if any -->      
+      <arg type="i" name="error_code" direction="out" />
+    </method>
+     <method name="service_request_sec">
+      <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="telephony_service_requests_sec_cb"/>
+      <!-- This parameter is used to identify the tapi service -->
+      <arg type="i" name="tapi_service" direction="in" />
+      <!-- This parameter is used to identify the tapi service function  -->
+      <arg type="i" name="tapi_service_function" direction="in" />
+      <!-- INPUT PARAMS FOR SERVICE FUNCTION  -->
+      <arg type="ay" name="service_func_input_param1" direction="in" />
+      <arg type="ay" name="service_func_input_param2" direction="in" />
+      <arg type="ay" name="service_func_input_param3" direction="in" />
+      <arg type="ay" name="service_func_input_param4" direction="in" /> <!-- connection name -->
+      <arg type="ay" name="service_func_input_param5" direction="in" /> <!-- security cookie -->
+      <!-- OUTPUT PARAMS FOR SERVICE FUNCTION  -->
+            <!-- here we are taking four output params , we may not need 4, for future uses -->
+      <arg type="ay" name="service_func_output_param1" direction="out" />
+      <arg type="ay" name="service_func_output_param2" direction="out" />
+      <arg type="ay" name="service_func_output_param3" direction="out" />
+      <arg type="ay" name="service_func_output_param4" direction="out" />
+      <!-- send error code if any -->      
+      <arg type="i" name="error_code" direction="out" />
+    </method>
+  </interface>
+</node>
+

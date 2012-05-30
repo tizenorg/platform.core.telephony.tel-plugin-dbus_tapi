@@ -5,6 +5,7 @@ Release:    1
 Group:      System/Libraries
 License:    Apache
 Source0:    tel-plugin-dbus_tapi-%{version}.tar.gz
+Source1001: packaging/tel-plugin-dbus_tapi.manifest 
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  cmake
@@ -25,6 +26,7 @@ dbus-tapi plugin for telephony
 %setup -q
 
 %build
+cp %{SOURCE1001} .
 cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
 make %{?jobs:-j%jobs}
 
@@ -38,6 +40,7 @@ rm -rf %{buildroot}
 %make_install
 
 %files
+%manifest tel-plugin-dbus_tapi.manifest
 %defattr(-,root,root,-)
 #%doc COPYING
 %{_libdir}/telephony/plugins/*

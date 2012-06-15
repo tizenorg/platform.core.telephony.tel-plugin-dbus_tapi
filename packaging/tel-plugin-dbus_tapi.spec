@@ -6,6 +6,7 @@ Group:      System/Libraries
 License:    Apache
 Source0:    tel-plugin-dbus_tapi-%{version}.tar.gz
 Source1001: packaging/tel-plugin-dbus_tapi.manifest 
+Patch0:     0001-Support-sysconfdir-in-the-makefile.patch
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  cmake
@@ -24,24 +25,21 @@ dbus-tapi plugin for telephony
 
 %prep
 %setup -q
+%patch0 -p1
 
 %build
 cp %{SOURCE1001} .
-cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
-make %{?jobs:-j%jobs}
+cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DSYSCONFDIR=%{_sysconfdir}
+make %{?_smp_mflags}
 
-%post
-/sbin/ldconfig
+%install
+%make_install
+
+%post -p /sbin/ldconfig
 
 %postun -p /sbin/ldconfig
 
-%install
-rm -rf %{buildroot}
-%make_install
-
 %files
 %manifest tel-plugin-dbus_tapi.manifest
-%defattr(-,root,root,-)
-#%doc COPYING
 %{_libdir}/telephony/plugins/*
-%{_prefix}/etc/dbus-1/system.d/*
+%{_sysconfdir}/dbus-1/system.d/*

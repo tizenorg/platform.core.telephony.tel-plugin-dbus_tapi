@@ -1,0 +1,36 @@
+From 43cfce1ac8bd448dc5690ba3a7c0bc535a220cb8 Mon Sep 17 00:00:00 2001
+From: Patrick McCarty <patrick.mccarty@linux.intel.com>
+Date: Fri, 15 Jun 2012 14:45:06 -0700
+Subject: [PATCH] Support sysconfdir in the makefile
+
+---
+ CMakeLists.txt |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d23b2c7..fce199d 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -8,6 +8,11 @@ SET(LIBDIR "\${prefix}/lib")
+ SET(INCLUDEDIR "\${prefix}/include")
+ SET(PKGCONFIGDIR "${PREFIX}/lib/pkgconfig" CACHE PATH PKGCONFIGDIR)
+ SET(CMAKE_INSTALL_PREFIX "${PREFIX}")
++if(DEFINED SYSCONFDIR)
++    set(SYSCONFDIR ${SYSCONFDIR})
++else()
++    set(SYSCONFDIR ${CMAKE_INSTALL_PREFIX}/etc)
++endif()
+ 
+ # Set required packages
+ INCLUDE(FindPkgConfig)
+@@ -65,6 +70,6 @@ ADD_DEPENDENCIES(dbus-tapi-plugin tapi-lib-stub.h)
+ 
+ 
+ # install
+-INSTALL(FILES ${CMAKE_SOURCE_DIR}/res/tapi.conf DESTINATION ${PREFIX}/etc/dbus-1/system.d)
++INSTALL(FILES ${CMAKE_SOURCE_DIR}/res/tapi.conf DESTINATION ${SYSCONFDIR}/dbus-1/system.d)
+ INSTALL(TARGETS dbus-tapi-plugin
+ 		LIBRARY DESTINATION lib/telephony/plugins)
+-- 
+1.7.10.3
+

@@ -1,29 +1,12 @@
-/*
- * tel-plugin-dbus-tapi
- *
- * Copyright (c) 2012 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Ja-young Gu <jygu@samsung.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+#include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <time.h>
 #include <glib.h>
+#include <glib-object.h>
+#include <gio/gio.h>
 
 #include <aul.h>
 #include <bundle.h>
@@ -33,645 +16,12 @@
 #include <storage.h>
 #include <user_request.h>
 #include <core_object.h>
+#include <co_call.h>
 #include <communicator.h>
 
-#include <TapiCommon.h>
-#include <TelCall.h>
-#include <ITapiSound.h>
-
-#include "tel_cs_conn.h"
+#include "generated-code.h"
 #include "common.h"
-#include "ts_utility.h"
-#include "ts_common.h"
-#include "ts_svr_req.h"
-#include "ts_noti.h"
-#include "modules.h"
 
-void dbus_request_call(struct custom_data *ctx, TcorePlugin *plugin, int tapi_service_function, GArray* in_param1,
-		GArray* in_param2, GArray* in_param3, GArray* in_param4, GArray** out_param1, GArray** out_param2,
-		GArray** out_param3, GArray** out_param4, GError** error)
-{
-	int					api_err = TAPI_API_SUCCESS;
-	int					req_id = 0xff;
-
-	CoreObject*			o = NULL;
-	UserRequest*		ur = NULL;
-	struct tcore_user_info	ui = { 0, 0, 0, NULL, 0, 0, NULL };
-
-	tapi_dbus_connection_name conn_name;
-	GSList*				co_list = 0;
-
-	TReturn				ret = 0;
-
-
-	conn_name = g_array_index(in_param4, tapi_dbus_connection_name, 0);
-
-	co_list = tcore_plugin_get_core_objects_bytype(plugin, CORE_OBJECT_TYPE_CALL);
-	if (!co_list) {
-		api_err = TAPI_API_NOT_SUPPORTED;
-		goto OUT;
-	}
-
-	o = (CoreObject *)co_list->data;
-	g_slist_free(co_list);
-
-	if (!o) {
-		api_err = TAPI_API_NOT_SUPPORTED;
-		goto OUT;
-	}
-
-	ur = tcore_user_request_new( ctx->comm, tcore_plugin_get_description(plugin)->name);
-	if (!ur) {
-		api_err = TAPI_API_SERVER_FAILURE;
-		goto OUT;
-	}
-
-	ui.appname = conn_name.name;
-	tcore_user_request_set_user_info(ur, &ui);
-
-	switch (tapi_service_function) {
-		case TAPI_CS_CALL_SETUP: {
-			int tmp_handle = -1; // this is tmp code for old interface
-
-			TelCallSetupParams_t in;
-			struct treq_call_dial data;
-
-			in = g_array_index( in_param1, TelCallSetupParams_t, 0 );
-
-			data.type = in.CallType;
-			memcpy(data.number, in.szNumber, TAPI_CALL_DIALDIGIT_LEN_MAX) ;
-
-			tcore_user_request_set_data(ur, sizeof( struct treq_call_dial ), &data);
-			tcore_user_request_set_command(ur, TREQ_CALL_DIAL);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			g_array_append_vals(*out_param3, &tmp_handle, sizeof(int)); // for old interface
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_ANSWER: {
-			unsigned int handle = 0;
-			TelCallAnswerType_t answer = 0;
-
-			struct treq_call_answer data;
-
-			handle = g_array_index( in_param1, unsigned int, 0 );
-			answer = g_array_index( in_param2, TelCallAnswerType_t, 0 );
-
-			data.id		= handle;
-			data.type	= answer;
-
-			tcore_user_request_set_data(ur, sizeof( struct treq_call_answer ), &data);
-			tcore_user_request_set_command(ur, TREQ_CALL_ANSWER);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_RELEASE: {
-			struct treq_call_end data;
-			unsigned int id =0;
-
-			id = g_array_index( in_param1, unsigned int, 0 );
-			data.id = id;
-			data.type = CALL_END_TYPE_DEFAULT;
-
-			tcore_user_request_set_data(ur, sizeof( struct treq_call_end ), &data);
-			tcore_user_request_set_command(ur, TREQ_CALL_END);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_RELEASEALL: {
-			struct treq_call_end data;
-			data.type = CALL_END_TYPE_ALL;
-
-			tcore_user_request_set_data(ur, sizeof( struct treq_call_end ), &data);
-			tcore_user_request_set_command(ur, TREQ_CALL_END);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_RELEASEALL_ACTIVE: {
-			struct treq_call_end data;
-			data.type = CALL_END_TYPE_ACTIVE_ALL;
-
-			tcore_user_request_set_data(ur, sizeof( struct treq_call_end ), &data);
-			tcore_user_request_set_command(ur, TREQ_CALL_END);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_RELEASEALL_HELD: {
-			struct treq_call_end data;
-			data.type = CALL_END_TYPE_HOLD_ALL;
-
-			tcore_user_request_set_data(ur, sizeof( struct treq_call_end ), &data);
-			tcore_user_request_set_command(ur, TREQ_CALL_END);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_DTMF: {
-			struct treq_call_dtmf data;
-
-			char *str = 0;
-			str = &g_array_index(in_param1, char, 0);
-	
-			if ( str ) {
-				strncpy( data.digits, str, MAX_CALL_DTMF_DIGITS_LEN );
-			} else {
-				dbg("[ error ] str : (0)");
-				goto OUT;
-			}
-
-			tcore_user_request_set_data(ur, sizeof( struct treq_call_dtmf ), &data);
-			tcore_user_request_set_command(ur, TREQ_CALL_SEND_DTMF);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-		case TAPI_CS_CALL_ACTIVATE: {
-			unsigned int id = 0;
-			id = g_array_index( in_param1, unsigned int, 0 );
-
-			tcore_user_request_set_data(ur, sizeof( unsigned int ), &id);
-			tcore_user_request_set_command(ur, TREQ_CALL_ACTIVE);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_HOLD: {
-			unsigned int id = 0;
-			id = g_array_index( in_param1, unsigned int, 0 );
-
-			tcore_user_request_set_data(ur, sizeof( unsigned int ), &id);
-			tcore_user_request_set_command(ur, TREQ_CALL_HOLD);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_SWAP: {
-			unsigned int id = 0;
-			id = g_array_index( in_param1, unsigned int, 0 );
-
-			tcore_user_request_set_data(ur, sizeof( unsigned int ), &id);
-			tcore_user_request_set_command(ur, TREQ_CALL_SWAP);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_SETUPCONFCALL: {
-			unsigned int id = 0;
-			id = g_array_index( in_param1, unsigned int, 0 );
-
-			tcore_user_request_set_data(ur, sizeof( unsigned int ), &id);
-			tcore_user_request_set_command(ur, TREQ_CALL_JOIN);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_SPLITCONFCALL: {
-			int id = 0;
-			id = g_array_index(in_param1, unsigned int, 0);
-
-			tcore_user_request_set_data(ur, sizeof( unsigned int ), &id);
-			tcore_user_request_set_command(ur, TREQ_CALL_SPLIT);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_TRANSFERCALL: {
-			int id = 0;
-			id = g_array_index(in_param1, unsigned int, 0);
-
-			tcore_user_request_set_data(ur, sizeof( unsigned int ), &id);
-			tcore_user_request_set_command(ur, TREQ_CALL_TRANSFER);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_GETACTIVELINE:
-		case TAPI_CS_CALL_SETACTIVELINE:{
-
-		} break;
-
-		case TAPI_CS_CALL_DEFLECT:{
-			TelCallDeflectDstInfo_t info;
-			int id = 0;
-
-			id = g_array_index(in_param1, unsigned int, 0);
-			info = g_array_index(in_param2, TelCallDeflectDstInfo_t, 0);
-
-			tcore_user_request_set_data(ur, sizeof(info.number), info.number);
-			tcore_user_request_set_command(ur, TREQ_CALL_DEFLECT);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-
-		} break;
-
-		case TAPI_CS_CALL_ACTIVATECCBS:
-		case TAPI_CS_CALL_GETSTATUS:
-		case TAPI_CS_CALL_GETDURATION:
-		case TAPI_CS_CALL_GETCONFERENCELIST:
-		case TAPI_CS_CALL_GETPRIVACYMODE:
-		case TAPI_CS_CALL_SETPRIVACYMODE:
-		case TAPI_CS_CALL_FLASHINFO:
-		case TAPI_CS_CALL_EXITEMERGENCYMODE:
-		case TAPI_CS_CALL_GETCALLTIME:
-		default:
-			api_err = TAPI_API_NOT_SUPPORTED;
-			break;
-	}
-
-OUT:
-	if (api_err != TAPI_API_SUCCESS) {
-		tcore_user_request_free(ur);
-	}
-	g_array_append_vals(*out_param1, &api_err, sizeof(int));
-	g_array_append_vals(*out_param2, &req_id, sizeof(int));
-}
-
-
-static int _get_call_event( enum telephony_call_type type, int event )
-{
-	if ( type == CALL_TYPE_VIDEO ) {
-		dbg("this is video call");
-
-		if ( ( event & 0xFF0000 ) == TAPI_EVENT_TYPE_CONFIRMATION )
-			event |= TAPI_EVENT_DATA_CALL_CONFIRMATION; 
-		else
-			event |= TAPI_EVENT_DATA_CALL_NOTIFICATION; 
-
-	} else {
-		dbg("this is voice call");
-	}
-
-	return event;
-}
-
-TReturn dbus_response_call(struct custom_data *ctx, UserRequest *ur, const char *appname,
-		enum tcore_response_command command, unsigned int data_len, const void *data)
-{
-	dbg("command = 0x%x", command);
-
-	switch (command) {
-		case TRESP_CALL_DIAL: {
-
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			if ( resp_data->err )
-				return ts_delivery_event( ctx->EvtDeliveryHandle,
-						TAPI_EVENT_CLASS_CALL_VOICE,
-						TAPI_EVENT_CALL_SETUP_CNF,
-						appname,
-						0xff,
-						resp_data->err,
-						sizeof( unsigned int ),
-						(void*)&resp_data->id );
-
-		} break;
-
-		case TRESP_CALL_ANSWER: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_ANSWER_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( unsigned int ),
-									  (void*)&resp_data->id );
-
-		} break;
-
-		case TRESP_CALL_END: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_RELEASE_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( unsigned int ),
-									  (void*)&resp_data->id );
-
-		} break;
-		case TRESP_CALL_END_ALL: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_RELEASE_ALL_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( unsigned int ),
-									  (void*)&resp_data->id );
-
-		} break;
-		case TRESP_CALL_END_ALL_ACTIVE: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_RELEASE_ALL_ACTIVE_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( unsigned int ),
-									  (void*)&resp_data->id );
-
-		} break;
-		case TRESP_CALL_END_ALL_HELD: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_RELEASE_ALL_HELD_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( unsigned int ),
-									  (void*)&resp_data->id );
-
-		} break;
-		case TRESP_CALL_HOLD: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_HOLD_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( unsigned int ),
-									  (void*)&resp_data->id );
-
-		} break;
-		case TRESP_CALL_ACTIVE: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_RETRIEVE_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( unsigned int ),
-									  (void*)&resp_data->id );
-
-		} break;
-		case TRESP_CALL_SWAP: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_SWAP_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( unsigned int ),
-									  (void*)&resp_data->id );
-
-		} break;
-		case TRESP_CALL_JOIN: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_SETUPCONFERENCE_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( unsigned int ),
-									  (void*)&resp_data->id );
-
-		} break;
-		case TRESP_CALL_SPLIT: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_SPLITCONFERENCE_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( unsigned int ),
-									  (void*)&resp_data->id );
-
-		} break;
-		case TRESP_CALL_DEFLECT: {
-
-		} break;
-		case TRESP_CALL_TRANSFER: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_TRANSFER_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( unsigned int ),
-									  (void*)&resp_data->id );
-
-		} break;
-		case TRESP_CALL_SEND_DTMF: {
-			struct tresp_call_general* resp_data = 0;
-			resp_data = (struct tresp_call_general*)data;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_CALL_VOICE,
-									  TAPI_EVENT_CALL_SEND_DTMF_CNF,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  0,
-									  0 );
-
-		} break;
-		case TRESP_CALL_SET_SOUND_PATH: {
-			struct tresp_call_sound_general* resp_data = 0;
-			tapi_sound_error_info_t error_info = { 0 };
-
-			resp_data = (struct tresp_call_sound_general*)data;
-			error_info.cause = resp_data->cause;
-			error_info.type  = 0x03;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_SOUND,
-									  TAPI_EVENT_SOUND_SUCCESS_IND,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( tapi_sound_error_info_t ),
-									  (void*)&error_info );
-
-		} break;
-
-		case TRESP_CALL_SET_SOUND_VOLUME_LEVEL: {
-			struct tresp_call_sound_general* resp_data = 0;
-			tapi_sound_error_info_t error_info = { 0 };
-			unsigned int err = 0;
-
-			resp_data = (struct tresp_call_sound_general*)data;
-
-			if ( resp_data->cause )
-				err = TAPI_EVENT_SOUND_ERROR_IND;
-			else
-				err = TAPI_EVENT_SOUND_SUCCESS_IND;
-
-			error_info.cause = resp_data->cause;
-			error_info.type  = 0x01;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_SOUND,
-									  TAPI_EVENT_SOUND_SUCCESS_IND,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( tapi_sound_error_info_t ),
-									  (void*)&error_info );
-
-		} break;
-
-		case TRESP_CALL_GET_SOUND_VOLUME_LEVEL: {
-
-		} break;
-
-		case TRESP_CALL_MUTE:
-		case TRESP_CALL_UNMUTE: {
-			struct tresp_call_sound_general* resp_data = 0;
-			tapi_sound_error_info_t error_info = { 0 };
-			unsigned int err = 0;
-
-			resp_data = (struct tresp_call_sound_general*)data;
-
-			if ( resp_data->cause )
-				err = TAPI_EVENT_SOUND_ERROR_IND;
-			else
-				err = TAPI_EVENT_SOUND_SUCCESS_IND;
-
-			error_info.cause = resp_data->cause;
-			error_info.type  = 0x02;
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle,
-									  TAPI_EVENT_CLASS_SOUND,
-									  TAPI_EVENT_SOUND_SUCCESS_IND,
-									  appname,
-									  0xff,
-									  resp_data->err,
-									  sizeof( tapi_sound_error_info_t ),
-									  (void*)&error_info );
-
-		} break;
-
-		case TRESP_CALL_GET_MUTE_STATUS: {
-
-		} break;
-
-		default:
-			break;
-	}
-
-	return TRUE;
-}
 
 static void _launch_voice_call( struct tnoti_call_status_incoming* incoming )
 {
@@ -698,9 +48,9 @@ static void _launch_voice_call( struct tnoti_call_status_incoming* incoming )
 	dbg("active_line : [%s]", active_line );
 
 	if ( incoming->cna.mode == CALL_CNA_MODE_PRESENT )
-		snprintf( cna, 2, "%d", TAPI_CALL_NAME_AVAIL );
+		snprintf( cna, 2, "%d", 0 );
 	else
-		snprintf( cna, 2, "%d", TAPI_CALL_NAME_RESTRICTED );
+		snprintf( cna, 2, "%d", 1 );
 
 	dbg("cna : [%s]", cna );
 	snprintf( name, 83, "%s", incoming->cna.name );
@@ -716,7 +66,7 @@ static void _launch_voice_call( struct tnoti_call_status_incoming* incoming )
 	bundle_add(kb, "fwded", forward);
 	bundle_add(kb, "activeline", active_line);
 
-	ret = aul_launch_app("org.tizen.call", kb);
+	ret = aul_launch_app("com.samsung.call", kb);
 	bundle_free(kb);
 
 	dbg("aul_launch_app [ voice call ] : %d", ret );
@@ -750,162 +100,1239 @@ static void _launch_video_call( struct tnoti_call_status_incoming* incoming )
 	bundle_add(kb, "KEY_CLI_CAUSE", cli);
 	bundle_add(kb, "KEY_FORWARDED", forward);
 
-	ret = aul_launch_app("org.tizen.vtmain", kb);
+	ret = aul_launch_app("com.samsung.vtmain", kb);
 	bundle_free(kb);
 
 	dbg("VT AUL return %d",ret);
 }
 
-TReturn dbus_notification_call(struct custom_data *ctx, CoreObject *source, enum tcore_notification_command command,
-		unsigned int data_len, const void *data)
+static gboolean on_call_dial(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_type, gchar* call_number, gpointer user_data)
 {
-	dbg("command = 0x%x", command);
+	struct treq_call_dial req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
 
-	switch (command) {
-		case TNOTI_CALL_STATUS_IDLE: {
-			struct tnoti_call_status_idle *status;
-			TelCallEndInfo_t resp_data;
+	TReturn ret = 0;
 
-			status = (struct tnoti_call_status_idle*)data;
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
 
-			resp_data.CallEndCause	= status->cause; 
-			resp_data.pCallHandle	= status->id;
-			resp_data.CallStartTime = 0;
-			resp_data.CallEndTime	= 0;
+	req.type = call_type;
 
-			dbg("end noti publish");
+	if ( call_number )
+		memcpy( req.number, call_number, MAX_CALL_DIAL_NUM_LEN );
 
-			return ts_delivery_event( ctx->EvtDeliveryHandle, 
-									  TAPI_EVENT_CLASS_CALL_VOICE, 
-									  _get_call_event(status->type, TAPI_EVENT_CALL_END_IND),
-									  0,
-									  0xff,
-									  0,
-									  sizeof( TelCallEndInfo_t ),
-									  (void*)&resp_data );
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_dial ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_DIAL );
 
-
-		} break;
-
-		case TNOTI_CALL_STATUS_DIALING: {
-
-			struct tnoti_call_status_dialing *status;
-			status = (struct tnoti_call_status_dialing*)data;
-
-			dbg("dialing noti publish");
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle, 
-									  TAPI_EVENT_CLASS_CALL_VOICE, 
-									  _get_call_event(status->type, TAPI_EVENT_CALL_SETUP_CNF),
-									  0,
-									  0xff,
-									  0,
-									  sizeof( unsigned int ),
-									  (void*)&status->id );
-
-
-		} break;
-
-		case TNOTI_CALL_STATUS_ALERT: {
-
-			struct tnoti_call_status_alert *status;
-			status = (struct tnoti_call_status_alert*)data;
-
-			dbg("alert noti publish");
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle, 
-									  TAPI_EVENT_CLASS_CALL_VOICE, 
-									  _get_call_event(status->type, TAPI_EVENT_CALL_ALERT_IND),
-									  0,
-									  0xff,
-									  0,
-									  sizeof( unsigned int ),
-									  (void*)&status->id );
-
-
-		} break;
-
-		case TNOTI_CALL_STATUS_ACTIVE: {
-
-			struct tnoti_call_status_active *status = 0;
-			status = (struct tnoti_call_status_active*)data;
-
-			dbg("active noti publish");
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle, 
-									  TAPI_EVENT_CLASS_CALL_VOICE, 
-									  _get_call_event(status->type, TAPI_EVENT_CALL_CONNECTED_IND),
-									  0,
-									  0xff,
-									  0,
-									  sizeof( unsigned int ),
-									  (void*)&status->id );
-
-		} break;
-
-		case TNOTI_CALL_STATUS_HELD: {
-
-			struct tnoti_call_status_held *status;
-			status = (struct tnoti_call_status_held*)data;
-
-			dbg("held noti publish");
-
-			return ts_delivery_event( ctx->EvtDeliveryHandle, 
-									  TAPI_EVENT_CLASS_CALL_VOICE, 
-									  _get_call_event(status->type, TAPI_EVENT_CALL_HOLD_IND ),
-									  0,
-									  0xff,
-									  0,
-									  sizeof( unsigned int ),
-									  (void*)&status->id );
-
-		} break;
-
-		case TNOTI_CALL_STATUS_INCOMING: {
-
-			struct tnoti_call_status_incoming *incoming = 0;
-			incoming = (struct tnoti_call_status_incoming*)data;
-
-			dbg("incoming noti publish");
-
-			if ( incoming->type == CALL_TYPE_VOICE )
-				_launch_voice_call( incoming );
-			else
-				_launch_video_call( incoming );
-
-		} break;
-
-		case TNOTI_CALL_STATUS_WAITING:
-			break;
-
-		case TNOTI_CALL_INFO_CALL_CONNECTED_LINE:
-		case TNOTI_CALL_INFO_WAITING:
-		case TNOTI_CALL_INFO_CUG:
-		case TNOTI_CALL_INFO_FORWARDED:
-		case TNOTI_CALL_INFO_BARRED_INCOMING:
-		case TNOTI_CALL_INFO_BARRED_OUTGOING:
-		case TNOTI_CALL_INFO_DEFLECTED:
-		case TNOTI_CALL_INFO_CLIR_SUPPRESSION_REJECT:
-		case TNOTI_CALL_INFO_FORWARD_UNCONDITIONAL:
-		case TNOTI_CALL_INFO_FORWARD_CONDITIONAL:
-		case TNOTI_CALL_INFO_CALL_LINE_IDENTITY:
-		case TNOTI_CALL_INFO_CALL_NAME_INFORMATION:
-		case TNOTI_CALL_INFO_FORWARDED_CALL:
-		case TNOTI_CALL_INFO_CUG_CALL:
-		case TNOTI_CALL_INFO_DEFLECTED_CALL:
-		case TNOTI_CALL_INFO_TRANSFERED_CALL:
-			break;
-		case TNOTI_CALL_INFO_HELD: {
-		} break;
-		case TNOTI_CALL_INFO_ACTIVE:
-		case TNOTI_CALL_INFO_JOINED:
-		case TNOTI_CALL_INFO_RELEASED_ON_HOLD:
-		case TNOTI_CALL_INFO_TRANSFER_ALERT:
-		case TNOTI_CALL_INFO_TRANSFERED:
-		case TNOTI_CALL_INFO_CF_CHECK_MESSAGE:
-		default:
-			break;
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
 	}
 
 	return TRUE;
 }
+
+static gboolean on_call_answer(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_id, gint answer_type, gpointer user_data)
+{
+	struct treq_call_answer req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.id = call_id;
+	req.type = answer_type;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_answer ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_ANSWER );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_end(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_id, gint end_type, gpointer user_data)
+{
+	struct treq_call_end req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.id = call_id;
+	req.type = end_type;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_end ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_END );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_dtmf(TelephonyCall *call, GDBusMethodInvocation *invocation, gchar *dtmf_string, gpointer user_data)
+{
+	struct treq_call_dtmf req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	if ( dtmf_string )
+		memcpy( req.digits, dtmf_string, MAX_CALL_DTMF_DIGITS_LEN );
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_dtmf ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_SEND_DTMF );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_active(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_id, gpointer user_data)
+{
+	struct treq_call_active req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.id = call_id;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_active ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_ACTIVE );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_hold(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_id, gpointer user_data)
+{
+	struct treq_call_hold req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.id = call_id;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_hold ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_HOLD );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_swap(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_id, gpointer user_data)
+{
+	struct treq_call_swap req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.id = call_id;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_swap ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_SWAP );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_join(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_id, gpointer user_data)
+{
+	struct treq_call_join req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.id = call_id;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_join ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_JOIN );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_split(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_id, gpointer user_data)
+{
+	struct treq_call_split req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.id = call_id;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_split ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_SPLIT );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_transfer(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_id, gpointer user_data)
+{
+	struct treq_call_transfer req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.id = call_id;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_transfer ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_TRANSFER );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_deflect(TelephonyCall *call, GDBusMethodInvocation *invocation, gchar *call_number, gpointer user_data)
+{
+	struct treq_call_deflect req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	if ( call_number )
+		memcpy( req.number, call_number, MAX_CALL_NUMBER_LEN );
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_deflect ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_DEFLECT );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_get_call_status(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_id, gpointer user_data )
+{
+	struct custom_data *ctx = user_data;
+	TcorePlugin *plugin = 0;
+	GSList *o_list = 0;
+	CoreObject *o = 0;
+	CallObject *co = 0;
+
+	gchar call_number[MAX_CALL_NUMBER_LEN];
+	gint call_type;
+	gboolean call_direction;
+	gint call_status;
+	gboolean call_multiparty_state;
+
+	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
+	if ( !plugin ) {
+		dbg("[ error ] plugin : 0");
+		return FALSE;
+	}
+
+	o_list = tcore_plugin_get_core_objects_bytype(plugin, CORE_OBJECT_TYPE_CALL);
+	if ( !o_list ) {
+		dbg("[ error ] co_list : 0");
+		return FALSE;
+	}
+
+	o = (CoreObject *)o_list->data;
+	g_slist_free(o_list);
+
+	co = tcore_call_object_find_by_id( o, call_id );
+	if ( !co ) {
+		dbg("[ error ] co : 0");
+		return FALSE;
+	}
+
+	tcore_call_object_get_number( co, call_number );
+
+	call_type = tcore_call_object_get_type( co );
+	call_direction = tcore_call_object_get_direction( co );
+
+	if ( call_direction == TCORE_CALL_DIRECTION_OUTGOING ) {
+		call_direction = TRUE;
+	} else {
+		call_direction = FALSE;
+	}
+	
+	call_status = tcore_call_object_get_status( co );
+	call_multiparty_state = tcore_call_object_get_multiparty_state( co );
+
+
+	telephony_call_complete_get_status(call, invocation, 
+			call_id, call_number, call_type, call_direction, call_status, call_multiparty_state );
+
+	return TRUE;
+}
+
+static gboolean on_call_get_call_status_all(TelephonyCall *call, GDBusMethodInvocation *invocation, gpointer user_data )
+{
+	struct custom_data *ctx = user_data;
+	TcorePlugin *plugin = 0;
+	GSList *list = 0;
+	CoreObject *o = 0;
+	CallObject *co = 0;
+
+	GVariant *gv = 0;
+	GVariantBuilder b;
+
+	gint call_id;
+	gchar call_number[MAX_CALL_NUMBER_LEN];
+	gint call_type;
+	gboolean call_direction;
+	gint call_status;
+	gboolean call_multiparty_state;
+
+	int len, i;
+
+	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
+	if ( !plugin ) {
+		dbg("[ error ] plugin : 0");
+		return FALSE;
+	}
+
+	list = tcore_plugin_get_core_objects_bytype(plugin, CORE_OBJECT_TYPE_CALL);
+	if ( !list ) {
+		dbg("[ error ] co_list : 0");
+		return FALSE;
+	}
+
+	o = (CoreObject *)list->data;
+	g_slist_free(list);
+
+	g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+
+#define MAX_CALL_STATUS_NUM 7
+	for ( i=0; i<MAX_CALL_STATUS_NUM; i++ ) {
+		list = tcore_call_object_find_by_status( o, i );
+
+		if ( list ) {
+
+			GSList *tmp = 0;
+			tmp = list;
+
+			dbg("[ check ] there is a call on state (0x%x)", i);
+
+			while ( tmp ) {
+
+				co = (CallObject*)list->data;
+				if ( !co ) {
+					dbg("[ error ] call object : 0");
+					tmp = tmp->next;
+					continue;
+				}
+
+				call_id = tcore_call_object_get_id( co );
+				len = tcore_call_object_get_number( co, call_number );
+				if ( !len ) {
+					dbg("[ check ] no number : (0x%d)", call_id);
+				}
+
+				call_type = tcore_call_object_get_type( co );
+				call_direction = tcore_call_object_get_direction( co );
+
+				if ( call_direction == TCORE_CALL_DIRECTION_OUTGOING ) {
+					call_direction = TRUE;
+				} else {
+					call_direction = FALSE;
+				}
+
+				call_status = tcore_call_object_get_status( co );
+				call_multiparty_state = tcore_call_object_get_multiparty_state( co );
+
+				g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
+				g_variant_builder_add(&b, "{sv}", "call_id", g_variant_new_int32( call_id ));
+				g_variant_builder_add(&b, "{sv}", "call_number", g_variant_new_string( call_number ));
+				g_variant_builder_add(&b, "{sv}", "call_type", g_variant_new_int32( call_type ));
+				g_variant_builder_add(&b, "{sv}", "call_direction", g_variant_new_boolean( call_direction ));
+				g_variant_builder_add(&b, "{sv}", "call_status", g_variant_new_int32( call_status ));
+				g_variant_builder_add(&b, "{sv}", "call_multiparty_state", g_variant_new_boolean( call_multiparty_state ));
+				g_variant_builder_close(&b);
+
+				tmp = g_slist_next( tmp );
+			}
+
+		} else {
+			dbg("[ check ] there is no call on state (0x%x)", i);
+
+		}
+
+	}
+
+	gv = g_variant_builder_end(&b);
+
+	telephony_call_complete_get_status_all(call, invocation, gv);
+
+	g_variant_unref(gv);
+
+	return TRUE;
+}
+
+static gboolean on_call_set_sound_path(TelephonyCall *call, GDBusMethodInvocation *invocation, gint sound_path, gboolean extra_volume_on, gpointer user_data)
+{
+	struct treq_call_sound_set_path req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.path = sound_path;
+	req.extra_volume_on = extra_volume_on;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_sound_set_path ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_SET_SOUND_PATH );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_get_volume(TelephonyCall *call, GDBusMethodInvocation *invocation, gint sound_device, gint sound_type, gpointer user_data)
+{
+	struct treq_call_sound_get_volume_level req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.device = sound_device;
+	req.sound = sound_type;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_sound_get_volume_level ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_GET_SOUND_VOLUME_LEVEL );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_set_volume(TelephonyCall *call, GDBusMethodInvocation *invocation, gint sound_device, gint sound_type, gint sound_volume, gpointer user_data)
+{
+	struct treq_call_sound_set_volume_level req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.device = sound_device;
+	req.sound = sound_type;
+	req.volume = sound_volume;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_sound_set_volume_level ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_SET_SOUND_VOLUME_LEVEL );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_get_mute_status(TelephonyCall *call, GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	tcore_user_request_set_command( ur, TREQ_CALL_GET_MUTE_STATUS );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_mute(TelephonyCall *call, GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	tcore_user_request_set_command( ur, TREQ_CALL_MUTE );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_unmute(TelephonyCall *call, GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	tcore_user_request_set_command( ur, TREQ_CALL_UNMUTE );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_set_sound_recording(TelephonyCall *call, GDBusMethodInvocation *invocation, gint recording_state, gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	struct treq_call_sound_set_recording req;
+
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.state = (gboolean)recording_state;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_sound_set_recording ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_SET_SOUND_RECORDING );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_set_sound_equalization(TelephonyCall *call, GDBusMethodInvocation *invocation, gint eq_mode, gint eq_direction, gchar* eq_parameter, gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	struct treq_call_sound_set_equalization req;
+
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.mode = (gboolean)eq_mode;
+	req.direction = (enum telephony_call_sound_direction)eq_direction;
+	memcpy( req.parameter, (const char*)eq_parameter, MAX_SOUND_EQ_PARAMETER_SIZE );
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_sound_set_equalization ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_SET_SOUND_EQUALIZATION );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+static gboolean on_call_set_sound_noise_reduction(TelephonyCall *call, GDBusMethodInvocation *invocation, gint nr_state, gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	struct treq_call_sound_set_noise_reduction req;
+
+	UserRequest *ur = MAKE_UR(ctx, call, invocation);
+
+	TReturn ret = 0;
+
+	if ( !ur ) {
+		dbg("[ error ] ur : 0");
+		return FALSE;
+	}
+
+	req.status = (gboolean)nr_state;
+
+	tcore_user_request_set_data( ur, sizeof( struct treq_call_sound_set_noise_reduction ), &req );
+	tcore_user_request_set_command( ur, TREQ_CALL_SET_SOUND_NOISE_REDUCTION );
+
+	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
+	if ( ret != TCORE_RETURN_SUCCESS ) {
+		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+
+gboolean dbus_plugin_setup_call_interface(TelephonyObjectSkeleton *object, struct custom_data *ctx)
+{
+	TelephonyCall *call;
+
+	call = telephony_call_skeleton_new();
+	telephony_object_skeleton_set_call(object, call);
+	g_object_unref(call);
+
+	g_signal_connect (call,
+			"handle-dial",
+			G_CALLBACK (on_call_dial),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-answer",
+			G_CALLBACK (on_call_answer),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-end",
+			G_CALLBACK (on_call_end),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-dtmf",
+			G_CALLBACK (on_call_dtmf),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-active",
+			G_CALLBACK (on_call_active),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-hold",
+			G_CALLBACK (on_call_hold),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-swap",
+			G_CALLBACK (on_call_swap),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-join",
+			G_CALLBACK (on_call_join),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-split",
+			G_CALLBACK (on_call_split),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-transfer",
+			G_CALLBACK (on_call_transfer),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-deflect",
+			G_CALLBACK (on_call_deflect),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-get-call-status",
+			G_CALLBACK (on_call_get_call_status),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-get-call-status-all",
+			G_CALLBACK (on_call_get_call_status_all),
+			ctx);
+
+
+	g_signal_connect (call,
+			"handle-set-sound-path",
+			G_CALLBACK (on_call_set_sound_path),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-get-volume",
+			G_CALLBACK (on_call_get_volume),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-set-volume",
+			G_CALLBACK (on_call_set_volume),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-get-mute-status",
+			G_CALLBACK (on_call_get_mute_status),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-mute",
+			G_CALLBACK (on_call_mute),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-unmute",
+			G_CALLBACK (on_call_unmute),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-set-sound-recording",
+			G_CALLBACK (on_call_set_sound_recording),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-set-sound-equalization",
+			G_CALLBACK (on_call_set_sound_equalization),
+			ctx);
+
+	g_signal_connect (call,
+			"handle-set-sound-noise-reduction",
+			G_CALLBACK (on_call_set_sound_noise_reduction),
+			ctx);
+
+
+	return TRUE;
+}
+
+gboolean dbus_plugin_call_response(struct custom_data *ctx, UserRequest *ur, struct dbus_request_info *dbus_info, enum tcore_response_command command, unsigned int data_len, const void *data)
+{
+	int i = 0;
+	GSList *co_list;
+	CoreObject *co_call;
+	char *modem_name = NULL;
+	TcorePlugin *p = NULL;
+
+	modem_name = tcore_user_request_get_modem_name(ur);
+	if (!modem_name)
+		return FALSE;
+
+	p = tcore_server_find_plugin(ctx->server, modem_name);
+	free(modem_name);
+	if (!p)
+		return FALSE;
+
+	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_NETWORK);
+	if (!co_list) {
+		return FALSE;
+	}
+
+	co_call = (CoreObject *)co_list->data;
+	g_slist_free(co_list);
+
+	if (!co_call) {
+		return FALSE;
+	}
+
+	switch (command) {
+		case TRESP_CALL_DIAL: {
+			struct tresp_call_dial *resp = (struct tresp_call_dial*)data;
+
+			dbg("receive TRESP_CALL_DIAL");
+			dbg("resp->err : [%d]", resp->err);
+
+			telephony_call_complete_dial(dbus_info->interface_object, dbus_info->invocation, resp->err);
+		} break;
+
+		case TRESP_CALL_ANSWER: {
+			struct tresp_call_answer *resp = (struct tresp_call_answer*)data;
+
+			dbg("receive TRESP_CALL_ANSWER");
+			dbg("resp->err : [%d]", resp->err);
+			dbg("resp->id : [%d]", resp->id);
+
+			telephony_call_complete_answer(dbus_info->interface_object, dbus_info->invocation, resp->err, resp->id );
+
+		} break;
+
+		case TRESP_CALL_END: {
+			struct tresp_call_end *resp = (struct tresp_call_end*)data;
+
+			dbg("receive TRESP_CALL_END");
+			dbg("resp->err : [%d]", resp->err);
+			dbg("resp->id : [%d]", resp->err);
+			dbg("resp->type : [%d]", resp->type);
+
+			telephony_call_complete_end(dbus_info->interface_object, dbus_info->invocation, resp->err, resp->id, resp->type );
+
+		} break;
+
+		case TRESP_CALL_HOLD: {
+			struct tresp_call_hold *resp = (struct tresp_call_hold*)data;
+
+			dbg("receive TRESP_CALL_HOLD");
+			dbg("resp->err : [%d]", resp->err);
+			dbg("resp->id : [%d]", resp->id);
+
+			telephony_call_complete_hold(dbus_info->interface_object, dbus_info->invocation, resp->err, resp->id );
+
+		} break;
+
+		case TRESP_CALL_ACTIVE: {
+			struct tresp_call_active *resp = (struct tresp_call_active*)data;
+
+			dbg("receive TRESP_CALL_ACTIVE");
+			dbg("resp->err : [%d]", resp->err);
+			dbg("resp->id : [%d]", resp->id);
+
+			telephony_call_complete_active(dbus_info->interface_object, dbus_info->invocation, resp->err, resp->id );
+
+		} break;
+
+		case TRESP_CALL_SWAP: {
+			struct tresp_call_swap *resp = (struct tresp_call_swap*)data;
+
+			dbg("receive TRESP_CALL_SWAP");
+			dbg("resp->err : [%d]", resp->err);
+			dbg("resp->id : [%d]", resp->id);
+
+			telephony_call_complete_swap(dbus_info->interface_object, dbus_info->invocation, resp->err, resp->id );
+
+		} break;
+
+		case TRESP_CALL_JOIN: {
+			struct tresp_call_join *resp = (struct tresp_call_join*)data;
+
+			dbg("receive TRESP_CALL_JOIN");
+			dbg("resp->err : [%d]", resp->err);
+			dbg("resp->id : [%d]", resp->id);
+
+			telephony_call_complete_join(dbus_info->interface_object, dbus_info->invocation, resp->err, resp->id );
+
+		} break;
+
+
+		case TRESP_CALL_SPLIT: {
+			struct tresp_call_split *resp = (struct tresp_call_split*)data;
+
+			dbg("receive TRESP_CALL_SPLIT");
+			dbg("resp->err : [%d]", resp->err);
+			dbg("resp->id : [%d]", resp->id);
+
+			telephony_call_complete_split(dbus_info->interface_object, dbus_info->invocation, resp->err, resp->id );
+
+		} break;
+
+		case TRESP_CALL_DEFLECT: {
+			struct tresp_call_deflect *resp = (struct tresp_call_deflect*)data;
+
+			dbg("receive TRESP_CALL_DEFLECT");
+			dbg("resp->err : [%d]", resp->err);
+			dbg("resp->id : [%d]", resp->id);
+
+			telephony_call_complete_deflect(dbus_info->interface_object, dbus_info->invocation, resp->err );
+
+		} break;
+
+		case TRESP_CALL_TRANSFER: {
+			struct tresp_call_transfer *resp = (struct tresp_call_transfer*)data;
+
+			dbg("receive TRESP_CALL_TRANSFER");
+			dbg("resp->err : [%d]", resp->err);
+			dbg("resp->id : [%d]", resp->id);
+
+			telephony_call_complete_transfer(dbus_info->interface_object, dbus_info->invocation, resp->err, resp->id );
+
+		} break;
+
+		case TRESP_CALL_SEND_DTMF: {
+			struct tresp_call_dtmf *resp = (struct tresp_call_dtmf*)data;
+
+			dbg("receive TRESP_CALL_SEND_DTMF");
+			dbg("resp->err : [%d]", resp->err);
+
+			telephony_call_complete_dtmf(dbus_info->interface_object, dbus_info->invocation, resp->err);
+		} break;
+
+		case TRESP_CALL_SET_SOUND_PATH: {
+			struct tresp_call_sound_set_path *resp = (struct tresp_call_sound_set_path*)data;
+
+			dbg("receive TRESP_CALL_SET_SOUND_PATH");
+			dbg("resp->err : [%d]", resp->err);
+
+			telephony_call_complete_set_sound_path(dbus_info->interface_object, dbus_info->invocation, resp->err);
+		} break;
+
+		case TRESP_CALL_SET_SOUND_VOLUME_LEVEL: {
+			struct tresp_call_sound_set_volume_level *resp = (struct tresp_call_sound_set_volume_level*)data;
+
+			dbg("receive TRESP_CALL_SET_SOUND_VOLUME_LEVEL");
+			dbg("resp->err : [%d]", resp->err);
+
+			telephony_call_complete_set_volume(dbus_info->interface_object, dbus_info->invocation, resp->err);
+		} break;
+
+		case TRESP_CALL_GET_SOUND_VOLUME_LEVEL: {
+			struct tresp_call_sound_get_volume_level *resp = (struct tresp_call_sound_get_volume_level*)data;
+			GVariant *result = 0;
+			GVariantBuilder b;
+
+			dbg("receive TRESP_CALL_GET_SOUND_VOLUME_LEVEL");
+
+			g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+
+			g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
+
+			dbg("resp->err : [%d]", resp->err);
+
+			g_variant_builder_add(&b, "{sv}", "err", g_variant_new_int32(resp->err));
+
+			if ( !resp->err ) {
+
+				dbg("resp->record_num : [%d]", resp->record_num);
+
+				for ( i=0; i<resp->record_num; i++ ) {
+					dbg("resp->type : [%d]", resp->record[i].sound);
+					dbg("resp->level : [%d]", resp->record[i].volume);
+
+					g_variant_builder_add(&b, "{sv}", "type", g_variant_new_int32(resp->record[i].sound));
+					g_variant_builder_add(&b, "{sv}", "level", g_variant_new_int32(resp->record[i].volume));
+				} 
+
+			}
+
+			g_variant_builder_close(&b);
+
+			result = g_variant_builder_end(&b);
+
+			telephony_call_complete_get_volume(dbus_info->interface_object, dbus_info->invocation, resp->err, result );
+
+			g_variant_unref(result);
+
+		} break;
+
+		case TRESP_CALL_MUTE: {
+			struct tresp_call_mute *resp = (struct tresp_call_mute*)data;
+
+			dbg("receive TRESP_CALL_MUTE");
+			dbg("resp->err : [%d]", resp->err);
+
+			telephony_call_complete_mute(dbus_info->interface_object, dbus_info->invocation, resp->err);
+		} break;
+
+		case TRESP_CALL_UNMUTE: {
+			struct tresp_call_unmute *resp = (struct tresp_call_unmute*)data;
+
+			dbg("receive TRESP_CALL_UNMUTE");
+			dbg("resp->err : [%d]", resp->err);
+
+			telephony_call_complete_unmute(dbus_info->interface_object, dbus_info->invocation, resp->err);
+		} break;
+
+		case TRESP_CALL_GET_MUTE_STATUS: {
+			struct tresp_call_get_mute_status *resp = (struct tresp_call_get_mute_status*)data;
+
+			dbg("receive TRESP_CALL_GET_MUTE_STATUS");
+			dbg("resp->err : [%d]", resp->err);
+			dbg("resp->status : [%d]", resp->status);
+
+			telephony_call_complete_get_mute_status(dbus_info->interface_object, dbus_info->invocation, resp->err, resp->status );
+
+		} break;
+
+		case TRESP_CALL_SET_SOUND_RECORDING: {
+			struct tresp_call_sound_set_recording *resp = (struct tresp_call_sound_set_recording*)data;
+			telephony_call_complete_set_sound_recording(dbus_info->interface_object, dbus_info->invocation, resp->err );
+
+		} break;
+
+		case TRESP_CALL_SET_SOUND_EQUALIZATION: {
+			struct tresp_call_sound_set_equalization *resp = (struct tresp_call_sound_set_equalization*)data;
+			telephony_call_complete_set_sound_equalization(dbus_info->interface_object, dbus_info->invocation, resp->err );
+
+		} break;
+
+		case TRESP_CALL_SET_SOUND_NOISE_REDUCTION: {
+			struct tresp_call_sound_set_noise_reduction *resp = (struct tresp_call_sound_set_noise_reduction*)data;
+			telephony_call_complete_set_sound_noise_reduction(dbus_info->interface_object, dbus_info->invocation, resp->err );
+
+		} break;
+
+		default:
+			dbg("not handled command[%d]", command);
+		break;
+
+	}
+
+	return TRUE;
+}
+
+gboolean dbus_plugin_call_notification(struct custom_data *ctx, const char *plugin_name, TelephonyObjectSkeleton *object, enum tcore_notification_command command, unsigned int data_len, const void *data)
+{
+	TelephonyCall *call;
+
+	if (!object) {
+		dbg("object is 0");
+		return FALSE;
+	}
+
+	call = telephony_object_peek_call(TELEPHONY_OBJECT(object));
+	dbg("call = %p", call);
+
+	switch (command) {
+		case TNOTI_CALL_STATUS_IDLE: {
+			struct tnoti_call_status_idle *idle = (struct tnoti_call_status_idle*)data;
+
+			dbg("[ check ] call status : idle");
+
+			if ( idle->type != CALL_TYPE_VIDEO ) {
+				dbg("[ check ] this is voice call");
+				telephony_call_emit_voice_call_status_idle( call, idle->id, idle->cause, 0, 0 );
+			} else {
+				dbg("[ check ] this is video call");
+				telephony_call_emit_video_call_status_idle( call, idle->id, idle->cause, 0, 0 );
+			}
+
+
+		} break;
+		case TNOTI_CALL_STATUS_DIALING: {
+			struct tnoti_call_status_dialing *dialing = (struct tnoti_call_status_dialing*)data;
+
+			dbg("[ check ] call status : dialing");
+			dbg("[ check ] call type : (%d)", dialing->type);
+			dbg("[ check ] call id : (%d)", dialing->id);
+
+			if ( dialing->type != CALL_TYPE_VIDEO ) {
+				dbg("[ check ] this is voice call");
+				telephony_call_emit_voice_call_status_dialing( call, dialing->id );
+			} else {
+				dbg("[ check ] this is video call");
+				telephony_call_emit_video_call_status_dialing( call, dialing->id );
+			}
+
+		} break;
+		case TNOTI_CALL_STATUS_ALERT: {
+			struct tnoti_call_status_alert *alert = (struct tnoti_call_status_alert*)data;
+
+			dbg("[ check ] call status : alert");
+
+			if ( alert->type != CALL_TYPE_VIDEO ) {
+				dbg("[ check ] this is voice call");
+				telephony_call_emit_voice_call_status_alert( call, alert->id );
+			} else {
+				dbg("[ check ] this is video call");
+				telephony_call_emit_video_call_status_alert( call, alert->id );
+			}
+
+		} break;
+		case TNOTI_CALL_STATUS_ACTIVE: {
+			struct tnoti_call_status_active *active = (struct tnoti_call_status_active*)data;
+
+			dbg("[ check ] call status : active");
+
+			if ( active->type != CALL_TYPE_VIDEO ) {
+				dbg("[ check ] this is voice call");
+				telephony_call_emit_voice_call_status_active( call, active->id );
+			} else {
+				dbg("[ check ] this is video call");
+				telephony_call_emit_video_call_status_active( call, active->id );
+			}
+
+		} break;
+		case TNOTI_CALL_STATUS_HELD: {
+			struct tnoti_call_status_held *held = (struct tnoti_call_status_held*)data;
+
+			dbg("[ check ] call status : held");
+
+			telephony_call_emit_voice_call_status_held( call, held->id );
+
+		} break;
+		case TNOTI_CALL_STATUS_INCOMING: {
+			struct tnoti_call_status_incoming *incoming = (struct tnoti_call_status_incoming*)data;
+
+			dbg("[ check ] call status : incoming");
+
+			if ( incoming->type != CALL_TYPE_VIDEO ) {
+				dbg("[ check ] this is voice call");
+
+				telephony_call_emit_voice_call_status_incoming( call, incoming->id );
+
+				_launch_voice_call( incoming );
+
+			} else {
+				dbg("[ check ] this is video call");
+				telephony_call_emit_video_call_status_incoming( call, incoming->id );
+
+				_launch_video_call( incoming );
+			}
+
+		} break;
+
+		case TNOTI_CALL_SOUND_PATH: {
+
+			struct tnoti_call_sound_path *noti = (struct tnoti_call_sound_path*)data;
+			telephony_call_emit_call_sound_path( call, noti->path );
+
+
+		} break;
+
+		case TNOTI_CALL_SOUND_RINGBACK_TONE: {
+			struct tnoti_call_sound_ringback_tone *noti = (struct tnoti_call_sound_ringback_tone*)data;
+			telephony_call_emit_call_sound_ringback_tone( call, (gint)noti->status );
+
+		} break;
+
+		case TNOTI_CALL_SOUND_WBAMR: {
+			struct tnoti_call_sound_wbamr *noti = (struct tnoti_call_sound_wbamr*)data;
+			telephony_call_emit_call_sound_wbamr( call, (gint)noti->status );
+
+		} break;
+
+		case TNOTI_CALL_SOUND_EQUALIZATION: {
+			struct tnoti_call_sound_equalization *noti = (struct tnoti_call_sound_equalization*)data;
+			telephony_call_emit_call_sound_equalization( call, (gint)noti->mode, (gint)noti->direction );
+
+		} break;
+
+		case TNOTI_CALL_SOUND_NOISE_REDUCTION: {
+			struct tnoti_call_sound_noise_reduction *noti = (struct tnoti_call_sound_noise_reduction*)data;
+			telephony_call_emit_call_sound_noise_reduction( call, (gint)noti->status );
+
+		} break;
+
+		default:
+			dbg("not handled command[%d]", command);
+		break;
+	}
+
+	return TRUE;
+}
+

@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Jongman Park <jman.park@samsung.com>
 Uploaders: Jayoung Gu <jygu@samsung.com>, Kyeongchul Kim <kyeongchul.kim@samsung.com>, Youngman Park <youngman.park@samsung.com>, Inho Oh <inho48.oh@samsung.com>,  DongHoo Park <donghoo.park@samsung.com>
 Build-Depends: debhelper (>= 5),
-               libglib2.0-dev, libtcore-dev, libaul-1-dev, dlog-dev, libslp-tapi-dev, libsecurity-server-client-dev
+               libglib2.0-dev, libtcore-dev, libaul-1-dev, dlog-dev
 Standards-Version: 0.0.0
 
 Package: tel-plugin-dbus-tapi
@@ -16,6 +16,6 @@ Description: telephony plugin library for communication with dbus based client l
 Package: tel-plugin-dbus-tapi-dbg
 Section: debug
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, tel-plugin-dbus-tapi (= ${Source-Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, tel-plugin-dbus (= ${Source-Version})
 Description: telephony plugin library for communication with dbus based client library (dbg package)
 

@@ -1,108 +1,28 @@
-/*
- * tel-plugin-dbus-tapi
- *
- * Copyright (c) 2012 Samsung Electronics Co., Ltd. All rights reserved.
- *
- * Contact: Ja-young Gu <jygu@samsung.com>
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+#include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <time.h>
 #include <glib.h>
+#include <glib-object.h>
+#include <gio/gio.h>
 
 #include <tcore.h>
-#include <plugin.h>
 #include <server.h>
+#include <plugin.h>
+#include <hal.h>
+#include <communicator.h>
 #include <storage.h>
+#include <queue.h>
 #include <user_request.h>
 #include <co_network.h>
-#include <communicator.h>
+#include <co_sim.h>
+#include <co_ps.h>
 
-#include <TapiCommon.h>
-#include <TelSim.h>
-#include <TelNetwork.h>
-
-#include "tel_cs_conn.h"
+#include "generated-code.h"
 #include "common.h"
-#include "ts_utility.h"
-#include "ts_common.h"
-#include "ts_svr_req.h"
-#include "ts_noti.h"
-#include "modules.h"
 
-#if 0
-typedef enum
-{
-	TAPI_NETWORK_SYSTEM_NO_SRV,				/**< No Service available */
-	TAPI_NETWORK_SYSTEM_GSM,				/**< Available service is GSM  */
-	TAPI_NETWORK_SYSTEM_GPRS,				/**< Available service is GPRS */
-	TAPI_NETWORK_SYSTEM_EGPRS,				/**< Available service is EGPRS  */
-	TAPI_NETWORK_SYSTEM_PCS1900,			/**< Available service is PCS1900 band */
-	TAPI_NETWORK_SYSTEM_UMTS,				/**< Available service is UMTS  */
-	TAPI_NETWORK_SYSTEM_GSM_AND_UMTS,		/**< Both GSM and UMTS systems available */
-	TAPI_NETWORK_SYSTEM_HSDPA,				/**< Available service is hsdpa */
-	TAPI_NETWORK_SYSTEM_IS95A,				/**< Available service is IS95A */
-	TAPI_NETWORK_SYSTEM_IS95B,				/**< Available service is IS95B */
-	TAPI_NETWORK_SYSTEM_CDMA_1X,			/**< Available service is CDMA 1X */
-	TAPI_NETWORK_SYSTEM_EVDO_REV_0,	/**< Available service is EV-DO rev0 */
-	TAPI_NETWORK_SYSTEM_1X_EVDO_REV_0_HYBRID, /**< Available service is  1X and EV-DO rev0 */
-	TAPI_NETWORK_SYSTEM_EVDO_REV_A,	/**< Available service is  EV-DO revA */
-	TAPI_NETWORK_SYSTEM_1X_EVDO_REV_A_HYBRID, /**< Available service is 1X and EV-DO revA */
-	TAPI_NETWORK_SYSTEM_EVDV,		/**< Available service is EV-DV */
-} TelNetworkSystemType_t;
-
-enum telephony_network_access_technology {
-	NETWORK_ACT_UNKNOWN = 0x0,
-	NETWORK_ACT_GSM = 0x1,
-	NETWORK_ACT_GPRS,
-	NETWORK_ACT_EGPRS,
-	NETWORK_ACT_UMTS = 0x4,
-	NETWORK_ACT_UTRAN = 0x4,
-	NETWORK_ACT_GSM_UTRAN,
-	NETWORK_ACT_IS95A = 0x11,
-	NETWORK_ACT_IS95B,
-	NETWORK_ACT_CDMA_1X,
-	NETWORK_ACT_EVDO_REV0,
-	NETWORK_ACT_CDMA_1X_EVDO_REV0,
-	NETWORK_ACT_EVDO_REVA,
-	NETWORK_ACT_CDMA_1X_EVDO_REVA,
-	NETWORK_ACT_EVDV,
-	NETWORK_ACT_LTE = 0x21,
-	NETWORK_ACT_NOT_SPECIFIED = 0xFF
-};
-#endif
-
-static TelNetworkSystemType_t _act_table[] = {
-		[NETWORK_ACT_GSM] =  TAPI_NETWORK_SYSTEM_GSM,
-		[NETWORK_ACT_GPRS] = TAPI_NETWORK_SYSTEM_GPRS,
-		[NETWORK_ACT_EGPRS] = TAPI_NETWORK_SYSTEM_EGPRS,
-		[NETWORK_ACT_UMTS] = TAPI_NETWORK_SYSTEM_UMTS,
-		[NETWORK_ACT_GSM_UTRAN] = TAPI_NETWORK_SYSTEM_GSM_AND_UMTS,
-		[NETWORK_ACT_IS95A] = TAPI_NETWORK_SYSTEM_IS95A,
-		[NETWORK_ACT_IS95B] = TAPI_NETWORK_SYSTEM_IS95B,
-		[NETWORK_ACT_CDMA_1X] = TAPI_NETWORK_SYSTEM_CDMA_1X,
-		[NETWORK_ACT_EVDO_REV0] = TAPI_NETWORK_SYSTEM_EVDO_REV_0,
-		[NETWORK_ACT_CDMA_1X_EVDO_REV0] = TAPI_NETWORK_SYSTEM_1X_EVDO_REV_0_HYBRID,
-		[NETWORK_ACT_EVDO_REVA] = TAPI_NETWORK_SYSTEM_EVDO_REV_A,
-		[NETWORK_ACT_CDMA_1X_EVDO_REVA] = TAPI_NETWORK_SYSTEM_1X_EVDO_REV_A_HYBRID,
-		[NETWORK_ACT_EVDV] = TAPI_NETWORK_SYSTEM_EVDV,
-		[NETWORK_ACT_NOT_SPECIFIED] = TAPI_NETWORK_SYSTEM_NO_SRV,
-};
 
 static char *_get_network_name_by_plmn(CoreObject *o, const char *plmn)
 {
@@ -131,366 +51,612 @@ static char *_get_network_name_by_plmn(CoreObject *o, const char *plmn)
 	return NULL;
 }
 
-void dbus_request_network(struct custom_data *ctx, TcorePlugin *plugin, int tapi_service_function, GArray* in_param1,
-		GArray* in_param2, GArray* in_param3, GArray* in_param4, GArray** out_param1, GArray** out_param2,
-		GArray** out_param3, GArray** out_param4, GError** error)
+
+static enum tcore_hook_return on_hook_location_cellinfo(Server *s, CoreObject *source, enum tcore_notification_command command, unsigned int data_len, void *data, void *user_data)
 {
-	int api_err = TAPI_API_SUCCESS;
-	tapi_dbus_connection_name conn_name;
-	unsigned int legacy_plmn;
-	TelNetworkServiceDomain_t info_service_domain;
-	TelNetworkPrefferedPlmnInfo_t *info_preferred_plmn_info;
-	TelNetworkPrefferedPlmnOp_t info_preferred_plmn_operation;
-	TelNetworkBandPreferred_t info_band_mode;
-	TelNetworkBand_t info_band;
-	TelNetworkMode_t *info_order;
-	TelNetworkPowerOnAttach_t info_power_on_attach;
-	int request_id = 0;
+	const struct tnoti_network_location_cellinfo *info = data;
+	TelephonyNetwork *network = user_data;
 
-	struct treq_network_set_plmn_selection_mode data_plmn_select;
-	struct treq_network_set_service_domain data_service_domain;
-	struct treq_network_set_band data_band;
-	struct treq_network_set_preferred_plmn data_preferred_plmn;
-	struct treq_network_set_order data_order;
-	struct treq_network_set_power_on_attach data_power_on_attach;
-	const struct tresp_network_search *data_network_search = NULL;
-	TReturn ret;
-	GSList *co_list = NULL;
-	CoreObject *co_network = NULL;
-	UserRequest *ur = NULL;
-	struct tcore_user_info ui = { 0, };
-	int i;
+	if (!network)
+		return TCORE_HOOK_RETURN_CONTINUE;
 
-	conn_name = g_array_index(in_param4, tapi_dbus_connection_name, 0);
+	telephony_network_set_lac(network, info->lac);
+	telephony_network_set_cell_id(network, info->cell_id);
 
-	co_list = tcore_plugin_get_core_objects_bytype(plugin, CORE_OBJECT_TYPE_NETWORK);
-	if (!co_list) {
-		api_err = TAPI_API_NOT_SUPPORTED;
-		goto OUT;
-	}
-
-	co_network = (CoreObject *)co_list->data;
-	g_slist_free(co_list);
-
-	if (!co_network) {
-		api_err = TAPI_API_NOT_SUPPORTED;
-		goto OUT;
-	}
-
-	ur = tcore_user_request_new(ctx->comm, tcore_plugin_get_description(plugin)->name);
-	if (!ur) {
-		api_err = TAPI_API_SERVER_FAILURE;
-		goto OUT;
-	}
-
-	ui.appname = conn_name.name;
-	tcore_user_request_set_user_info(ur, &ui);
-
-	switch (tapi_service_function) {
-		case TAPI_CS_NETWORK_SEARCH: /* 0x402 */
-			tcore_user_request_set_data(ur, 0, NULL);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_SEARCH);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_SELECT_AUTOMATIC: /* 0x410 */
-			data_plmn_select.mode = NETWORK_SELECT_MODE_GSM_AUTOMATIC;
-
-			tcore_user_request_set_data(ur, sizeof(struct treq_network_set_plmn_selection_mode), &data_plmn_select);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_SET_PLMN_SELECTION_MODE);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_SELECT_MANUAL: /* 0x411 */
-			legacy_plmn = g_array_index(in_param1, unsigned int, 0);
-			data_plmn_select.mode = NETWORK_SELECT_MODE_GSM_MANUAL;
-			snprintf(data_plmn_select.plmn, 6, "%u", legacy_plmn);
-			if (strlen(data_plmn_select.plmn) <= 5)
-				data_plmn_select.plmn[5] = '#';
-
-			data_network_search = ctx->plmn_list_search_result_cache;
-			for (i = 0; i < data_network_search->list_count; i++) {
-				if (!g_strcmp0(data_network_search->list[i].plmn, data_plmn_select.plmn)) {
-					data_plmn_select.act = data_network_search->list[i].act;
-					break;
-				}
-			}
-
-			tcore_user_request_set_data(ur, sizeof(struct treq_network_set_plmn_selection_mode), &data_plmn_select);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_SET_PLMN_SELECTION_MODE);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_GETSELECTIONMODE: /* 0x401 */
-			tcore_user_request_set_data(ur, 0, NULL);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_GET_PLMN_SELECTION_MODE);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_SETSERVICEDOMAIN: /* 0x405 */
-			info_service_domain = g_array_index(in_param1, TelNetworkServiceDomain_t, 0);
-			data_service_domain.domain = info_service_domain;
-
-			tcore_user_request_set_data(ur, sizeof(struct treq_network_set_service_domain), &data_service_domain);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_SET_SERVICE_DOMAIN);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_GETSERVICEDOMAIN: /* 0x406 */
-			tcore_user_request_set_data(ur, 0, NULL);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_GET_SERVICE_DOMAIN);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_SETNETWORKBAND: /* 0x403 */
-			info_band_mode = g_array_index(in_param1,TelNetworkBandPreferred_t, 0);
-			info_band = g_array_index(in_param2,TelNetworkBand_t, 0);
-
-			data_band.mode = info_band_mode;
-			data_band.band = info_band;
-
-			tcore_user_request_set_data(ur, sizeof(struct treq_network_set_band), &data_band);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_SET_BAND);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_GETNETWORKBAND: /* 0x404 */
-			tcore_user_request_set_data(ur, 0, NULL);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_GET_BAND);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_SETPREFPLMN: /* 0x409 */
-			info_preferred_plmn_operation = g_array_index(in_param1,TelNetworkPrefferedPlmnOp_t, 0);
-			info_preferred_plmn_info = &g_array_index(in_param2,TelNetworkPrefferedPlmnInfo_t, 0);
-
-			data_preferred_plmn.operation = info_preferred_plmn_operation;
-			memcpy(data_preferred_plmn.plmn, info_preferred_plmn_info->Plmn, 6);
-
-			if (strlen((char *)info_preferred_plmn_info->Plmn) == 4) {
-				data_preferred_plmn.plmn[4] = data_preferred_plmn.plmn[3];
-				data_preferred_plmn.plmn[3] = '0';
-			}
-
-			if (strlen((char *)info_preferred_plmn_info->Plmn) <= 5) {
-				data_preferred_plmn.plmn[5] = '#';
-			}
-
-			data_preferred_plmn.ef_index = info_preferred_plmn_info->Index;
-
-			switch (info_preferred_plmn_info->SystemType) {
-				case TAPI_NETWORK_SYSTEM_GSM:
-					data_preferred_plmn.act = NETWORK_ACT_GSM;
-					break;
-
-				case TAPI_NETWORK_SYSTEM_UMTS:
-					data_preferred_plmn.act = NETWORK_ACT_UMTS;
-					break;
-
-				case TAPI_NETWORK_SYSTEM_GPRS:
-					data_preferred_plmn.act = NETWORK_ACT_GPRS;
-					break;
-
-				case TAPI_NETWORK_SYSTEM_EGPRS:
-					data_preferred_plmn.act = NETWORK_ACT_EGPRS;
-					break;
-
-				case TAPI_NETWORK_SYSTEM_GSM_AND_UMTS:
-					data_preferred_plmn.act = NETWORK_ACT_UMTS;
-					break;
-
-				default:
-					break;
-			}
-
-			tcore_user_request_set_data(ur, sizeof(struct treq_network_set_preferred_plmn), &data_preferred_plmn);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_SET_PREFERRED_PLMN);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_GETPREFPLMN: /* 0x40A */
-			tcore_user_request_set_data(ur, 0, NULL);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_GET_PREFERRED_PLMN);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_SETNETWORKORDER: /* 0x40000412 */
-			info_order = &g_array_index(in_param1,TelNetworkMode_t, 0);
-			data_order.order = *info_order;
-
-			tcore_user_request_set_data(ur, sizeof(struct treq_network_set_order), &data_order);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_SET_ORDER);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_GETNETWORKORDER: /* 0x40000413 */
-			tcore_user_request_set_data(ur, 0, NULL);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_GET_ORDER);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_SETPOWERONATTACH: /* 0x40000414 */
-			info_power_on_attach = g_array_index(in_param1,TelNetworkPowerOnAttach_t, 0);
-			data_power_on_attach.enable = info_power_on_attach;
-
-			tcore_user_request_set_data(ur, sizeof(struct treq_network_set_power_on_attach), &data_power_on_attach);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_SET_POWER_ON_ATTACH);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_GETPOWERONATTACH: /* 0x40000415 */
-			tcore_user_request_set_data(ur, 0, NULL);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_GET_POWER_ON_ATTACH);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		case TAPI_CS_NETWORK_CANCELMANUALSEARCH: /* 0x4000416 */
-			tcore_user_request_set_data(ur, 0, NULL);
-			tcore_user_request_set_command(ur, TREQ_NETWORK_SET_CANCEL_MANUAL_SEARCH);
-
-			ret = tcore_communicator_dispatch_request(ctx->comm, ur);
-			if (ret != TCORE_RETURN_SUCCESS) {
-				api_err = TAPI_API_OPERATION_FAILED;
-			}
-
-			dbg("ret = 0x%x", ret);
-			break;
-
-		/* Unused */
-		case TAPI_CS_NETWORK_SETNETWORKMODE:
-		case TAPI_CS_NETWORK_GETNETWORKMODE:
-		case TAPI_CS_NETWORK_SETROAMINGMODE:
-		case TAPI_CS_NETWORK_GETROAMINGMODE:
-		case TAPI_CS_NETWORK_SETCDMAHYBRIDMODE:
-		case TAPI_CS_NETWORK_GETCDMAHYBRIDMODE:
-		case TAPI_CS_NETWORK_CANCELMANUALSELECTION:
-		default:
-			api_err = TAPI_API_NOT_SUPPORTED;
-			break;
-	}
-
-OUT:
-	if (api_err != TAPI_API_SUCCESS) {
-		tcore_user_request_free(ur);
-	}
-	g_array_append_vals(*out_param1, &api_err, sizeof(int));
-	g_array_append_vals(*out_param2, &request_id, sizeof(int));
+	return TCORE_HOOK_RETURN_CONTINUE;
 }
 
-TReturn dbus_response_network(struct custom_data *ctx, UserRequest *ur, const char *appname,
-		enum tcore_response_command command, unsigned int data_len, const void *data)
+static enum tcore_hook_return on_hook_icon_info(Server *s, CoreObject *source, enum tcore_notification_command command, unsigned int data_len, void *data, void *user_data)
 {
-	const struct tresp_network_search *data_network_search = data;
-	const struct tresp_network_set_plmn_selection_mode *data_set_plmn_selection_mode = data;
-	const struct tresp_network_get_plmn_selection_mode *data_get_plmn_selection_mode = data;
-	const struct tresp_network_set_service_domain *data_set_service_domain = data;
-	const struct tresp_network_get_service_domain *data_get_service_domain = data;
-	const struct tresp_network_set_band *data_set_band = data;
-	const struct tresp_network_get_band *data_get_band = data;
-	const struct tresp_network_set_preferred_plmn *data_set_preferred_plmn = data;
-	const struct tresp_network_get_preferred_plmn *data_get_preferred_plmn = data;
-	const struct tresp_network_set_order *data_set_order = data;
-	const struct tresp_network_get_order *data_get_order = data;
-	const struct tresp_network_set_power_on_attach *data_set_power_on_attach = data;
-	const struct tresp_network_get_power_on_attach *data_get_power_on_attach = data;
-	const struct tresp_network_set_cancel_manual_search *data_set_cancel_manual_search = data;
+	const struct tnoti_network_icon_info *info = data;
+	TelephonyNetwork *network = user_data;
 
-	TelNetworkPlmnList_t info_plmn_list;
-	TelNetworkSelectionMode_t info_selection_mode;
-	TelNetworkServiceDomain_t info_service_domain;
-	TelNetworkBand_t info_network_band;
-	TelNetworkPrefferedPlmnList_t info_preferred_plmn_list;
-	TelNetworkMode_t info_network_mode;
-	TelNetworkPowerOnAttach_t info_power_on_attach;
+	if (!network)
+		return TCORE_HOOK_RETURN_CONTINUE;
+
+	telephony_network_set_rssi(network, info->rssi);
+
+	return TCORE_HOOK_RETURN_CONTINUE;
+}
+
+static enum tcore_hook_return on_hook_registration_status(Server *s, CoreObject *source, enum tcore_notification_command command, unsigned int data_len, void *data, void *user_data)
+{
+	const struct tnoti_network_registration_status *info = data;
+	TelephonyNetwork *network = user_data;
+
+	if (!network)
+		return TCORE_HOOK_RETURN_CONTINUE;
+
+	telephony_network_set_circuit_status(network, info->cs_domain_status);
+	telephony_network_set_packet_status(network, info->ps_domain_status);
+	telephony_network_set_service_type(network, info->service_type);
+	telephony_network_set_roaming_status(network, info->roaming_status);
+
+	switch (info->service_type) {
+		case NETWORK_SERVICE_TYPE_UNKNOWN:
+		case NETWORK_SERVICE_TYPE_NO_SERVICE:
+			telephony_network_set_network_name(network, "No Service");
+			break;
+
+		case NETWORK_SERVICE_TYPE_EMERGENCY:
+			telephony_network_set_network_name(network, "EMERGENCY");
+			break;
+
+		case NETWORK_SERVICE_TYPE_SEARCH:
+			telephony_network_set_network_name(network, "Searching...");
+			break;
+
+		default:
+			break;
+	}
+
+	return TCORE_HOOK_RETURN_CONTINUE;
+}
+
+static enum tcore_hook_return on_hook_change(Server *s, CoreObject *source, enum tcore_notification_command command, unsigned int data_len, void *data, void *user_data)
+{
+	const struct tnoti_network_change *info = data;
+	TelephonyNetwork *network = user_data;
+	struct tcore_network_operator_info *noi = NULL;
+	char mcc[4] = { 0, };
+	char mnc[4] = { 0, };
+	enum telephony_network_service_type svc_type;
+	enum tcore_network_name_priority network_name_priority;
+	char *tmp;
+
+	if (!network)
+		return TCORE_HOOK_RETURN_CONTINUE;
+
+	telephony_network_set_plmn(network, info->plmn);
+	telephony_network_set_lac(network, info->gsm.lac);
+
+	snprintf(mcc, 4, "%s", info->plmn);
+	snprintf(mnc, 4, "%s", info->plmn+3);
+
+	if (mnc[2] == '#')
+		mnc[2] = '\0';
+
+	tcore_network_get_network_name_priority(source, &network_name_priority);
+	telephony_network_set_name_priority(network, network_name_priority);
+
+	tmp = tcore_network_get_network_name(source, TCORE_NETWORK_NAME_TYPE_SPN);
+	if (tmp) {
+		telephony_network_set_spn_name(network, tmp);
+		free(tmp);
+	}
+
+	tcore_network_get_service_type(source, &svc_type);
+	switch(svc_type) {
+		case NETWORK_SERVICE_TYPE_UNKNOWN:
+		case NETWORK_SERVICE_TYPE_NO_SERVICE:
+			telephony_network_set_network_name(network, "No Service");
+			break;
+
+		case NETWORK_SERVICE_TYPE_EMERGENCY:
+			telephony_network_set_network_name(network, "EMERGENCY");
+			break;
+
+		case NETWORK_SERVICE_TYPE_SEARCH:
+			telephony_network_set_network_name(network, "Searching...");
+			break;
+
+		default:
+			tmp = tcore_network_get_network_name(source, TCORE_NETWORK_NAME_TYPE_SHORT);
+			if (tmp) {
+				telephony_network_set_network_name(network, tmp);
+				free(tmp);
+			}
+			else {
+				/* pre-defined table */
+				noi = tcore_network_operator_info_find(source, mcc, mnc);
+				if (noi) {
+					dbg("%s-%s: country=[%s], oper=[%s]", mcc, mnc, noi->country, noi->name);
+					dbg("NWNAME = pre-define table[%s]", noi->name);
+					telephony_network_set_network_name(network, noi->name);
+				}
+				else {
+					dbg("%s-%s: no network operator name", mcc, mnc);
+					telephony_network_set_network_name(network, info->plmn);
+				}
+			}
+			break;
+	}
+
+	return TCORE_HOOK_RETURN_CONTINUE;
+}
+
+static enum tcore_hook_return on_hook_ps_protocol_status(Server *s, CoreObject *source, enum tcore_notification_command command, unsigned int data_len, void *data, void *user_data)
+{
+	const struct tnoti_ps_protocol_status *info = data;
+	TelephonyNetwork *network = user_data;
+
+	if (!network)
+		return TCORE_HOOK_RETURN_CONTINUE;
+
+	telephony_network_set_network_type(network, info->status);
+
+	return TCORE_HOOK_RETURN_CONTINUE;
+}
+
+static gboolean
+on_network_search (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gpointer user_data)
+{
+#if 1
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+	tcore_user_request_set_data(ur, 0, NULL);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_SEARCH);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_search(network, invocation, NULL, ret);
+		tcore_user_request_unref(ur);
+	}
+#else
+	/* Dummy return */
+	GVariant *result = NULL;
+	GVariantBuilder b;
+	int i;
+	char *buf;
+
+	g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+
+	for (i = 0; i < 3; i++) {
+		g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
+
+		g_variant_builder_add(&b, "{sv}", "plmn", g_variant_new_string("45001"));
+		g_variant_builder_add(&b, "{sv}", "act", g_variant_new_int32(4));
+		g_variant_builder_add(&b, "{sv}", "type", g_variant_new_int32(2));
+		g_variant_builder_add(&b, "{sv}", "name", g_variant_new_string("Samsung"));
+
+		g_variant_builder_close(&b);
+	}
+
+	result = g_variant_builder_end(&b);
+
+	telephony_network_complete_search(network, invocation, result, 0);
+	g_variant_unref(result);
+#endif
+
+	return TRUE;
+}
+
+static gboolean
+on_network_search_cancel (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+	tcore_user_request_set_data(ur, 0, NULL);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_CANCEL_MANUAL_SEARCH);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_search_cancel(network, invocation, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+static gboolean
+on_network_get_selection_mode (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+	tcore_user_request_set_data(ur, 0, NULL);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_PLMN_SELECTION_MODE);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_get_selection_mode(network, invocation, -1, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+static gboolean
+on_network_set_selection_mode (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gint mode,
+		const gchar *plmn,
+		gint act,
+		gpointer user_data)
+{
+	struct treq_network_set_plmn_selection_mode req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	memset(&req, 0, sizeof(struct treq_network_set_plmn_selection_mode));
+
+	if (mode == 0) {
+		/* Automatic */
+		req.mode = NETWORK_SELECT_MODE_GSM_AUTOMATIC;
+	}
+	else if (mode == 1) {
+		/* Manual */
+		req.mode = NETWORK_SELECT_MODE_GSM_MANUAL;
+		snprintf(req.plmn, 7, "%s", plmn);
+		if (strlen(plmn) <= 5)
+			req.plmn[5] = '#';
+		req.act = act;
+	}
+	else {
+		telephony_network_complete_set_selection_mode(network, invocation, -1);
+		return TRUE;
+	}
+
+	dbg("mode = %d, plmn = [%s], act = %d",
+			req.mode, req.plmn, req.act);
+
+	ur = MAKE_UR(ctx, network, invocation);
+
+	tcore_user_request_set_data(ur, sizeof(struct treq_network_set_plmn_selection_mode), &req);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_PLMN_SELECTION_MODE);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_set_selection_mode(network, invocation, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+
+static gboolean
+on_network_set_service_domain (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gint domain,
+		gpointer user_data)
+{
+	struct treq_network_set_service_domain req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+
+	req.domain = domain;
+
+	tcore_user_request_set_data(ur, sizeof(struct treq_network_set_service_domain), &req);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_SERVICE_DOMAIN);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_set_service_domain(network, invocation, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+static gboolean
+on_network_get_service_domain (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+	tcore_user_request_set_data(ur, 0, NULL);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_SERVICE_DOMAIN);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_get_service_domain(network, invocation, -1, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+static gboolean
+on_network_set_band (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gint band,
+		gint mode,
+		gpointer user_data)
+{
+	struct treq_network_set_band req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+
+	req.mode = mode;
+	req.band = band;
+
+	tcore_user_request_set_data(ur, sizeof(struct treq_network_set_band), &req);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_BAND);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_set_band(network, invocation, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+static gboolean
+on_network_get_band (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+	tcore_user_request_set_data(ur, 0, NULL);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_BAND);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_get_band(network, invocation, -1, -1, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+static gboolean
+on_network_set_mode (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gint mode,
+		gpointer user_data)
+{
+	struct treq_network_set_mode req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+
+	req.mode = mode;
+
+	tcore_user_request_set_data(ur, sizeof(struct treq_network_set_mode), &req);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_MODE);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_set_mode(network, invocation, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+static gboolean
+on_network_get_mode (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+	tcore_user_request_set_data(ur, 0, NULL);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_MODE);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_get_mode(network, invocation, -1, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+static gboolean
+on_network_set_preferred_plmn (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gint mode,
+		gint ef_index,
+		gint act,
+		const gchar *plmn,
+		gpointer user_data)
+{
+	struct treq_network_set_preferred_plmn req;
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+
+	req.operation = mode;
+	req.ef_index = ef_index;
+	req.act = act;
+
+	memcpy(req.plmn, plmn, 6);
+
+	if (strlen(plmn) <= 5) {
+		req.plmn[5] = '#';
+	}
+
+	tcore_user_request_set_data(ur, sizeof(struct treq_network_set_preferred_plmn), &req);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_PREFERRED_PLMN);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_set_preferred_plmn(network, invocation, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+static gboolean
+on_network_get_preferred_plmn (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+	tcore_user_request_set_data(ur, 0, NULL);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_PREFERRED_PLMN);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_get_preferred_plmn(network, invocation, NULL, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+static gboolean
+on_network_get_serving_network (TelephonyNetwork *network,
+		GDBusMethodInvocation *invocation,
+		gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, network, invocation);
+	tcore_user_request_set_data(ur, 0, NULL);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_SERVING_NETWORK);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		telephony_network_complete_get_serving_network(network, invocation, 0, NULL, 0, ret);
+		tcore_user_request_unref(ur);
+	}
+
+	return TRUE;
+}
+
+gboolean dbus_plugin_setup_network_interface(TelephonyObjectSkeleton *object, struct custom_data *ctx)
+{
+	TelephonyNetwork *network;
+
+	network = telephony_network_skeleton_new();
+	telephony_object_skeleton_set_network(object, network);
+	g_object_unref(network);
+
+	g_signal_connect (network,
+			"handle-search",
+			G_CALLBACK (on_network_search),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-search-cancel",
+			G_CALLBACK (on_network_search_cancel),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-set-selection-mode",
+			G_CALLBACK (on_network_set_selection_mode),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-get-selection-mode",
+			G_CALLBACK (on_network_get_selection_mode),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-set-service-domain",
+			G_CALLBACK (on_network_set_service_domain),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-get-service-domain",
+			G_CALLBACK (on_network_get_service_domain),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-set-band",
+			G_CALLBACK (on_network_set_band),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-get-band",
+			G_CALLBACK (on_network_get_band),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-set-mode",
+			G_CALLBACK (on_network_set_mode),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-get-mode",
+			G_CALLBACK (on_network_get_mode),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-set-preferred-plmn",
+			G_CALLBACK (on_network_set_preferred_plmn),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-get-preferred-plmn",
+			G_CALLBACK (on_network_get_preferred_plmn),
+			ctx);
+
+	g_signal_connect (network,
+			"handle-get-serving-network",
+			G_CALLBACK (on_network_get_serving_network),
+			ctx);
+
+	tcore_server_add_notification_hook(ctx->server, TNOTI_NETWORK_LOCATION_CELLINFO, on_hook_location_cellinfo, network);
+	tcore_server_add_notification_hook(ctx->server, TNOTI_NETWORK_ICON_INFO, on_hook_icon_info, network);
+	tcore_server_add_notification_hook(ctx->server, TNOTI_NETWORK_REGISTRATION_STATUS, on_hook_registration_status, network);
+	tcore_server_add_notification_hook(ctx->server, TNOTI_NETWORK_CHANGE, on_hook_change, network);
+	tcore_server_add_notification_hook(ctx->server, TNOTI_PS_PROTOCOL_STATUS, on_hook_ps_protocol_status, network);
+
+	return TRUE;
+}
+
+gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, struct dbus_request_info *dbus_info, enum tcore_response_command command, unsigned int data_len, const void *data)
+{
+	const struct tresp_network_search *resp_network_search = data;
+	const struct tresp_network_get_plmn_selection_mode *resp_get_plmn_selection_mode = data;
+	const struct tresp_network_set_plmn_selection_mode *resp_set_plmn_selection_mode = data;
+	const struct tresp_network_set_service_domain *resp_set_service_domain = data;
+	const struct tresp_network_get_service_domain *resp_get_service_domain = data;
+	const struct tresp_network_set_band *resp_set_band = data;
+	const struct tresp_network_get_band *resp_get_band = data;
+	const struct tresp_network_set_preferred_plmn *resp_set_preferred_plmn = data;
+	const struct tresp_network_get_preferred_plmn *resp_get_preferred_plmn = data;
+	const struct tresp_network_get_serving_network *resp_get_serving_network = data;
+	const struct tresp_network_set_mode *resp_set_mode = data;
+	const struct tresp_network_get_mode *resp_get_mode = data;
 
 	int i = 0;
-	int request_id = 0;
-	int ret = TAPI_API_SUCCESS;
-	char *buf = NULL;
+	char *buf;
 
 	GSList *co_list;
 	CoreObject *co_network;
@@ -519,206 +685,240 @@ TReturn dbus_response_network(struct custom_data *ctx, UserRequest *ur, const ch
 	}
 
 	switch (command) {
-		case TRESP_NETWORK_SEARCH:
-			memset(&info_plmn_list, 0, sizeof(TelNetworkPlmnList_t));
-			info_plmn_list.networks_count = data_network_search->list_count;
+		case TRESP_NETWORK_SEARCH: {
+			GVariant *result = NULL;
+			GVariantBuilder b;
 
-			dbg("size_of(TelNetworkPlmnList_t) = %d", sizeof(TelNetworkPlmnList_t));
-			dbg("list_count = %d", info_plmn_list.networks_count);
-			for (i=0; i<info_plmn_list.networks_count; i++) {
-				info_plmn_list.network_list[i].plmn_id = atoi(data_network_search->list[i].plmn);
-				info_plmn_list.network_list[i].type_of_plmn = data_network_search->list[i].status;
-				info_plmn_list.network_list[i].access_technology = _act_table[data_network_search->list[i].act];
+			g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 
-				buf = _get_network_name_by_plmn(co_network, data_network_search->list[i].plmn);
-				if (buf) {
-					memcpy(info_plmn_list.network_list[i].network_name, buf, 40);
-					memcpy(info_plmn_list.network_list[i].service_provider_name, buf, 40);
+			for (i = 0; i < resp_network_search->list_count; i++) {
+				g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
+
+				g_variant_builder_add(&b, "{sv}", "plmn", g_variant_new_string(resp_network_search->list[i].plmn));
+				g_variant_builder_add(&b, "{sv}", "act", g_variant_new_int32(resp_network_search->list[i].act));
+				g_variant_builder_add(&b, "{sv}", "type", g_variant_new_int32(resp_network_search->list[i].status));
+
+				if (strlen(resp_network_search->list[i].name) > 0) {
+					g_variant_builder_add(&b, "{sv}", "name", g_variant_new_string(resp_network_search->list[i].name));
 				}
 				else {
-					snprintf(info_plmn_list.network_list[i].network_name, 40, "%d", info_plmn_list.network_list[i].plmn_id);
-					snprintf(info_plmn_list.network_list[i].service_provider_name, 40, "%d", info_plmn_list.network_list[i].plmn_id);
+					buf = _get_network_name_by_plmn(co_network, resp_network_search->list[i].plmn);
+					if (buf)
+						g_variant_builder_add(&b, "{sv}", "name", g_variant_new_string(buf));
+					else
+						g_variant_builder_add(&b, "{sv}", "name", g_variant_new_string(resp_network_search->list[i].plmn));
 				}
 
-				dbg("[%d] plmn_id = %d", i, info_plmn_list.network_list[i].plmn_id);
-				dbg("[%d] type_of_plmn = %d", i, info_plmn_list.network_list[i].type_of_plmn);
-				dbg("[%d] access_technology = %d", i, info_plmn_list.network_list[i].access_technology);
-				dbg("[%d] network_name = %s", i, info_plmn_list.network_list[i].network_name);
-				dbg("[%d] service_provider_name = %s", i, info_plmn_list.network_list[i].service_provider_name);
+				g_variant_builder_close(&b);
 			}
 
-			/* Save cache */
-			if (!ctx->plmn_list_search_result_cache)
-				ctx->plmn_list_search_result_cache = calloc(sizeof(struct tresp_network_search), 1);
-			memcpy(ctx->plmn_list_search_result_cache, data_network_search, sizeof(struct tresp_network_search));
+			result = g_variant_builder_end(&b);
 
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK, TAPI_EVENT_NETWORK_SEARCH_CNF,
-					appname, request_id, ret, sizeof(TelNetworkPlmnList_t), (void*) &info_plmn_list);
+			telephony_network_complete_search(dbus_info->interface_object, dbus_info->invocation, result, 0);
+		}
+
 			break;
 
 		case TRESP_NETWORK_SET_PLMN_SELECTION_MODE:
-			if (data_set_plmn_selection_mode->result != TCORE_RETURN_SUCCESS)
-				ret = TAPI_API_OPERATION_FAILED;
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK, TAPI_EVENT_NETWORK_SELECT_CNF,
-					appname, request_id, ret, 0, NULL);
+			dbg("receive TRESP_SET_PLMN_SELECTION_MODE");
+			dbg("resp->result = %d", resp_set_plmn_selection_mode->result);
+			telephony_network_complete_set_selection_mode(dbus_info->interface_object, dbus_info->invocation, resp_set_plmn_selection_mode->result);
 			break;
 
 		case TRESP_NETWORK_GET_PLMN_SELECTION_MODE:
-			info_selection_mode = data_get_plmn_selection_mode->mode;
-
-			switch (data_get_plmn_selection_mode->mode) {
+			dbg("receive TRESP_GET_PLMN_SELECTION_MODE");
+			dbg("resp->mode = %d", resp_get_plmn_selection_mode->mode);
+			switch (resp_get_plmn_selection_mode->mode) {
 				case NETWORK_SELECT_MODE_GLOBAL_AUTOMATIC:
-					info_selection_mode = TAPI_NETWORK_SELECTIONMODE_GLOBAL_AUTOMAITIC;
-					break;
-
 				case NETWORK_SELECT_MODE_GSM_AUTOMATIC:
-					info_selection_mode = TAPI_NETWORK_SELECTIONMODE_AUTOMATIC;
+					telephony_network_complete_get_selection_mode(dbus_info->interface_object, dbus_info->invocation, 0, 0);
 					break;
 
 				case NETWORK_SELECT_MODE_GSM_MANUAL:
-					info_selection_mode = TAPI_NETWORK_SELECTIONMODE_MANUAL;
-					break;
-
-				case NETWORK_SELECT_MODE_CDMA:
-					info_selection_mode = TAPI_NETWORK_SELECTIONMODE_CDMA;
+					telephony_network_complete_get_selection_mode(dbus_info->interface_object, dbus_info->invocation, 1, 0);
 					break;
 
 				default:
+					telephony_network_complete_get_selection_mode(dbus_info->interface_object, dbus_info->invocation, -1, -1);
 					break;
 			}
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK,
-					TAPI_EVENT_NETWORK_GETSELECTIONMODE_CNF, appname, request_id, ret,
-					sizeof(TelNetworkSelectionMode_t), (void*) &info_selection_mode);
-
 			break;
 
 		case TRESP_NETWORK_SET_SERVICE_DOMAIN:
-			if (data_set_service_domain->result != TCORE_RETURN_SUCCESS)
-				ret = TAPI_API_OPERATION_FAILED;
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK, TAPI_EVENT_NETWORK_SETSERVICEDOMAIN_CNF,
-					appname, request_id, ret, 0, NULL);
+			dbg("receive TRESP_NETWORK_SET_SERVICE_DOMAIN");
+			dbg("resp->result = %d", resp_set_service_domain->result);
+			telephony_network_complete_set_service_domain(dbus_info->interface_object, dbus_info->invocation, resp_set_service_domain->result);
 			break;
 
 		case TRESP_NETWORK_GET_SERVICE_DOMAIN:
-			info_service_domain = data_get_service_domain->domain;
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK,
-					TAPI_EVENT_NETWORK_GETSERVICEDOMAIN_CNF, appname, request_id, ret, sizeof(TelNetworkServiceDomain_t),
-					(void*) &info_service_domain);
+			dbg("receive TRESP_NETWORK_GET_SERVICE_DOMAIN");
+			dbg("resp->domain = %d", resp_get_service_domain->domain);
+			telephony_network_complete_get_service_domain(dbus_info->interface_object, dbus_info->invocation, resp_get_service_domain->domain, 0);
 			break;
 
 		case TRESP_NETWORK_SET_BAND:
-			if (data_set_band->result != TCORE_RETURN_SUCCESS)
-				ret = TAPI_API_OPERATION_FAILED;
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK, TAPI_EVENT_NETWORK_SETNWBAND_CNF,
-					appname, request_id, ret, 0, NULL);
+			dbg("receive TRESP_NETWORK_SET_BAND");
+			dbg("resp->result = %d", resp_set_band->result);
+			telephony_network_complete_set_band(dbus_info->interface_object, dbus_info->invocation, resp_set_band->result);
 			break;
 
 		case TRESP_NETWORK_GET_BAND:
-			info_network_band = data_get_band->band;
+			dbg("receive TRESP_NETWORK_GET_BAND");
+			dbg("resp->mode = %d", resp_get_band->mode);
+			dbg("resp->band = %d", resp_get_band->band);
+			telephony_network_complete_get_band(dbus_info->interface_object, dbus_info->invocation, resp_get_band->band, resp_get_band->mode, 0);
+			break;
 
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK, TAPI_EVENT_NETWORK_GETNWBAND_CNF,
-					appname, request_id, ret, sizeof(TelNetworkBand_t), (void*) &info_network_band);
+		case TRESP_NETWORK_SET_MODE:
+			dbg("receive TRESP_NETWORK_SET_MODE");
+			dbg("resp->result = %d", resp_set_mode->result);
+			telephony_network_complete_set_mode(dbus_info->interface_object, dbus_info->invocation, resp_set_mode->result);
+			break;
+
+		case TRESP_NETWORK_GET_MODE:
+			dbg("receive TRESP_NETWORK_GET_MODE");
+			dbg("resp->mode = %d", resp_get_mode->mode);
+			telephony_network_complete_get_mode(dbus_info->interface_object, dbus_info->invocation, resp_get_mode->mode, resp_get_mode->result);
 			break;
 
 		case TRESP_NETWORK_SET_PREFERRED_PLMN:
-			if (data_set_preferred_plmn->result != TCORE_RETURN_SUCCESS)
-				ret = TAPI_API_OPERATION_FAILED;
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK,
-					TAPI_EVENT_NETWORK_SETPREFFEREDPLMN_CNF, appname, request_id, ret, 0, NULL);
+			dbg("receive TRESP_NETWORK_SET_PREFERRED_PLMN");
+			dbg("resp->result = %d", resp_set_preferred_plmn->result);
+			telephony_network_complete_set_preferred_plmn(dbus_info->interface_object, dbus_info->invocation, resp_set_preferred_plmn->result);
 			break;
 
 		case TRESP_NETWORK_GET_PREFERRED_PLMN:
-			info_preferred_plmn_list.NumOfPreffPlmns = data_get_preferred_plmn->list_count;
+			dbg("receive TRESP_NETWORK_GET_PREFERRED_PLMN");
+			{
+				GVariant *result = NULL;
+				GVariantBuilder b;
 
-			for (i = 0; i < data_get_preferred_plmn->list_count; i++) {
-				info_preferred_plmn_list.PreffPlmnRecord[i].Index = data_get_preferred_plmn->list[i].ef_index;
-				memcpy(info_preferred_plmn_list.PreffPlmnRecord[i].Plmn, data_get_preferred_plmn->list[i].plmn, 6);
+				g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 
-				buf = _get_network_name_by_plmn(co_network, data_network_search->list[i].plmn);
-				if (buf) {
-					memcpy(info_preferred_plmn_list.PreffPlmnRecord[i].network_name, buf, 40);
-					memcpy(info_preferred_plmn_list.PreffPlmnRecord[i].service_provider_name, buf, 40);
+				for (i = 0; i < resp_get_preferred_plmn->list_count; i++) {
+					g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
+
+					g_variant_builder_add(&b, "{sv}", "plmn",
+							g_variant_new_string(resp_get_preferred_plmn->list[i].plmn));
+					g_variant_builder_add(&b, "{sv}", "act", g_variant_new_int32(resp_get_preferred_plmn->list[i].act));
+					g_variant_builder_add(&b, "{sv}", "index",
+							g_variant_new_int32(resp_get_preferred_plmn->list[i].ef_index));
+
+					buf = _get_network_name_by_plmn(co_network, resp_get_preferred_plmn->list[i].plmn);
+					if (buf)
+						g_variant_builder_add(&b, "{sv}", "name", g_variant_new_string(buf));
+					else
+						g_variant_builder_add(&b, "{sv}", "name",
+								g_variant_new_string(resp_get_preferred_plmn->list[i].plmn));
+
+					g_variant_builder_close(&b);
 				}
-				else {
-					memcpy(info_preferred_plmn_list.PreffPlmnRecord[i].network_name,
-							data_get_preferred_plmn->list[i].plmn, 6);
-					memcpy(info_preferred_plmn_list.PreffPlmnRecord[i].service_provider_name,
-							data_get_preferred_plmn->list[i].plmn, 6);
-				}
 
-				info_preferred_plmn_list.PreffPlmnRecord[i].SystemType = data_get_preferred_plmn->list[i].act;
+				result = g_variant_builder_end(&b);
+
+				telephony_network_complete_get_preferred_plmn(dbus_info->interface_object, dbus_info->invocation,
+						result, 0);
 			}
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK,
-					TAPI_EVENT_NETWORK_GETPREFFEREDPLMN_CNF, appname, request_id, ret, sizeof(TelNetworkPrefferedPlmnList_t),
-					(void*) &info_preferred_plmn_list);
-			break;
-
-		case TRESP_NETWORK_SET_ORDER:
-			if (data_set_order->result != TCORE_RETURN_SUCCESS)
-				ret = TAPI_API_OPERATION_FAILED;
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK,
-					TAPI_EVENT_NETWORK_SETNWORDER_CNF, appname, request_id, ret, 0, NULL);
-			break;
-
-		case TRESP_NETWORK_GET_ORDER:
-			info_network_mode = data_get_order->order;
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK,
-					TAPI_EVENT_NETWORK_GETNWORDER_CNF, appname, request_id, ret, sizeof(TelNetworkMode_t),
-					(void*) &info_network_mode);
-			break;
-
-		case TRESP_NETWORK_SET_POWER_ON_ATTACH:
-			if (data_set_power_on_attach->result != TCORE_RETURN_SUCCESS)
-				ret = TAPI_API_OPERATION_FAILED;
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK,
-					TAPI_EVENT_NETWORK_SETPOWERONATTACH_CNF, appname, request_id, ret, 0, NULL);
-			break;
-
-		case TRESP_NETWORK_GET_POWER_ON_ATTACH:
-			info_power_on_attach = data_get_power_on_attach->enabled;
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK,
-					TAPI_EVENT_NETWORK_GETPOWERONATTACH_CNF, appname, request_id, ret, sizeof(TelNetworkPowerOnAttach_t),
-					(void*) &info_power_on_attach);
 			break;
 
 		case TRESP_NETWORK_SET_CANCEL_MANUAL_SEARCH:
-			if (data_set_cancel_manual_search->result != TCORE_RETURN_SUCCESS)
-				ret = TAPI_API_OPERATION_FAILED;
-
-			return ts_delivery_event(ctx->EvtDeliveryHandle, TAPI_EVENT_CLASS_NETWORK,
-					TAPI_EVENT_NETWORK_CANCELMANUALSEARCH_CNF, appname, request_id, ret, 0, NULL);
+			dbg("receive TRESP_NETWORK_SET_CANCEL_MANUAL_SEARCH");
+			telephony_network_complete_search_cancel(dbus_info->interface_object, dbus_info->invocation, 0);
 			break;
 
 		case TRESP_NETWORK_GET_SERVING_NETWORK:
-			/* not support current tapi */
+			dbg("receive TRESP_NETWORK_GET_SERVING_NETWORK");
+			dbg("resp->act = %d", resp_get_serving_network->act);
+			dbg("resp->plmn = %s", resp_get_serving_network->plmn);
+			dbg("resp->lac = %d", resp_get_serving_network->gsm.lac);
+			telephony_network_complete_get_serving_network(dbus_info->interface_object, dbus_info->invocation,
+					resp_get_serving_network->act,
+					resp_get_serving_network->plmn,
+					resp_get_serving_network->gsm.lac,
+					0);
 			break;
 
 		default:
+			dbg("not handled cmd[0x%x]", command);
 			break;
 	}
+
 	return TRUE;
 }
 
-TReturn dbus_notification_network(struct custom_data *ctx, CoreObject *source, enum tcore_notification_command command,
-		unsigned int data_len, const void *data)
+gboolean dbus_plugin_network_notification(struct custom_data *ctx, const char *plugin_name, TelephonyObjectSkeleton *object, enum tcore_notification_command command, unsigned int data_len, const void *data)
 {
-	dbg("command = 0x%x", command);
+	TelephonyNetwork *network;
+	const struct tnoti_network_registration_status *registration = data;
+	const struct tnoti_network_change *change = data;
+	const struct tnoti_network_icon_info *icon_info = data;
+	const struct tnoti_network_timeinfo *time_info = data;
+	const struct tnoti_network_identity *identity = data;
+	const struct tnoti_network_location_cellinfo *location = data;
+
+	if (!object) {
+		dbg("object is NULL");
+		return FALSE;
+	}
+
+	network = telephony_object_peek_network(TELEPHONY_OBJECT(object));
+	dbg("network = %p", network);
 
 	switch (command) {
+		case TNOTI_NETWORK_REGISTRATION_STATUS:
+			telephony_network_emit_registration_status(network,
+					registration->cs_domain_status,
+					registration->ps_domain_status,
+					registration->service_type,
+					registration->roaming_status);
+			break;
+
+		case TNOTI_NETWORK_CHANGE:
+			telephony_network_emit_change(network,
+					change->act,
+					change->plmn,
+					change->gsm.lac);
+			break;
+
+		case TNOTI_NETWORK_ICON_INFO:
+			telephony_network_emit_info(network,
+					icon_info->rssi,
+					icon_info->battery);
+			break;
+
+		case TNOTI_NETWORK_TIMEINFO:
+			telephony_network_emit_time_info(network,
+					time_info->year,
+					time_info->month,
+					time_info->day,
+					time_info->hour,
+					time_info->minute,
+					time_info->second,
+					time_info->wday,
+					time_info->gmtoff,
+					time_info->dstoff,
+					time_info->isdst,
+					time_info->plmn);
+			break;
+
+		case TNOTI_NETWORK_IDENTITY:
+			telephony_network_emit_identity(network,
+					identity->plmn,
+					identity->short_name,
+					identity->full_name);
+			break;
+
+		case TNOTI_NETWORK_LOCATION_CELLINFO:
+			telephony_network_emit_cell_info(network,
+					location->lac,
+					location->cell_id);
+			break;
+
 		default:
+			dbg("not handled cmd[0x%x]", command);
 			break;
 	}
 
 	return TRUE;
 }
+

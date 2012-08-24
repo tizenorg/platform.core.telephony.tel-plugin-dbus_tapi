@@ -410,7 +410,7 @@ static gboolean on_call_deflect(TelephonyCall *call, GDBusMethodInvocation *invo
 	return TRUE;
 }
 
-static gboolean on_call_get_call_status(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_id, gpointer user_data )
+static gboolean on_call_get_status(TelephonyCall *call, GDBusMethodInvocation *invocation, gint call_id, gpointer user_data )
 {
 	struct custom_data *ctx = user_data;
 	TcorePlugin *plugin = 0;
@@ -466,7 +466,7 @@ static gboolean on_call_get_call_status(TelephonyCall *call, GDBusMethodInvocati
 	return TRUE;
 }
 
-static gboolean on_call_get_call_status_all(TelephonyCall *call, GDBusMethodInvocation *invocation, gpointer user_data )
+static gboolean on_call_get_status_all(TelephonyCall *call, GDBusMethodInvocation *invocation, gpointer user_data )
 {
 	struct custom_data *ctx = user_data;
 	TcorePlugin *plugin = 0;
@@ -546,7 +546,7 @@ static gboolean on_call_get_call_status_all(TelephonyCall *call, GDBusMethodInvo
 				g_variant_builder_add(&b, "{sv}", "call_number", g_variant_new_string( call_number ));
 				g_variant_builder_add(&b, "{sv}", "call_type", g_variant_new_int32( call_type ));
 				g_variant_builder_add(&b, "{sv}", "call_direction", g_variant_new_boolean( call_direction ));
-				g_variant_builder_add(&b, "{sv}", "call_status", g_variant_new_int32( call_status ));
+				g_variant_builder_add(&b, "{sv}", "call_state", g_variant_new_int32( call_status ));
 				g_variant_builder_add(&b, "{sv}", "call_multiparty_state", g_variant_new_boolean( call_multiparty_state ));
 				g_variant_builder_close(&b);
 
@@ -767,7 +767,7 @@ static gboolean on_call_set_sound_equalization(TelephonyCall *call, GDBusMethodI
 
 	req.mode = (gboolean)eq_mode;
 	req.direction = (enum telephony_call_sound_direction)eq_direction;
-	memcpy( req.parameter, (const char*)eq_parameter, MAX_SOUND_EQ_PARAMETER_SIZE );
+	memcpy( (char*)req.parameter, (const char*)eq_parameter, (MAX_SOUND_EQ_PARAMETER_SIZE*2) );
 
 	tcore_user_request_set_data( ur, sizeof( struct treq_call_sound_set_equalization ), &req );
 	tcore_user_request_set_command( ur, TREQ_CALL_SET_SOUND_EQUALIZATION );
@@ -874,13 +874,13 @@ gboolean dbus_plugin_setup_call_interface(TelephonyObjectSkeleton *object, struc
 			ctx);
 
 	g_signal_connect (call,
-			"handle-get-call-status",
-			G_CALLBACK (on_call_get_call_status),
+			"handle-get-status",
+			G_CALLBACK (on_call_get_status),
 			ctx);
 
 	g_signal_connect (call,
-			"handle-get-call-status-all",
-			G_CALLBACK (on_call_get_call_status_all),
+			"handle-get-status-all",
+			G_CALLBACK (on_call_get_status_all),
 			ctx);
 
 

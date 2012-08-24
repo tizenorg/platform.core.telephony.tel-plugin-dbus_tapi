@@ -571,3 +571,20 @@ gboolean sat_ui_support_create_desktop_file(const gchar *title)
 
 	return TRUE;
 }
+
+gboolean sat_ui_support_remove_desktop_file(void)
+{
+	int rv = 0;
+	FILE *b_check;
+
+	b_check = fopen("/opt/share/applications/com.samsung.sat-ui.desktop", "r");
+	if(!b_check){
+		dbg("desktop file does not exist");
+		return TRUE;
+	}
+
+	rv = system("/bin/rm /opt/share/applications/com.samsung.sat-ui.desktop");
+	dbg("the result to remove desktop file (%d)", rv);
+
+	return TRUE;
+}

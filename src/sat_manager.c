@@ -247,6 +247,9 @@ GVariant* sat_manager_caching_setup_menu_info(struct custom_data *ctx, const cha
 	//menu item count
 	menu_cnt = setup_menu_tlv->menu_item_cnt;
 	if(!menu_cnt){
+		/*
+		 * support GCF case 27.22.4.8.1 - 1.1 setup menu
+		 */
 		struct treq_sat_terminal_rsp_data *tr = NULL;
 		dbg("no item");
 
@@ -257,7 +260,7 @@ GVariant* sat_manager_caching_setup_menu_info(struct custom_data *ctx, const cha
 		memcpy((void*)&tr->terminal_rsp_data.setup_menu.command_detail, &setup_menu_tlv->command_detail, sizeof(struct tel_sat_cmd_detail_info));
 		tr->terminal_rsp_data.setup_menu.device_id.src = setup_menu_tlv->device_id.dest;
 		tr->terminal_rsp_data.setup_menu.device_id.dest = setup_menu_tlv->device_id.src;
-		tr->terminal_rsp_data.setup_menu.result_type = RESULT_COMMAND_DATA_NOT_UNDERSTOOD_BY_ME;
+		tr->terminal_rsp_data.setup_menu.result_type = RESULT_SUCCESS;
 
 		sat_manager_send_terminal_response(ctx->comm, plg, tr);
 		return NULL;
@@ -517,6 +520,11 @@ GVariant* sat_manager_select_item_noti(struct custom_data *ctx, const char *plug
 	// help info
 	help_info = select_item_tlv->command_detail.cmd_qualifier.select_item.help_info;
 
+	if(!select_item_tlv->alpha_id.is_exist){
+		dbg("set the item dcs value to ALPHABET_FROMAT_8BIT_DATA");
+		select_item_tlv->alpha_id.dcs.a_format = ALPHABET_FROMAT_8BIT_DATA;
+	}
+
 	// select item text
 	if(select_item_tlv->alpha_id.is_exist && select_item_tlv->alpha_id.alpha_data_len > 0)
 		sat_mgr_convert_string((unsigned char*)&text,(unsigned short *)&text_len,
@@ -690,8 +698,7 @@ GVariant* sat_manager_get_input_noti(struct custom_data *ctx, const char *plugin
 		return NULL;
 	}
 
-	if( (get_input_tlv->icon_id.is_exist && get_input_tlv->icon_id.icon_qualifer == ICON_QUALI_NOT_SELF_EXPLANATORY)
-			|| !get_input_tlv->text.string_length ){
+	if(get_input_tlv->icon_id.is_exist && get_input_tlv->icon_id.icon_qualifer == ICON_QUALI_NOT_SELF_EXPLANATORY ){
 
 		struct treq_sat_terminal_rsp_data *tr = NULL;
 		dbg("[SAT]  exceptional case to fix gcf case 2.4 command not understood");
@@ -725,11 +732,17 @@ GVariant* sat_manager_get_input_noti(struct custom_data *ctx, const char *plugin
 	dbg("numeric (%d), help info(%d), echo input(%d)", b_numeric, b_help_info, b_echo_input);
 
 	//text & text len
-	sat_mgr_convert_string((unsigned char*)&text,(unsigned short *)&text_len,
-			get_input_tlv->text.dcs.a_format ,
-			(unsigned char*)&get_input_tlv->text.string,
-			(unsigned short)get_input_tlv->text.string_length);
-	dbg("get input text(%s)",text);
+	if(get_input_tlv->text.string_length){
+		sat_mgr_convert_string((unsigned char*)&text,(unsigned short *)&text_len,
+				get_input_tlv->text.dcs.a_format ,
+				(unsigned char*)&get_input_tlv->text.string,
+				(unsigned short)get_input_tlv->text.string_length);
+		dbg("get input text(%s)",text);
+	}
+	else{
+		memcpy(text,"", 1);
+		text_len = 0;
+	}
 
 	//response length min & max
 	rsp_len_min = get_input_tlv->rsp_len.min;
@@ -881,6 +894,10 @@ GVariant* sat_manager_send_sms_noti(struct custom_data *ctx, const char *plugin_
 				(unsigned char*)&send_sms_tlv->alpha_id.alpha_data,
 				(unsigned short)send_sms_tlv->alpha_id.alpha_data_len);
 		dbg("send sms ui display text (%s)",text);
+	}
+	else{
+		memcpy(text,"",1);
+		text_len = 0;
 	}
 
 	//packing required
@@ -4429,53 +4446,28 @@ static gboolean _sat_manager_handle_setup_idle_mode_text_ui_display_status(struc
 
 static gboolean _sat_manager_handle_refresh_ui_display_status(struct custom_data *ctx, TcorePlugin *plg,struct sat_manager_queue_data *q_data, gboolean display_status)
 {
-	char *path;
-	TelephonySAT *sat;
-	TelephonyObjectSkeleton *object;
+	struct treq_sat_terminal_rsp_data tr;
 
-	gchar *plg_name = NULL;
+	memset(&tr, 0, sizeof(struct treq_sat_terminal_rsp_data));
 
-	GVariant *refresh = NULL;
-	gint command_id = 0;
-	gint refresh_type =0;
-	GVariant *file_list = NULL;
+	tr.cmd_number = q_data->cmd_data.refresh.command_detail.cmd_num;
+	tr.cmd_type = q_data->cmd_data.refresh.command_detail.cmd_type;
+	memcpy((void*)&tr.terminal_rsp_data.refresh.command_detail, &q_data->cmd_data.refresh.command_detail, sizeof(struct tel_sat_cmd_detail_info));
+	tr.terminal_rsp_data.refresh.device_id.src = q_data->cmd_data.refresh.device_id.dest;
+	tr.terminal_rsp_data.refresh.device_id.dest = q_data->cmd_data.refresh.device_id.src;
 
 	if(!display_status){
-		struct treq_sat_terminal_rsp_data *tr = NULL;
-		dbg("[SAT] fail to show ui display for refresh");
-
-		tr = (struct treq_sat_terminal_rsp_data *)calloc(1, sizeof(struct treq_sat_terminal_rsp_data));
-
-		tr->cmd_number = q_data->cmd_data.refresh.command_detail.cmd_num;
-		tr->cmd_type = q_data->cmd_data.refresh.command_detail.cmd_type;
-		memcpy((void*)&tr->terminal_rsp_data.refresh.command_detail, &q_data->cmd_data.refresh.command_detail, sizeof(struct tel_sat_cmd_detail_info));
-
-		tr->terminal_rsp_data.refresh.device_id.src = q_data->cmd_data.refresh.device_id.dest;
-		tr->terminal_rsp_data.refresh.device_id.dest = q_data->cmd_data.refresh.device_id.src;
-		tr->terminal_rsp_data.refresh.result_type = RESULT_ME_UNABLE_TO_PROCESS_COMMAND;
-
-		sat_manager_send_terminal_response(ctx->comm, plg, tr);
-		return TRUE;
+		dbg("fail to show ui for refresh");
+		tr.terminal_rsp_data.refresh.result_type = RESULT_ME_UNABLE_TO_PROCESS_COMMAND;
+	}
+	else{
+		dbg("success to show ui for refresh");
+		tr.terminal_rsp_data.more_time.result_type = RESULT_SUCCESS;
+		tr.terminal_rsp_data.more_time.me_problem_type = ME_PROBLEM_NO_SPECIFIC_CAUSE;
 	}
 
-	//emit send_dtmf signal
-	plg_name = tcore_plugin_ref_plugin_name(plg);
-	if (plg_name) {
-		path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plg_name);
-	} else {
-		path = g_strdup_printf("%s", MY_DBUS_PATH);
-	}
-	dbg("path = [%s]", path);
-
-	object = g_hash_table_lookup(ctx->objects, path);
-	sat = telephony_object_peek_sat(TELEPHONY_OBJECT(object));
-
-	refresh = sat_manager_refresh_noti(ctx, plg_name, &q_data->cmd_data.refresh);
-	dbg("refresh type_format(%s)", g_variant_get_type_string(refresh));
-	g_variant_get(refresh, "(ii@v)", &command_id, &refresh_type, &file_list);
-
-	telephony_sat_emit_refresh(sat, command_id, refresh_type, file_list);
-
+	dbg("send refresh tr");
+	sat_manager_send_terminal_response(ctx->comm, plg, &tr);
 	return TRUE;
 }
 

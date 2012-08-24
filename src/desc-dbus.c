@@ -368,16 +368,10 @@ on_manager_getmodems (TelephonyManager *mgr,
 	return TRUE;
 }
 
-static void setup_dbus(struct custom_data *ctx)
+static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
 {
-	GDBusConnection *conn;
+	struct custom_data *ctx = user_data;
 	TelephonyManager *mgr;
-
-	conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, NULL);
-	if (!conn) {
-		dbg("g_bus_get_sync() failed.");
-		return;
-	}
 
 	ctx->manager = g_dbus_object_manager_server_new (MY_DBUS_PATH);
 
@@ -411,6 +405,7 @@ static gboolean on_init(TcorePlugin *p)
 {
 	Communicator *comm;
 	struct custom_data *data;
+	guint id;
 
 	if (!p)
 		return FALSE;
@@ -435,7 +430,13 @@ static gboolean on_init(TcorePlugin *p)
 
 	dbg("data = %p", data);
 
-	setup_dbus(data);
+	id = g_bus_own_name (G_BUS_TYPE_SYSTEM,
+			MY_DBUS_SERVICE,
+			G_BUS_NAME_OWNER_FLAGS_REPLACE,
+			on_bus_acquired,
+			NULL, NULL,
+			data,
+			NULL);
 
 	return TRUE;
 }

@@ -49,7 +49,7 @@ static gboolean on_sat_get_main_menu_info(TelephonySAT *sat, GDBusMethodInvocati
 	gchar *title;
 	gint result = 1, command_id, item_cnt;
 	gboolean b_present, b_help_info, b_updated;
-	GVariant *items, *icon,*icon_list;
+	GVariant *items;
 
 
 	if(!ctx->cached_sat_main_menu){
@@ -59,11 +59,11 @@ static gboolean on_sat_get_main_menu_info(TelephonySAT *sat, GDBusMethodInvocati
 
 	main_menu = ctx->cached_sat_main_menu;
 
-	g_variant_get(main_menu, "(ibs@vibb@v@v)", &command_id, &b_present, &title, &items, &item_cnt,
-			&b_help_info, &b_updated, &icon, &icon_list);
+	g_variant_get(main_menu, "(ibs@vibb)", &command_id, &b_present, &title, &items, &item_cnt,
+			&b_help_info, &b_updated);
 
 	telephony_sat_complete_get_main_menu_info(sat, invocation, result, command_id, b_present, title,
-			items, item_cnt, b_help_info, b_updated, icon, icon_list);
+			items, item_cnt, b_help_info, b_updated);
 
 	return TRUE;
 }
@@ -341,6 +341,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 
 			if(!menu_info){
 				dbg("no main menu data");
+				sat_ui_support_remove_desktop_file();
 				return TRUE;
 			}
 
@@ -836,14 +837,12 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 			g_variant_get(refresh, "(ii@v)", &command_id, &refresh_type, &file_list);
 
 			dbg("check refresh_type(%d)", refresh_type);
-
 			dbg("text should be displayed by ui");
-			dbg("refresh is pending!!!")
 
 			ui_info = g_variant_new("(isib)", command_id, info, strlen(info), user_confirm);
 			sat_ui_support_launch_sat_ui(SAT_PROATV_CMD_NONE, ui_info);
 
-			//telephony_sat_emit_refresh(sat, command_id, refresh_type, file_list);
+			telephony_sat_emit_refresh(sat, command_id, refresh_type, file_list);
 		}break;
 
 		case SAT_PROATV_CMD_MORE_TIME:{

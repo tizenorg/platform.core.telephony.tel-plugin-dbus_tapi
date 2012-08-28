@@ -44,6 +44,13 @@
 #define SAT_DEF_CMD_Q_MAX 10
 #define SAT_TIME_OUT 60000
 
+#define g_variant_iter_free0( iter ) \
+	if ( iter ) \
+		g_variant_iter_free( iter );\
+	else \
+		dbg("iter : 0");
+
+
 static unsigned int _get_time_in_ms(struct tel_sat_duration *dr)
 {
 	switch (dr->time_unit) {
@@ -2903,7 +2910,7 @@ static gboolean sat_manager_handle_receive_data_result(struct custom_data *ctx, 
 			tr->terminal_rsp_data.receive_data.channel_data.data_string[index] = data;
 			index++;
 		}
-		g_variant_iter_free(iter);
+		g_variant_iter_free0(iter);
 
 		dbg("the last index data(%d), data_total_len(%d)", index, data_str_len);
 	}
@@ -3338,7 +3345,7 @@ static gboolean _sat_manager_handle_menu_select_confirm(struct custom_data *ctx,
 			item_id = data;
 			index++;
 		}
-		g_variant_iter_free(iter);
+		g_variant_iter_free0(iter);
 		g_variant_unref(inner_gv);
 	}
 
@@ -3506,7 +3513,7 @@ static gboolean _sat_manager_handle_get_inkey_confirm(struct custom_data *ctx, T
 			inkey_data[index] = data;
 			index++;
 		}
-		g_variant_iter_free(iter);
+		g_variant_iter_free0(iter);
 		g_variant_unref(inner_gv);
 		inkey_data_len = index;
 	}
@@ -3662,7 +3669,7 @@ static gboolean _sat_manager_handle_get_input_confirm(struct custom_data *ctx, T
 			input_data[index] = data;
 			index++;
 		}
-		g_variant_iter_free(iter);
+		g_variant_iter_free0(iter);
 		g_variant_unref(inner_gv);
 		input_data_len = index;
 	}
@@ -3801,7 +3808,7 @@ static gboolean _sat_manager_handle_setup_call_confirm(struct custom_data *ctx, 
 			input_data[index] = data;
 			index++;
 		}
-		g_variant_iter_free(iter);
+		g_variant_iter_free0(iter);
 		g_variant_unref(inner_gv);
 		input_data_len = index;
 	}

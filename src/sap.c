@@ -39,6 +39,13 @@
 #include "generated-code.h"
 #include "common.h"
 
+#define g_variant_iter_free0( iter ) \
+	if ( iter ) \
+		g_variant_iter_free( iter );\
+	else \
+		dbg("iter : 0");
+
+
 static gboolean on_sap_connect(TelephonySap *sap, GDBusMethodInvocation *invocation,
 		gint arg_req_max_size, gpointer user_data)
 {
@@ -133,7 +140,7 @@ static gboolean on_sap_transfer_apdu(TelephonySap *sap, GDBusMethodInvocation *i
 		i++;
 	}
 	t_apdu.apdu_length = (unsigned int)i;
-	g_variant_iter_free(iter);
+	g_variant_iter_free0(iter);
 	g_variant_unref(inner_gv);
 	g_variant_unref(arg_req_apdu);
 

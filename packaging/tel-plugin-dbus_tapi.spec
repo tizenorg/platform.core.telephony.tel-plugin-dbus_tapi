@@ -1,6 +1,6 @@
 Name: tel-plugin-dbus_tapi
 Summary: dbus-tapi plugin for telephony
-Version:    0.1.45
+Version:    0.1.49
 Release:    1
 Group:      System/Libraries
 License:    Apache

@@ -206,8 +206,6 @@ GVariant* sat_manager_caching_setup_menu_info(struct custom_data *ctx, const cha
 	gchar main_title[SAT_ALPHA_ID_LEN_MAX];
 	GVariantBuilder *v_builder = NULL;
 	GVariant *menu_items = NULL;
-	GVariant *icon_id = NULL;
-	GVariant *icon_list = NULL;
 
 	dbg("interpreting setup menu notification");
 	memset(&main_title, 0 , SAT_ALPHA_ID_LEN_MAX);
@@ -366,11 +364,8 @@ GVariant* sat_manager_caching_setup_menu_info(struct custom_data *ctx, const cha
 	sat_manager_enqueue_cmd(ctx, &q_data);
 	command_id = q_data.cmd_id;
 
-	icon_id = g_variant_new_variant(menu_items);
-	icon_list = g_variant_new_variant(menu_items);
-
-	setup_menu_info = g_variant_new("(ibsvibbvv)", command_id, menu_present, main_title, menu_items,
-			menu_cnt, help_info, updated, icon_id, icon_list);
+	setup_menu_info = g_variant_new("(ibsvibb)", command_id, menu_present, main_title, menu_items,
+			menu_cnt, help_info, updated);
 
 	return setup_menu_info;
 }

@@ -334,7 +334,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 			gchar *title;
 			gint command_id, menu_cnt;
 			gboolean b_present, b_helpinfo, b_updated;
-			GVariant *items, *icon, *icon_list;
+			GVariant *items;
 
 			menu_info = sat_manager_caching_setup_menu_info(ctx, plugin_name, (struct tel_sat_setup_menu_tlv*) &p_ind->proactive_ind_data.setup_menu);
 			ctx->cached_sat_main_menu = menu_info;
@@ -346,8 +346,8 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 			}
 
 			dbg("menu_info type_format(%s)", g_variant_get_type_string(menu_info));
-			g_variant_get(menu_info, "(ibs@vibb@v@v)", &command_id, &b_present, &title, &items,
-					&menu_cnt, &b_helpinfo, &b_updated, &icon, &icon_list);
+			g_variant_get(menu_info, "(ibs@vibb)", &command_id, &b_present, &title, &items,
+					&menu_cnt, &b_helpinfo, &b_updated);
 
 			rv = sat_ui_support_create_desktop_file(title);
 			rv = TRUE;

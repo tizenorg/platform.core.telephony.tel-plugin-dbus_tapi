@@ -767,7 +767,7 @@ static gboolean on_call_set_sound_equalization(TelephonyCall *call, GDBusMethodI
 
 	req.mode = (gboolean)eq_mode;
 	req.direction = (enum telephony_call_sound_direction)eq_direction;
-	memcpy( (char*)req.parameter, (const char*)eq_parameter, (MAX_SOUND_EQ_PARAMETER_SIZE*2) );
+	memcpy( (char*)req.parameter, (const char*)eq_parameter, (MAX_CALL_EQ_PARAMETER_SIZE*2) );
 
 	tcore_user_request_set_data( ur, sizeof( struct treq_call_sound_set_equalization ), &req );
 	tcore_user_request_set_command( ur, TREQ_CALL_SET_SOUND_EQUALIZATION );

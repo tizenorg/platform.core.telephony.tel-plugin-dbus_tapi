@@ -370,6 +370,9 @@ on_manager_getmodems (TelephonyManager *mgr,
 
 static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
 {
+	gboolean rv = FALSE;
+	gpointer handle = NULL;
+	static Storage *strg;
 	struct custom_data *ctx = user_data;
 	TelephonyManager *mgr;
 
@@ -387,6 +390,17 @@ static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer u
 	g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(mgr), conn, MY_DBUS_PATH, NULL);
 
 	g_dbus_object_manager_server_set_connection (ctx->manager, conn);
+
+	//set telephony ready registry
+	strg = tcore_server_find_storage(ctx->server, "vconf");
+	handle = tcore_storage_create_handle(strg, "vconf");
+
+	rv = tcore_storage_set_bool(strg, STORAGE_KEY_TELEPHONY_READY, TRUE);
+	if(!rv){
+		dbg("fail to set the telephony status to registry");
+	}
+
+	dbg("done to acquire the dbus");
 }
 
 struct tcore_communitor_operations ops = {

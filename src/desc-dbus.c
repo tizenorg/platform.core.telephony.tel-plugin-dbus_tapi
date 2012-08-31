@@ -40,6 +40,10 @@
 #include <co_sim.h>
 #include <co_ps.h>
 
+#ifndef PLUGIN_VERSION
+#define PLUGIN_VERSION 1
+#endif
+
 #include "generated-code.h"
 #include "common.h"
 
@@ -75,7 +79,6 @@ static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 		g_slist_free(co_list);
 		dbus_plugin_setup_call_interface(object, ctx);
 	}
-
 
 	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_NETWORK);
 	if (co_list) {
@@ -376,6 +379,8 @@ static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer u
 	struct custom_data *ctx = user_data;
 	TelephonyManager *mgr;
 
+	info("dbus registered");
+
 	ctx->manager = g_dbus_object_manager_server_new (MY_DBUS_PATH);
 
 	refresh_object(ctx);
@@ -482,7 +487,7 @@ struct tcore_plugin_define_desc plugin_define_desc =
 {
 	.name = "NEW_DBUS_COMMUNICATOR",
 	.priority = TCORE_PLUGIN_PRIORITY_HIGH,
-	.version = 1,
+	.version = PLUGIN_VERSION,
 	.load = on_load,
 	.init = on_init,
 	.unload = on_unload

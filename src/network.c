@@ -643,6 +643,7 @@ gboolean dbus_plugin_setup_network_interface(TelephonyObjectSkeleton *object, st
 gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, struct dbus_request_info *dbus_info, enum tcore_response_command command, unsigned int data_len, const void *data)
 {
 	const struct tresp_network_search *resp_network_search = data;
+	const struct tresp_network_set_cancel_manual_search *resp_set_cancel_manual_search = data;
 	const struct tresp_network_get_plmn_selection_mode *resp_get_plmn_selection_mode = data;
 	const struct tresp_network_set_plmn_selection_mode *resp_set_plmn_selection_mode = data;
 	const struct tresp_network_set_service_domain *resp_set_service_domain = data;
@@ -689,6 +690,9 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, 
 			GVariant *result = NULL;
 			GVariantBuilder b;
 
+			dbg("receive TRESP_NETWORK_SEARCH");
+			dbg("resp->result = %d", resp_network_search->result);
+
 			g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 
 			for (i = 0; i < resp_network_search->list_count; i++) {
@@ -714,7 +718,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, 
 
 			result = g_variant_builder_end(&b);
 
-			telephony_network_complete_search(dbus_info->interface_object, dbus_info->invocation, result, 0);
+			telephony_network_complete_search(dbus_info->interface_object, dbus_info->invocation, result, resp_network_search->result);
 		}
 
 			break;
@@ -731,15 +735,15 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, 
 			switch (resp_get_plmn_selection_mode->mode) {
 				case NETWORK_SELECT_MODE_GLOBAL_AUTOMATIC:
 				case NETWORK_SELECT_MODE_GSM_AUTOMATIC:
-					telephony_network_complete_get_selection_mode(dbus_info->interface_object, dbus_info->invocation, 0, 0);
+					telephony_network_complete_get_selection_mode(dbus_info->interface_object, dbus_info->invocation, 0, resp_get_plmn_selection_mode->result);
 					break;
 
 				case NETWORK_SELECT_MODE_GSM_MANUAL:
-					telephony_network_complete_get_selection_mode(dbus_info->interface_object, dbus_info->invocation, 1, 0);
+					telephony_network_complete_get_selection_mode(dbus_info->interface_object, dbus_info->invocation, 1, resp_get_plmn_selection_mode->result);
 					break;
 
 				default:
-					telephony_network_complete_get_selection_mode(dbus_info->interface_object, dbus_info->invocation, -1, -1);
+					telephony_network_complete_get_selection_mode(dbus_info->interface_object, dbus_info->invocation, -1, resp_get_plmn_selection_mode->result);
 					break;
 			}
 			break;
@@ -753,7 +757,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, 
 		case TRESP_NETWORK_GET_SERVICE_DOMAIN:
 			dbg("receive TRESP_NETWORK_GET_SERVICE_DOMAIN");
 			dbg("resp->domain = %d", resp_get_service_domain->domain);
-			telephony_network_complete_get_service_domain(dbus_info->interface_object, dbus_info->invocation, resp_get_service_domain->domain, 0);
+			telephony_network_complete_get_service_domain(dbus_info->interface_object, dbus_info->invocation, resp_get_service_domain->domain, resp_get_service_domain->result);
 			break;
 
 		case TRESP_NETWORK_SET_BAND:
@@ -766,7 +770,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, 
 			dbg("receive TRESP_NETWORK_GET_BAND");
 			dbg("resp->mode = %d", resp_get_band->mode);
 			dbg("resp->band = %d", resp_get_band->band);
-			telephony_network_complete_get_band(dbus_info->interface_object, dbus_info->invocation, resp_get_band->band, resp_get_band->mode, 0);
+			telephony_network_complete_get_band(dbus_info->interface_object, dbus_info->invocation, resp_get_band->band, resp_get_band->mode, resp_get_band->result);
 			break;
 
 		case TRESP_NETWORK_SET_MODE:
@@ -789,6 +793,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, 
 
 		case TRESP_NETWORK_GET_PREFERRED_PLMN:
 			dbg("receive TRESP_NETWORK_GET_PREFERRED_PLMN");
+			dbg("resp->result = %d", resp_get_preferred_plmn->result);
 			{
 				GVariant *result = NULL;
 				GVariantBuilder b;
@@ -817,13 +822,14 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, 
 				result = g_variant_builder_end(&b);
 
 				telephony_network_complete_get_preferred_plmn(dbus_info->interface_object, dbus_info->invocation,
-						result, 0);
+						result, resp_get_preferred_plmn->result);
 			}
 			break;
 
 		case TRESP_NETWORK_SET_CANCEL_MANUAL_SEARCH:
 			dbg("receive TRESP_NETWORK_SET_CANCEL_MANUAL_SEARCH");
-			telephony_network_complete_search_cancel(dbus_info->interface_object, dbus_info->invocation, 0);
+			dbg("resp->result = %d", resp_set_cancel_manual_search->result);
+			telephony_network_complete_search_cancel(dbus_info->interface_object, dbus_info->invocation, resp_set_cancel_manual_search->result);
 			break;
 
 		case TRESP_NETWORK_GET_SERVING_NETWORK:
@@ -835,7 +841,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, 
 					resp_get_serving_network->act,
 					resp_get_serving_network->plmn,
 					resp_get_serving_network->gsm.lac,
-					0);
+					resp_get_serving_network->result);
 			break;
 
 		default:

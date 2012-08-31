@@ -1,6 +1,9 @@
+%define major 0
+%define minor 1
+%define patchlevel 49
 Name: tel-plugin-dbus_tapi
 Summary: dbus-tapi plugin for telephony
-Version:    0.1.49
+Version:    %{major}.%{minor}.%{patchlevel}
 Release:    1
 Group:      System/Libraries
 License:    Apache
@@ -26,7 +29,8 @@ dbus-tapi plugin for telephony
 %setup -q
 
 %build
-cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix}
+versionint=$[%{major} * 1000000 + %{minor} * 1000 + %{patchlevel}]
+cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DVERSION=$versionint
 make %{?jobs:-j%jobs}
 
 %post

@@ -9,6 +9,7 @@
 #include <gio/gio.h>
 
 #include <aul.h>
+#include <appsvc.h>
 #include <bundle.h>
 #include <tcore.h>
 #include <plugin.h>
@@ -32,7 +33,7 @@ static void _launch_voice_call( struct tnoti_call_status_incoming* incoming )
 	char cna[2] = {0, };
 	char number[83] = {0, };
 	char name[83] = {0, };
-	int ret = 0;
+//	int ret = 0;
 
 	bundle *kb  = 0;
 
@@ -57,6 +58,9 @@ static void _launch_voice_call( struct tnoti_call_status_incoming* incoming )
 	dbg("name : [%s]", name );
 
 	kb = bundle_create();
+
+#if 0
+	/* AUL */
 	bundle_add(kb, "launch-type", "MT");
 	bundle_add(kb, "handle", id);
 	bundle_add(kb, "number", number);
@@ -67,9 +71,24 @@ static void _launch_voice_call( struct tnoti_call_status_incoming* incoming )
 	bundle_add(kb, "activeline", active_line);
 
 	ret = aul_launch_app("com.samsung.call", kb);
-	bundle_free(kb);
-
 	dbg("aul_launch_app [ voice call ] : %d", ret );
+#else
+	/* AppSvc */
+	appsvc_set_operation(kb, APPSVC_OPERATION_CALL);
+	appsvc_set_uri(kb,"tel:MT");
+
+	appsvc_add_data(kb, "launch-type", "MT");
+	appsvc_add_data(kb, "handle", id);
+	appsvc_add_data(kb, "number", number);
+	appsvc_add_data(kb, "name_mode", cna);
+	appsvc_add_data(kb, "name", name);
+	appsvc_add_data(kb, "clicause", cli);
+	appsvc_add_data(kb, "fwded", forward);
+	appsvc_add_data(kb, "activeline", active_line);
+
+	appsvc_run_service(kb, 0, NULL, NULL);
+#endif
+	bundle_free(kb);
 }
 
 static void _launch_video_call( struct tnoti_call_status_incoming* incoming )

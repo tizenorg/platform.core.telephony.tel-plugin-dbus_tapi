@@ -119,10 +119,20 @@ static gboolean _pop_nth_data(struct custom_data *ctx, struct sat_manager_queue_
 
 static gboolean _peek_nth_data(struct custom_data *ctx, struct sat_manager_queue_data *cmd_obj, int command_id)
 {
-	if (g_queue_is_empty(&ctx->queue_sat))
-		return FALSE;
+	gpointer element = NULL;
 
-	memcpy((void*)cmd_obj, g_queue_peek_nth(&ctx->queue_sat, command_id), sizeof(struct sat_manager_queue_data));
+	if (g_queue_is_empty(&ctx->queue_sat)) {
+		dbg("[SAT] queue_sat is empty.")
+		return FALSE;
+	}
+
+	element = g_queue_peek_nth(&ctx->queue_sat, command_id);
+	if (element==NULL) {
+		dbg("[SAT] queue_sat has no element with command_id [%d].\n", command_id);
+		return FALSE;
+	}
+
+	memcpy((void*)cmd_obj, element, sizeof(struct sat_manager_queue_data));
 	return TRUE;
 }
 

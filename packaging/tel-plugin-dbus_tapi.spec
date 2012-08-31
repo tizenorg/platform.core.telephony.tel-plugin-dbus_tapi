@@ -18,6 +18,7 @@ BuildRequires:  pkgconfig(gio-unix-2.0)
 BuildRequires:  pkgconfig(tcore)
 BuildRequires:  pkgconfig(dlog)
 BuildRequires:  pkgconfig(aul)
+BuildRequires:  pkgconfig(appsvc)
 BuildRequires:  pkgconfig(security-server)
 BuildRequires:  python
 BuildRequires:  python-xml

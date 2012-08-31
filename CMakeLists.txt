@@ -11,7 +11,7 @@ SET(CMAKE_INSTALL_PREFIX "${PREFIX}")
 
 # Set required packages
 INCLUDE(FindPkgConfig)
-pkg_check_modules(pkgs REQUIRED glib-2.0 gobject-2.0 gio-2.0 gio-unix-2.0 tcore dlog aul)
+pkg_check_modules(pkgs REQUIRED glib-2.0 gobject-2.0 gio-2.0 gio-unix-2.0 tcore dlog aul appsvc)
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
@@ -24,6 +24,7 @@ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} -Werror -Wextra -Wno-unused-
 
 ADD_DEFINITIONS("-DFEATURE_DLOG_DEBUG")
 ADD_DEFINITIONS("-DTCORE_LOG_TAG=\"DBUS\"")
+ADD_DEFINITIONS("-DPLUGIN_VERSION=${VERSION}")
 
 MESSAGE(${CMAKE_C_FLAGS})
 MESSAGE(${CMAKE_EXE_LINKER_FLAGS})

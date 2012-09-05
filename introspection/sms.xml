@@ -136,8 +136,8 @@
 		<!--
 			GetCbConfig:
 			@result: Success(0)
+			@3gppType: Type of 3gpp, 0x01 . 3gpp. 0x02 . 3gpp2(CDMA)
 			@cbEnable: CB service state. If cb_enabled is true then cell broadcast service will be enabled 
-			@slectedId: CBMI Identifier selected (all or some)
 			@msgIdMaxCount: CB Channel List Max Count
 			@msgIdCount: CB message ID count
 			@msgId: CB message ID information
@@ -146,17 +146,17 @@
 		-->
 		<method name="GetCbConfig">
 			<arg direction="out" type="i" name="result"/>
+			<arg direction="out" type="i" name="net3gppType"/>
 			<arg direction="out" type="i" name="cbEnable"/>
-			<arg direction="out" type="i" name="slectedId"/>
 			<arg direction="out" type="i" name="msgIdMaxCount"/>
-			<arg direction="out" type="i" name="msgIdCount"/>
-			<arg direction="out" type="s" name="msgId"/>
+			<arg direction="out" type="i" name="msgIdRangeCount"/>
+			<arg direction="out" type="aa{sv}" name="msgId"/>
 		</method>
 
 		<!--
 			SetCbConfig:
+			@3gppType: Type of 3gpp, 0x01 . 3gpp. 0x02 . 3gpp2(CDMA)
 			@cbEnable: CB service state. If cb_enabled is true then cell broadcast service will be enabled
-			@slectedId: CBMI Identifier selected (all or some)
 			@msgIdMaxCount: CB Channel List Max Count
 			@msgIdCount: CB message ID count
 			@msgId: CB message ID information
@@ -165,10 +165,10 @@
 			Set SMS CB Message Identifiers in the appropriate EF-CBMI/EF-CBMIR file in (U)SIM.
 		-->
 		<method name="SetCbConfig">
+			<arg direction="in" type="i" name="net3gppType"/>
 			<arg direction="in" type="i" name="cbEnable"/>
-			<arg direction="in" type="i" name="slectedId"/>
 			<arg direction="in" type="i" name="msgIdMaxCount"/>
-			<arg direction="in" type="i" name="msgIdCount"/>
+			<arg direction="in" type="i" name="msgIdRangeCount"/>
 			<arg direction="in" type="s" name="msgId"/>
 			<arg direction="out" type="i" name="result"/>
 		</method>
@@ -371,6 +371,20 @@
 		-->
 		<signal name="IncommingCbMsg">
 			<arg type="i" name="cbMsgType"/>
+			<arg type="i" name="msgLength"/>
+			<arg type="s" name="tpdu"/>
+		</signal>
+
+		<!--
+			IncommingEtwsMsg:
+                        @cbMsgType: ETWS message type. PRIMARY, SECONDARY_GSM, SECONDARY_UMTS
+                        @msgLength: Size of the array which is actual TPDU message
+                        @tpdu: ETWS message data[Refer 3GPP TS 23.041 9.4.1
+
+			This is an unsolicited Incoming cell broadcast message
+		-->
+		<signal name="IncommingEtwsMsg">
+			<arg type="i" name="etwsMsgType"/>
 			<arg type="i" name="msgLength"/>
 			<arg type="s" name="tpdu"/>
 		</signal>

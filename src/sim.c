@@ -40,11 +40,6 @@
 #include "generated-code.h"
 #include "common.h"
 
-#define g_variant_iter_free0( iter ) \
-	if ( iter ) \
-		g_variant_iter_free( iter );\
-	else \
-		dbg("iter : 0");
 
 static gboolean dbus_sim_data_request(struct custom_data *ctx, enum tel_sim_status sim_status )
 {
@@ -696,7 +691,7 @@ static gboolean on_sim_transfer_apdu(TelephonySim *sim, GDBusMethodInvocation *i
 		i++;
 	}
 	send_apdu.apdu_length = (unsigned int)i;
-	g_variant_iter_free0(iter);
+	g_variant_iter_free(iter);
 	g_variant_unref(inner_gv);
 	g_variant_unref(arg_apdu);
 

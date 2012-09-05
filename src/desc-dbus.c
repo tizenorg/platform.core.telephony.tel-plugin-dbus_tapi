@@ -379,7 +379,7 @@ static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer u
 	struct custom_data *ctx = user_data;
 	TelephonyManager *mgr;
 
-	dbg("dbus registered");
+	info("dbus registered");
 
 	ctx->manager = g_dbus_object_manager_server_new (MY_DBUS_PATH);
 

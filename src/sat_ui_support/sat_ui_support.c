@@ -11,12 +11,6 @@
 #include "TelSat.h"
 #include "sat_ui_support.h"
 
-#define g_variant_iter_free0( iter ) \
-	if ( iter ) \
-		g_variant_iter_free( iter );\
-	else \
-		dbg("iter : 0");
-
 static gboolean _sat_ui_support_processing_setup_menu_ind(GVariant *data)
 {
 	gint rv;
@@ -54,7 +48,7 @@ static gboolean _sat_ui_support_processing_setup_menu_ind(GVariant *data)
 			memcpy(setup_menu.satMainMenuItem[index].itemString, item_str, TAPI_SAT_DEF_ITEM_STR_LEN_MAX + 6);
 			index++;
 		}
-		g_variant_iter_free0(iter);
+		g_variant_iter_free(iter);
 	}
 	setup_menu.bIsSatMainMenuHelpInfo = (b_helpinfo ? 1 : 0);
 	setup_menu.bIsUpdatedSatMainMenu = (b_updated ? 1 : 0);
@@ -160,7 +154,7 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data)
 			memcpy(select_item.menuItem[index].text, item_str, TAPI_SAT_ITEM_TEXT_LEN_MAX + 1);
 			index++;
 		}
-		g_variant_iter_free0(iter);
+		g_variant_iter_free(iter);
 	}
 
 	cmd_type = g_strdup_printf("%d", SAT_PROATV_CMD_SELECT_ITEM);

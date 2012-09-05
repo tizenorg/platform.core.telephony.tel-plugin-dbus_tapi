@@ -458,7 +458,7 @@ static gboolean
 on_sms_get_cb_config(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
-        struct treq_sms_get_cb_config getCbConfig;
+	struct treq_sms_get_cb_config getCbConfig;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 
@@ -478,27 +478,27 @@ on_sms_get_cb_config(TelephonySms *sms, GDBusMethodInvocation *invocation,
 
 static gboolean
 on_sms_set_cb_config(TelephonySms *sms, GDBusMethodInvocation *invocation,
+	gint arg_net3gppType,
 	gboolean arg_cbEnable,
-	gint arg_slectedId,
 	gint arg_msgIdMaxCount,
-	gint arg_msgIdCount,
+	gint arg_msgIdRangeCount,
 	const gchar *arg_msgId,
 	gpointer user_data)
 {
-        struct treq_sms_set_cb_config setCbConfig = {0,};
+    struct treq_sms_set_cb_config setCbConfig = {0,};
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 
 	gsize length;
 	guchar *decoded_msgId = NULL;
 
-	setCbConfig.bCBEnabled = arg_cbEnable;
-	setCbConfig.selectedId = arg_slectedId;
+	setCbConfig.net3gppType = arg_net3gppType;
+	setCbConfig.cbEnabled = arg_cbEnable;
 	setCbConfig.msgIdMaxCount = arg_msgIdMaxCount;
-	setCbConfig.msgIdCount = arg_msgIdCount;
+	setCbConfig.msgIdRangeCount = arg_msgIdRangeCount;
 
 	decoded_msgId = g_base64_decode(arg_msgId, &length);
-	memcpy(&(setCbConfig.msgIDs[0]), decoded_msgId, SMS_GSM_SMS_CBMI_LIST_SIZE_MAX);
+	memcpy(&(setCbConfig.msgIDs[0]), decoded_msgId, SMS_GSM_SMS_CBMI_LIST_SIZE_MAX*5);
 
 	ur = MAKE_UR(ctx, sms, invocation);
 	tcore_user_request_set_data(ur, sizeof(struct treq_sms_set_cb_config), &setCbConfig);
@@ -854,6 +854,7 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 	CoreObject *co_sms;
 	char *modem_name = NULL;
 	TcorePlugin *p = NULL;
+	int i;
 
 	modem_name = tcore_user_request_get_modem_name(ur);
 	if (!modem_name)
@@ -1028,28 +1029,42 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 
 		case TRESP_SMS_GET_CB_CONFIG: {
 			const struct tresp_sms_get_cb_config *resp = data;
-			gchar *msgIDs = NULL;
+			GVariant *result = NULL;
+			GVariantBuilder b;
 
 			dbg("receive TRESP_SMS_GET_CB_CONFIG");
 			dbg("resp->result = 0x%x", resp->result);
 
-			msgIDs = g_base64_encode((const guchar *)&(resp->cbConfig.msgIDs[0]), SMS_GSM_SMS_CBMI_LIST_SIZE_MAX);
-			if (msgIDs == NULL) {
-				dbg("g_base64_encode: Failed to Enocde cbConfig.msgIDs");
-				msgIDs = "";
+			g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+
+			for (i = 0; i < resp->cbConfig.msgIdRangeCount; i++) {
+				g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
+
+				if( resp->cbConfig.net3gppType == SMS_NETTYPE_3GPP ) {
+					g_variant_builder_add(&b, "{sv}", "FromMsgId", g_variant_new_uint16(resp->cbConfig.msgIDs[i].net3gpp.fromMsgId));
+					g_variant_builder_add(&b, "{sv}", "ToMsgId", g_variant_new_uint16(resp->cbConfig.msgIDs[i].net3gpp.toMsgId));
+				} else if( resp->cbConfig.net3gppType == SMS_NETTYPE_3GPP2) {
+					g_variant_builder_add(&b, "{sv}", "CBCategory", g_variant_new_uint16(resp->cbConfig.msgIDs[i].net3gpp2.cbCategory));
+					g_variant_builder_add(&b, "{sv}", "CBLanguage", g_variant_new_uint16(resp->cbConfig.msgIDs[i].net3gpp2.cbLanguage));				
+				} else {
+					dbg("Unknown 3gpp type");
+					return FALSE;
+				}
+			
+				g_variant_builder_add(&b, "{sv}", "Selected", g_variant_new_byte(resp->cbConfig.msgIDs[i].net3gpp.selected));
+			
+				g_variant_builder_close(&b);
 			}
 			
+			result = g_variant_builder_end(&b);
+
 			telephony_sms_complete_get_cb_config(dbus_info->interface_object, dbus_info->invocation,
 				resp->result,
-				resp->cbConfig.bCBEnabled,
-				resp->cbConfig.selectedId,
+				resp->cbConfig.net3gppType,
+				resp->cbConfig.cbEnabled,
 				resp->cbConfig.msgIdMaxCount,
-				resp->cbConfig.msgIdCount,
-				msgIDs);
-
-			if(msgIDs)
-				g_free(msgIDs);
-
+				resp->cbConfig.msgIdRangeCount,
+				result);
 			}
 			break;
 
@@ -1280,6 +1295,26 @@ gboolean dbus_plugin_sms_notification(struct custom_data *ctx, const char *plugi
 			if(msgData)
 				g_free(msgData);
 
+			}
+			break;
+
+		case TNOTI_SMS_ETWS_INCOM_MSG: {
+			const struct tnoti_sms_etws_msg *noti = data;
+			gchar *msgData = NULL;
+			
+			msgData = g_base64_encode((const guchar *)&(noti->etwsMsg.msgData[0]), SMS_SMSP_ADDRESS_LEN);
+			if (msgData == NULL) {
+				dbg("g_base64_encode: Failed to Enocde etwsMsg.msgData");
+				msgData = "";
+			}
+
+			telephony_sms_emit_incomming_etws_msg(sms,
+				noti->etwsMsg.etwsMsgType,
+				noti->etwsMsg.length,
+				msgData);
+
+			if(msgData)
+				g_free(msgData);
 			}
 			break;
 

@@ -1,0 +1,9 @@
+Change-Id: I231a9ba90957b73bdf327dd0df127692e836d13d
+Verified+1: Ryan Ware <ryan.r.ware@intel.com>
+Code-Review+2: Tracy Graydon <tracy.graydon@intel.com>
+Verified+1: Tracy Graydon <tracy.graydon@intel.com>
+Submitted-by: Tracy Graydon <tracy.graydon@intel.com>
+Submitted-at: Wed, 28 Nov 2012 05:54:13 +0900
+Reviewed-on: http://review.tizen.org/gerrit/2256
+Project: framework/telephony/tel-plugin-dbus_tapi
+Branch: refs/heads/master

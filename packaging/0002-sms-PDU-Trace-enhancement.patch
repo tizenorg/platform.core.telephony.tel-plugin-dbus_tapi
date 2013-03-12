@@ -1,0 +1,43 @@
+From 757427f10bc55b32995c6ffb6ed4f3b75287e9cc Mon Sep 17 00:00:00 2001
+From: Nicolas Bertrand <nicolas.bertrand@linux.intel.com>
+Date: Mon, 21 Jan 2013 10:30:16 +0100
+Subject: [PATCH 2/2] sms: PDU Trace enhancement
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+
+---
+ src/sms.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/src/sms.c b/src/sms.c
+index 5443568..ee8ed4e 100644
+--- a/src/sms.c
++++ b/src/sms.c
+@@ -60,14 +60,22 @@ on_sms_send_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
+ 	guchar *decoded_tpdu = NULL;
+ 
+ 	memset(&sendUmtsMsg, 0 , sizeof(struct treq_sms_send_umts_msg));
++	dbg("tpdu_length = %d", tpdu_length);
++
++        dbg("sca: <%s>", sca);
++        dbg("pdu: <%s>", tpdu_data);
+ 
+ 	decoded_sca = g_base64_decode(sca, &length);
++	dbg("decoded_sca  length = %d", length);
++
+ 	memcpy(&(sendUmtsMsg.msgDataPackage.sca[0]), decoded_sca, SMS_SMSP_ADDRESS_LEN);
+ 
+ 	sendUmtsMsg.msgDataPackage.msgLength = tpdu_length;
+-	dbg("tpdu_length = 0x%x", tpdu_length);
++        
++        decoded_tpdu = g_base64_decode(tpdu_data, &length);
++
++	dbg("decoded_tpu  length = %d", length);
+ 
+-	decoded_tpdu = g_base64_decode(tpdu_data, &length);
+ 	memcpy(&(sendUmtsMsg.msgDataPackage.tpduData[0]), decoded_tpdu, SMS_SMDATA_SIZE_MAX + 1);
+ 	sendUmtsMsg.more = moreMsg;
+ 
+-- 
+1.7.10.4
+

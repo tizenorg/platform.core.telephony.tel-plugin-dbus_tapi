@@ -459,7 +459,6 @@ static gboolean on_call_get_status(TelephonyCall *call, GDBusMethodInvocation *i
 {
 	struct custom_data *ctx = user_data;
 	TcorePlugin *plugin = 0;
-	GSList *o_list = 0;
 	CoreObject *o = 0;
 	CallObject *co = 0;
 
@@ -475,14 +474,11 @@ static gboolean on_call_get_status(TelephonyCall *call, GDBusMethodInvocation *i
 		return FALSE;
 	}
 
-	o_list = tcore_plugin_get_core_objects_bytype(plugin, CORE_OBJECT_TYPE_CALL);
-	if ( !o_list ) {
-		dbg("[ error ] co_list : 0");
+	o = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_CALL);
+	if ( !o ) {
+		dbg("no core object call");
 		return FALSE;
 	}
-
-	o = (CoreObject *)o_list->data;
-	g_slist_free(o_list);
 
 	co = tcore_call_object_find_by_id( o, call_id );
 	if ( !co ) {
@@ -537,14 +533,9 @@ static gboolean on_call_get_status_all(TelephonyCall *call, GDBusMethodInvocatio
 		return FALSE;
 	}
 
-	list = tcore_plugin_get_core_objects_bytype(plugin, CORE_OBJECT_TYPE_CALL);
-	if ( !list ) {
-		dbg("[ error ] co_list : 0");
+	o = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_CALL);
+	if ( !o )
 		return FALSE;
-	}
-
-	o = (CoreObject *)list->data;
-	g_slist_free(list);
 
 	g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 
@@ -1048,7 +1039,6 @@ gboolean dbus_plugin_setup_call_interface(TelephonyObjectSkeleton *object, struc
 gboolean dbus_plugin_call_response(struct custom_data *ctx, UserRequest *ur, struct dbus_request_info *dbus_info, enum tcore_response_command command, unsigned int data_len, const void *data)
 {
 	int i = 0;
-	GSList *co_list;
 	CoreObject *co_call;
 	char *modem_name = NULL;
 	TcorePlugin *p = NULL;
@@ -1062,17 +1052,9 @@ gboolean dbus_plugin_call_response(struct custom_data *ctx, UserRequest *ur, str
 	if (!p)
 		return FALSE;
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_NETWORK);
-	if (!co_list) {
+	co_call = tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_CALL);
+	if (!co_call)
 		return FALSE;
-	}
-
-	co_call = (CoreObject *)co_list->data;
-	g_slist_free(co_list);
-
-	if (!co_call) {
-		return FALSE;
-	}
 
 	switch (command) {
 		case TRESP_CALL_DIAL: {

@@ -58,21 +58,13 @@ static gboolean on_phonebook_get_init_status(TelephonyPhonebook *phonebook, GDBu
 	struct custom_data *ctx = user_data;
 	gboolean pb_status = FALSE;
 	struct tel_phonebook_support_list *list = NULL;
-	GSList *co_list = NULL;
 	CoreObject *co_pb = NULL;
 	TcorePlugin *plugin = NULL;
 
 	dbg("Func Entrance");
 
 	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
-	co_list = tcore_plugin_get_core_objects_bytype(plugin, CORE_OBJECT_TYPE_PHONEBOOK);
-	if (!co_list) {
-		dbg("error- co_list is NULL");
-		return FALSE;
-	}
-	co_pb = (CoreObject *)co_list->data;
-	g_slist_free(co_list);
-
+	co_pb = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_PHONEBOOK);
 	if (!co_pb) {
 		dbg("error- co_pb is NULL");
 		return FALSE;

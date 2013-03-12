@@ -706,7 +706,6 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, 
 	int i = 0;
 	char *buf;
 
-	GSList *co_list;
 	CoreObject *co_network;
 	char *modem_name = NULL;
 	TcorePlugin *p = NULL;
@@ -720,17 +719,9 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, 
 	if (!p)
 		return FALSE;
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_NETWORK);
-	if (!co_list) {
+	co_network = tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_NETWORK);
+	if (!co_network)
 		return FALSE;
-	}
-
-	co_network = (CoreObject *)co_list->data;
-	g_slist_free(co_list);
-
-	if (!co_network) {
-		return FALSE;
-	}
 
 	switch (command) {
 		case TRESP_NETWORK_SEARCH: {

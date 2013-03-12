@@ -125,7 +125,6 @@ gboolean dbus_plugin_gps_response(struct custom_data *ctx, UserRequest *ur, stru
 {
 	const struct tresp_gps_set_frequency_aiding*resp_gps_frequency_aiding = data;
 
-	GSList *co_list;
 	CoreObject *co_gps;
 	char *modem_name = NULL;
 	TcorePlugin *p = NULL;
@@ -139,17 +138,9 @@ gboolean dbus_plugin_gps_response(struct custom_data *ctx, UserRequest *ur, stru
 	if (!p)
 		return FALSE;
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_GPS);
-	if (!co_list) {
+	co_gps = tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_GPS);
+	if (!co_gps)
 		return FALSE;
-	}
-
-	co_gps = (CoreObject *)co_list->data;
-	g_slist_free(co_list);
-
-	if (!co_gps) {
-		return FALSE;
-	}
 
 	switch (command) {
 		case TRESP_GPS_SET_FREQUENCY_AIDING:

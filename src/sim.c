@@ -84,21 +84,13 @@ static gboolean on_sim_get_init_status(TelephonySim *sim, GDBusMethodInvocation 
 	struct custom_data *ctx = user_data;
 	gint tmp_cardstatus = 0xff;
 	gboolean b_changed = FALSE;
-	GSList *co_list = NULL;
 	CoreObject *co_sim = NULL;
 	TcorePlugin *plugin = NULL;
 
 	dbg("Func Entrance");
 
 	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
-	co_list = tcore_plugin_get_core_objects_bytype(plugin, CORE_OBJECT_TYPE_SIM);
-	if (!co_list) {
-		dbg("error- co_list is NULL");
-		return FALSE;
-	}
-	co_sim = (CoreObject *)co_list->data;
-	g_slist_free(co_list);
-
+	co_sim = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_SIM);
 	if (!co_sim) {
 		dbg("error- co_sim is NULL");
 		return FALSE;
@@ -118,21 +110,13 @@ static gboolean on_sim_get_card_type(TelephonySim *sim, GDBusMethodInvocation *i
 {
 	struct custom_data *ctx = user_data;
 	enum tel_sim_type type = SIM_TYPE_UNKNOWN;
-	GSList *co_list = NULL;
 	CoreObject *co_sim = NULL;
 	TcorePlugin *plugin = NULL;
 
 	dbg("Func Entrance");
 
 	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
-	co_list = tcore_plugin_get_core_objects_bytype(plugin, CORE_OBJECT_TYPE_SIM);
-	if (!co_list) {
-		dbg("error- co_list is NULL");
-		return FALSE;
-	}
-	co_sim = (CoreObject *)co_list->data;
-	g_slist_free(co_list);
-
+	co_sim = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_SIM);
 	if (!co_sim) {
 		dbg("error- co_sim is NULL");
 		return FALSE;
@@ -150,20 +134,12 @@ static gboolean on_sim_get_imsi(TelephonySim *sim, GDBusMethodInvocation *invoca
 {
 	struct custom_data *ctx = user_data;
 	struct tel_sim_imsi *n_imsi;
-	GSList *co_list = NULL;
 	CoreObject *co_sim = NULL;
 	TcorePlugin *plugin = NULL;
 
 	dbg("Func Entrance");
 	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
-	co_list = tcore_plugin_get_core_objects_bytype(plugin, CORE_OBJECT_TYPE_SIM);
-	if (!co_list) {
-		dbg("error- co_list is NULL");
-		return FALSE;
-	}
-	co_sim = (CoreObject *)co_list->data;
-	g_slist_free(co_list);
-
+	co_sim = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_SIM);
 	if (!co_sim) {
 		dbg("error- co_sim is NULL");
 		return FALSE;

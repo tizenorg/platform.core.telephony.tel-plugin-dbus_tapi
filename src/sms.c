@@ -410,19 +410,16 @@ on_sms_set_sca(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	setSca.scaInfo.typeOfNum = arg_ton;
 	setSca.scaInfo.numPlanId = arg_npi;
 
-	if ((setSca.scaInfo.dialNumLen <= 0) || (setSca.scaInfo.dialNumLen > (SMS_MAX_SMS_SERVICE_CENTER_ADDR + 1)))
-	{
+	if ((setSca.scaInfo.dialNumLen <= 0)
+			|| (setSca.scaInfo.dialNumLen > SMS_SMSP_ADDRESS_LEN)) {
 		err("[tcore_SMS] TAPI_API_INVALID_INPUT !!!");
 		return  FALSE;
 	}
-	else if(setSca.index != 0)
-	{
+	else if(setSca.index != 0) {
 		err("[tcore_SMS] Index except 0 is supported");
 		// api_err = TAPI_API_NOT_SUPPORTED;
 		return  FALSE;
-	}
-	else
-	{
+	} else {
 		gsize length;
 		guchar *decoded_sca = NULL;
 	
@@ -771,22 +768,13 @@ on_sms_get_sms_ready_status(TelephonySms *sms, GDBusMethodInvocation *invocation
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	GSList *co_list = NULL;
 	CoreObject *co_sms = NULL;
 	TcorePlugin *plugin = NULL;
 
 	dbg("Func Entrance");
 
 	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
-	co_list = tcore_plugin_get_core_objects_bytype(plugin, CORE_OBJECT_TYPE_SMS);
-	if (!co_list) {
-		dbg("error- co_list is NULL");
-		return FALSE;
-	}
-
-	co_sms = (CoreObject *)co_list->data;
-	g_slist_free(co_list);
-
+	co_sms = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_SMS);
 	if (!co_sms) {
 		dbg("error- co_sms is NULL");
 		return FALSE;
@@ -829,7 +817,6 @@ gboolean dbus_plugin_setup_sms_interface(TelephonyObjectSkeleton *object, struct
 
 gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, struct dbus_request_info *dbus_info, enum tcore_response_command command, unsigned int data_len, const void *data)
 {
-	GSList *co_list;
 	CoreObject *co_sms;
 	char *modem_name = NULL;
 	TcorePlugin *p = NULL;
@@ -844,17 +831,9 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 	if (!p)
 		return FALSE;
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_SMS);
-	if (!co_list) {
+	co_sms = tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_SMS);
+	if (!co_sms)
 		return FALSE;
-	}
-
-	co_sms = (CoreObject *)co_list->data;
-	g_slist_free(co_list);
-
-	if (!co_sms) {
-		return FALSE;
-	}
 
 	switch (command) {
 		case TRESP_SMS_SEND_UMTS_MSG: {

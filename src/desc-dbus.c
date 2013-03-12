@@ -52,7 +52,6 @@ static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 	TelephonyObjectSkeleton *object;
 	char *plugin_name = NULL;
 	char *path = NULL;
-	GSList *co_list = NULL;
 
 	plugin_name = tcore_plugin_ref_plugin_name(p);
 	if (!plugin_name)
@@ -74,59 +73,35 @@ static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 	/* Add interfaces */
 	dbus_plugin_setup_modem_interface(object, ctx);
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_CALL);
-	if (co_list) {
-		g_slist_free(co_list);
+	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_CALL) != NULL)
 		dbus_plugin_setup_call_interface(object, ctx);
-	}
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_NETWORK);
-	if (co_list) {
-		g_slist_free(co_list);
+
+	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_NETWORK) != NULL)
 		dbus_plugin_setup_network_interface(object, ctx);
-	}
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_SS);
-	if (co_list) {
-		g_slist_free(co_list);
+	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_SS) != NULL)
 		dbus_plugin_setup_ss_interface(object, ctx);
-	}
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_SMS);
-	if (co_list) {
-		g_slist_free(co_list);
+	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_SMS) != NULL)
 		dbus_plugin_setup_sms_interface(object, ctx);
-	}
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_SAT);
-	if (co_list) {
-		g_slist_free(co_list);
+
+	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_SAT) != NULL)
 		dbus_plugin_setup_sat_interface(object, ctx);
-	}
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_PHONEBOOK);
-	if (co_list) {
-		g_slist_free(co_list);
+
+	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_PHONEBOOK) != NULL)
 		dbus_plugin_setup_phonebook_interface(object, ctx);
-	}
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_SAP);
-	if (co_list) {
-		g_slist_free(co_list);
+	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_SAP) != NULL)
 		dbus_plugin_setup_sap_interface(object, ctx);
-	}
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_SIM);
-	if (co_list) {
-		g_slist_free(co_list);
+	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_SIM) != NULL)
 		dbus_plugin_setup_sim_interface(object, ctx);
-	}
 
-	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_GPS);
-	if (co_list) {
-		g_slist_free(co_list);
+	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_GPS) != NULL)
 		dbus_plugin_setup_gps_interface(object, ctx);
-	}
 
 	g_dbus_object_manager_server_export (ctx->manager, G_DBUS_OBJECT_SKELETON (object));
 
@@ -139,8 +114,8 @@ static void refresh_object(struct custom_data *ctx)
 {
 	GSList *plugins;
 	GSList *cur;
-	GSList *co_list;
 	TcorePlugin *p;
+	CoreObject *co;
 
 	if (!ctx->manager) {
 		dbg("not ready..");
@@ -157,16 +132,12 @@ static void refresh_object(struct custom_data *ctx)
 		if (!p)
 			continue;
 
-		co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_MODEM);
-		if (!co_list)
+		co = tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_MODEM);
+		if (!co)
 			continue;
 
-		if (!tcore_object_get_hal(co_list->data)) {
-			g_slist_free(co_list);
+		if (!tcore_object_get_hal(co))
 			continue;
-		}
-
-		g_slist_free(co_list);
 
 		add_modem(ctx, p);
 	}
@@ -337,10 +308,10 @@ on_manager_getmodems (TelephonyManager *mgr,
 	struct custom_data *ctx = user_data;
 	GSList *plugins;
 	GSList *cur;
-	GSList *co_list;
 	int max_count = 0;
 	int count;
 	TcorePlugin *p;
+	CoreObject *co;
 	gchar **list;
 
 	plugins = tcore_server_ref_plugins(ctx->server);
@@ -359,15 +330,12 @@ on_manager_getmodems (TelephonyManager *mgr,
 		if (!p)
 			continue;
 
-		co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_MODEM);
-		if (!co_list)
+		co = tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_MODEM);
+		if (!co)
 			continue;
 
-		if (!tcore_object_get_hal(co_list->data)) {
-			g_slist_free(co_list);
+		if (!tcore_object_get_hal(co))
 			continue;
-		}
-		g_slist_free(co_list);
 
 		list[count] = g_strdup(tcore_plugin_get_description(p)->name);
 		count++;

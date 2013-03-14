@@ -50,14 +50,13 @@
 static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 {
 	TelephonyObjectSkeleton *object;
-	char *plugin_name = NULL;
+	const char *cp_name = tcore_server_get_cp_name_by_plugin(p);
 	char *path = NULL;
 
-	plugin_name = tcore_plugin_ref_plugin_name(p);
-	if (!plugin_name)
+	if (!cp_name)
 		return;
 
-	path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plugin_name);
+	path = g_strdup_printf("%s/%s", MY_DBUS_PATH, cp_name);
 	dbg("path = [%s]", path);
 
 	object = g_hash_table_lookup(ctx->objects, path);
@@ -68,6 +67,9 @@ static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 
 	object = telephony_object_skeleton_new(path);
 	dbg("new dbus object created. (object = %p)", object);
+	if (object == NULL)
+		goto OUT;
+
 	g_hash_table_insert(ctx->objects, g_strdup(path), object);
 
 	/* Add interfaces */
@@ -182,26 +184,24 @@ static TReturn send_response(Communicator *comm, UserRequest *ur, enum tcore_res
 static TReturn send_notification(Communicator *comm, CoreObject *source, enum tcore_notification_command command, unsigned int data_len, const void *data)
 {
 	struct custom_data *ctx = NULL;
-	char *plugin_name;
-	char *path;
 	TelephonyObjectSkeleton *object;
 	TcorePlugin *p = tcore_object_ref_plugin(source);
+	const char *cp_name = tcore_server_get_cp_name_by_plugin(p);
+	char *path = NULL;
+
+	if (!cp_name)
+		return TCORE_RETURN_FAILURE;
 
 	dbg("notification !!! (command = 0x%x, data_len = %d)", command, data_len);
 
 	ctx = tcore_communicator_ref_user_data(comm);
 	if (!ctx) {
 		dbg("user_data is NULL");
-		return FALSE;
+		return TCORE_RETURN_FAILURE;
 	}
 
-	plugin_name = tcore_plugin_ref_plugin_name(p);
-	if (plugin_name) {
-		path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plugin_name);
-	}
-	else {
-		path = g_strdup_printf("%s", MY_DBUS_PATH);
-	}
+	path = g_strdup_printf("%s/%s", MY_DBUS_PATH, cp_name);
+
 	dbg("path = [%s]", path);
 
 	object = g_hash_table_lookup(ctx->objects, path);
@@ -209,51 +209,51 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 
 	switch (command & (TCORE_NOTIFICATION | 0x0FF00000)) {
 		case TNOTI_CALL:
-			dbus_plugin_call_notification(ctx, plugin_name, object, command, data_len, data);
+			dbus_plugin_call_notification(ctx, NULL, object, command, data_len, data);
 			break;
 
 		case TNOTI_SS:
-			dbus_plugin_ss_notification(ctx, plugin_name, object, command, data_len, data);
+			dbus_plugin_ss_notification(ctx, NULL, object, command, data_len, data);
 			break;
 
 		case TNOTI_PS:
 			break;
 
 		case TNOTI_SIM:
-			dbus_plugin_sim_notification(ctx, plugin_name, object, command, data_len, data);
+			dbus_plugin_sim_notification(ctx, NULL, object, command, data_len, data);
 			break;
 
 		case TNOTI_SAP:
-			dbus_plugin_sap_notification(ctx, plugin_name, object, command, data_len, data);
+			dbus_plugin_sap_notification(ctx, NULL, object, command, data_len, data);
 			break;
 
 		case TNOTI_PHONEBOOK:
-			dbus_plugin_phonebook_notification(ctx, plugin_name, object, command, data_len, data);
+			dbus_plugin_phonebook_notification(ctx, NULL, object, command, data_len, data);
 			break;
 
 		case TNOTI_MODEM:
 			if (command == TNOTI_MODEM_ADDED)
 				add_modem(ctx, p);
 
-			dbus_plugin_modem_notification(ctx, plugin_name, object, command, data_len, data);
+			dbus_plugin_modem_notification(ctx, NULL, object, command, data_len, data);
 			break;
 
 		case TNOTI_SMS:
-			dbus_plugin_sms_notification(ctx, plugin_name, object, command, data_len, data);
+			dbus_plugin_sms_notification(ctx, NULL, object, command, data_len, data);
 			break;
 
 		case TNOTI_SAT:
-			dbus_plugin_sat_notification(ctx, plugin_name, object, command, data_len, data);
+			dbus_plugin_sat_notification(ctx, NULL, object, command, data_len, data);
 			break;
 		case TNOTI_CUSTOM:
 			break;
 
 		case TNOTI_NETWORK:
-			dbus_plugin_network_notification(ctx, plugin_name, object, command, data_len, data);
+			dbus_plugin_network_notification(ctx, NULL, object, command, data_len, data);
 			break;
 
 		case TNOTI_GPS:
-			dbus_plugin_gps_notification(ctx, plugin_name, object, command, data_len, data);
+			dbus_plugin_gps_notification(ctx, NULL, object, command, data_len, data);
 			break;
 
 		case TNOTI_SERVER:
@@ -274,49 +274,11 @@ on_manager_getmodems (TelephonyManager *mgr,
 		gpointer                user_data)
 {
 	struct custom_data *ctx = user_data;
-	GSList *plugins;
-	GSList *cur;
-	int max_count = 0;
-	int count;
-	TcorePlugin *p;
-	CoreObject *co;
-	gchar **list;
+	char **cp_list;
 
-	plugins = tcore_server_ref_plugins(ctx->server);
-	if (!plugins) {
-		telephony_manager_complete_get_modems(mgr, invocation, NULL);
-		return TRUE;
-	}
+	cp_list = tcore_server_get_cp_name_list(ctx->server);
 
-	max_count = g_slist_length(plugins);
-	list = calloc(sizeof(gchar *) * max_count, 1);
-	count = 0;
-
-	cur = plugins;
-	for (cur = plugins; cur; cur = cur->next) {
-		p = cur->data;
-		if (!p)
-			continue;
-
-		co = tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_MODEM);
-		if (!co)
-			continue;
-
-		if (!tcore_object_get_hal(co))
-			continue;
-
-		list[count] = g_strdup(tcore_plugin_get_description(p)->name);
-		count++;
-	}
-
-	telephony_manager_complete_get_modems(mgr, invocation, (const gchar **)list);
-
-	for (;count >= 0; count--) {
-		if (list[count]) {
-			g_free(list[count]);
-		}
-	}
-	free(list);
+	telephony_manager_complete_get_modems(mgr, invocation, (const gchar **)cp_list);
 
 	return TRUE;
 }

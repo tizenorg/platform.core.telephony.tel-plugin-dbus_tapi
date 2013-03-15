@@ -223,6 +223,8 @@ gboolean dbus_plugin_setup_modem_interface(TelephonyObjectSkeleton *object, stru
 	telephony_object_skeleton_set_modem(object, modem);
 	g_object_unref(modem);
 
+	dbg("modem = %p", modem);
+
 	g_signal_connect (modem,
 			"handle-set-power",
 			G_CALLBACK (on_modem_set_power),

@@ -706,6 +706,8 @@ gboolean dbus_plugin_setup_ss_interface(TelephonyObjectSkeleton *object, struct 
 	telephony_object_skeleton_set_ss(object, ss);
 	g_object_unref(ss);
 
+	dbg("ss = %p", ss);
+
 	g_signal_connect (ss,
 			"handle-activate-barring",
 			G_CALLBACK (on_ss_activate_barring),

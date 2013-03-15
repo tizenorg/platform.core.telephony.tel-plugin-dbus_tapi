@@ -4160,7 +4160,7 @@ static gboolean _sat_manager_handle_setup_call_confirm(struct custom_data *ctx, 
 			gchar *confirmed_text, *text, *call_number;
 			GVariant *icon_id;
 
-			plg_name = tcore_plugin_ref_plugin_name(plg);
+			plg_name = (gchar *)tcore_server_get_cp_name_by_plugin(plg);
 			if (plg_name) {
 				path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plg_name);
 			}
@@ -4308,7 +4308,7 @@ static gboolean _sat_manager_handle_launch_browser_confirm(struct custom_data *c
 			gchar *gateway_proxy = NULL;
 			GVariant *icon_id = NULL;
 
-			plg_name = tcore_plugin_ref_plugin_name(plg);
+			plg_name = (gchar *)tcore_server_get_cp_name_by_plugin(plg);
 			if (plg_name) {
 				path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plg_name);
 			} else {
@@ -4404,7 +4404,7 @@ static gboolean _sat_manager_handle_open_channel_confirm(struct custom_data *ctx
 			GVariant *bearer_detail;
 
 			//emit send_dtmf signal
-			plg_name = tcore_plugin_ref_plugin_name(plg);
+			plg_name = (gchar *)tcore_server_get_cp_name_by_plugin(plg);
 			if (plg_name) {
 				path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plg_name);
 			} else {
@@ -4556,7 +4556,7 @@ static gboolean _sat_manager_handle_play_tone_ui_display_status(struct custom_da
 	}
 
 	//emit play tone signal
-	plg_name = tcore_plugin_ref_plugin_name(plg);
+	plg_name = (gchar *)tcore_server_get_cp_name_by_plugin(plg);
 	if (plg_name) {
 		path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plg_name);
 	}
@@ -4615,7 +4615,7 @@ static gboolean _sat_manager_handle_send_sms_ui_display_status(struct custom_dat
 	}
 
 	//emit send sms signal
-	plg_name = tcore_plugin_ref_plugin_name(plg);
+	plg_name = (gchar *)tcore_server_get_cp_name_by_plugin(plg);
 	if (plg_name) {
 		path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plg_name);
 	}
@@ -4675,7 +4675,7 @@ static gboolean _sat_manager_handle_send_ss_ui_display_status(struct custom_data
 	}
 
 	//emit send ss signal
-	plg_name = tcore_plugin_ref_plugin_name(plg);
+	plg_name = (gchar *)tcore_server_get_cp_name_by_plugin(plg);
 	if (plg_name) {
 		path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plg_name);
 	}
@@ -4733,8 +4733,8 @@ static gboolean _sat_manager_handle_send_ussd_ui_display_status(struct custom_da
 		return TRUE;
 	}
 
-	//emit send ussd signal
-	plg_name = tcore_plugin_ref_plugin_name(plg);
+	/* emit send ussd signal */
+	plg_name = (gchar *)tcore_server_get_cp_name_by_plugin(plg);
 	if (plg_name) {
 		path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plg_name);
 	}
@@ -4862,7 +4862,7 @@ static gboolean _sat_manager_handle_send_dtmf_ui_display_status(struct custom_da
 	}
 
 	//emit send_dtmf signal
-	plg_name = tcore_plugin_ref_plugin_name(plg);
+	plg_name = (gchar *)tcore_server_get_cp_name_by_plugin(plg);
 	if (plg_name) {
 		path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plg_name);
 	} else {
@@ -4921,7 +4921,7 @@ static gboolean _sat_manager_handle_open_channel_ui_display_status(struct custom
 	}
 
 	//emit send_dtmf signal
-	plg_name = tcore_plugin_ref_plugin_name(plg);
+	plg_name = (gchar *)tcore_server_get_cp_name_by_plugin(plg);
 	if (plg_name) {
 		path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plg_name);
 	} else {

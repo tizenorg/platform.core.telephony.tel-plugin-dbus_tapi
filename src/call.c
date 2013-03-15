@@ -43,6 +43,7 @@
 #include "generated-code.h"
 #include "common.h"
 
+#define MAX_CALL_STATUS_NUM 7
 
 static void _launch_voice_call( struct tnoti_call_status_incoming* incoming )
 {
@@ -467,8 +468,9 @@ static gboolean on_call_get_status(TelephonyCall *call, GDBusMethodInvocation *i
 	gboolean call_direction;
 	gint call_status;
 	gboolean call_multiparty_state;
+	char *cp_name = GET_PLUGIN_NAME(invocation);
 
-	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
+	plugin = tcore_server_find_plugin(ctx->server, cp_name);
 	if ( !plugin ) {
 		dbg("[ error ] plugin : 0");
 		return FALSE;
@@ -524,10 +526,11 @@ static gboolean on_call_get_status_all(TelephonyCall *call, GDBusMethodInvocatio
 	gboolean call_direction;
 	gint call_status;
 	gboolean call_multiparty_state;
+	char *cp_name = GET_PLUGIN_NAME(invocation);
 
 	int len, i;
 
-	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
+	plugin = tcore_server_find_plugin(ctx->server, cp_name);
 	if ( !plugin ) {
 		dbg("[ error ] plugin : 0");
 		return FALSE;
@@ -539,7 +542,6 @@ static gboolean on_call_get_status_all(TelephonyCall *call, GDBusMethodInvocatio
 
 	g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 
-#define MAX_CALL_STATUS_NUM 7
 	for ( i=0; i<MAX_CALL_STATUS_NUM; i++ ) {
 		list = tcore_call_object_find_by_status( o, i );
 
@@ -916,6 +918,8 @@ gboolean dbus_plugin_setup_call_interface(TelephonyObjectSkeleton *object, struc
 	call = telephony_call_skeleton_new();
 	telephony_object_skeleton_set_call(object, call);
 	g_object_unref(call);
+
+	dbg("call = %p", call);
 
 	g_signal_connect (call,
 			"handle-dial",

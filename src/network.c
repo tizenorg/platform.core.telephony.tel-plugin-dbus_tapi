@@ -223,7 +223,6 @@ on_network_search (TelephonyNetwork *network,
 		GDBusMethodInvocation *invocation,
 		gpointer user_data)
 {
-#if 1
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
@@ -236,31 +235,6 @@ on_network_search (TelephonyNetwork *network,
 		telephony_network_complete_search(network, invocation, NULL, ret);
 		tcore_user_request_unref(ur);
 	}
-#else
-	/* Dummy return */
-	GVariant *result = NULL;
-	GVariantBuilder b;
-	int i;
-	char *buf;
-
-	g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
-
-	for (i = 0; i < 3; i++) {
-		g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
-
-		g_variant_builder_add(&b, "{sv}", "plmn", g_variant_new_string("45001"));
-		g_variant_builder_add(&b, "{sv}", "act", g_variant_new_int32(4));
-		g_variant_builder_add(&b, "{sv}", "type", g_variant_new_int32(2));
-		g_variant_builder_add(&b, "{sv}", "name", g_variant_new_string("Samsung"));
-
-		g_variant_builder_close(&b);
-	}
-
-	result = g_variant_builder_end(&b);
-
-	telephony_network_complete_search(network, invocation, result, 0);
-	g_variant_unref(result);
-#endif
 
 	return TRUE;
 }
@@ -606,6 +580,8 @@ gboolean dbus_plugin_setup_network_interface(TelephonyObjectSkeleton *object, st
 	network = telephony_network_skeleton_new();
 	telephony_object_skeleton_set_network(object, network);
 	g_object_unref(network);
+
+	dbg("network = %p", network);
 
 	g_signal_connect (network,
 			"handle-search",

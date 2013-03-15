@@ -86,173 +86,6 @@ on_sms_send_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 		
 	return  TRUE;
 }
-/*
-
-static gboolean
-on_sms_send_cdma_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
-	const gchar *sca,
-	gint tpdu_length,
-	const gchar *tpdu_data,
-	gint moreMsg,
-	gpointer user_data)
-{
-#if 0
-	cdmaMsg.more = sipc_util_marshal_object_get_int(in_obj, "More");
-	cdmaMsg.cdmaMsgInfo.ParamMask = sipc_util_marshal_object_get_int(in_obj, "ParamMask");
-	cdmaMsg.cdmaMsgInfo.MsgType = sipc_util_marshal_object_get_int(in_obj, "MsgType");
-
-	switch(cdmaMsg.cdmaMsgInfo.MsgType)
-	{
-		case SMS_MESSAGETYPE_SUBMIT: {
-			gchar *dstAddr_szAddress;
-			gchar *dstSubAddr_szAddress;
-			gchar *szData;
-			gchar *callBackNumer_szAddress;
-
-			 Origination address
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DstAddr.Digit = sipc_util_marshal_object_get_int(in_obj, "DstAddr.Digit");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DstAddr.NumberMode = sipc_util_marshal_object_get_int(in_obj, "DstAddr.NumberMode");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DstAddr.NumberType = sipc_util_marshal_object_get_int(in_obj, "DstAddr.NumberType");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DstAddr.NumberPlan = sipc_util_marshal_object_get_int(in_obj, "DstAddr.NumberPlan");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DstAddr.szAddrLength = sipc_util_marshal_object_get_char(in_obj, "DstAddr.szAddrLength");
-			dstAddr_szAddress = sipc_util_marshal_object_get_string(in_obj, "DstAddr.szAddress");
-			memcpy(&(cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DstAddr.szAddress[0]), dstAddr_szAddress, SMS_MAXLENGTH_SMS_ADDRESS);
-
-			 Origination subaddress
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DstSubAddr.SubType = sipc_util_marshal_object_get_int(in_obj, "DstSubAddr.SubType");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DstSubAddr.Odd = sipc_util_marshal_object_get_char(in_obj, "DstSubAddr.Odd");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DstSubAddr.szAddrLength = sipc_util_marshal_object_get_char(in_obj, "DstSubAddr.szAddrLength");
-			dstSubAddr_szAddress = sipc_util_marshal_object_get_string(in_obj, "DstSubAddr.szAddress");
-			memcpy(&(cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DstSubAddr.szAddress[0]), dstSubAddr_szAddress, SMS_MAXLENGTH_SMS_ADDRESS);
-
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.TeleService = sipc_util_marshal_object_get_int(in_obj, "TeleService");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.bBearerReplySeqRequest = sipc_util_marshal_object_get_int(in_obj, "bBearerReplySeqRequest");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.ReplySeqNumber = sipc_util_marshal_object_get_char(in_obj, "ReplySeqNumber");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.MsgId = sipc_util_marshal_object_get_int(in_obj, "MsgId");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.MsgEncoding = sipc_util_marshal_object_get_int(in_obj, "MsgEncoding");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.MsgLength = sipc_util_marshal_object_get_int(in_obj, "MsgLength");
-			szData = sipc_util_marshal_object_get_string(in_obj, "szData");
-			memcpy(&(cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.szData[0]), szData, SMS_MAXLENGTH_SMS_MO_USER_DATA);
-
-			 Validity period - Absolute
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.ValidityPeriodAbs.year = sipc_util_marshal_object_get_int(in_obj, "ValidityPeriodAbs.year");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.ValidityPeriodAbs.month = sipc_util_marshal_object_get_int(in_obj, "ValidityPeriodAbs.month");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.ValidityPeriodAbs.day = sipc_util_marshal_object_get_int(in_obj, "ValidityPeriodAbs.day");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.ValidityPeriodAbs.hours = sipc_util_marshal_object_get_int(in_obj, "ValidityPeriodAbs.hours");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.ValidityPeriodAbs.minutes = sipc_util_marshal_object_get_int(in_obj, "ValidityPeriodAbs.minutes");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.ValidityPeriodAbs.seconds = sipc_util_marshal_object_get_int(in_obj, "ValidityPeriodAbs.seconds");
-
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.ValidityPeriodRel = sipc_util_marshal_object_get_char(in_obj, "ValidityPeriodRel");
-
-			 Deferred delivery time - Absolute (not supported)
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DeferredDelTimeAbs.year = sipc_util_marshal_object_get_int(in_obj, "DeferredDelTimeAbs.year");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DeferredDelTimeAbs.month = sipc_util_marshal_object_get_int(in_obj, "DeferredDelTimeAbs.month");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DeferredDelTimeAbs.day = sipc_util_marshal_object_get_int(in_obj, "DeferredDelTimeAbs.day");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DeferredDelTimeAbs.hours = sipc_util_marshal_object_get_int(in_obj, "DeferredDelTimeAbs.hours");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DeferredDelTimeAbs.minutes = sipc_util_marshal_object_get_int(in_obj, "DeferredDelTimeAbs.minutes");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DeferredDelTimeAbs.seconds = sipc_util_marshal_object_get_int(in_obj, "DeferredDelTimeAbs.seconds");
-
-			 Deferred delivery time - Relative (not supported)
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.DeferredDelTimeRel = sipc_util_marshal_object_get_char(in_obj, "DeferredDelTimeRel");
-
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.Priority = sipc_util_marshal_object_get_int(in_obj, "Priority");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.Privacy = sipc_util_marshal_object_get_int(in_obj, "Privacy");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.bUserAckRequest = sipc_util_marshal_object_get_int(in_obj, "bUserAckRequest");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.bDeliveryAckRequest = sipc_util_marshal_object_get_int(in_obj, "bDeliveryAckRequest");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.AlertPriority= sipc_util_marshal_object_get_int(in_obj, "AlertPriority");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.MsgLang= sipc_util_marshal_object_get_int(in_obj, "MsgLang");
-
-			 Callback number address
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.CallBackNumber.Digit = sipc_util_marshal_object_get_int(in_obj, "CallBackNumer.Digit");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.CallBackNumber.NumberMode = sipc_util_marshal_object_get_int(in_obj, "CallBackNumer.NumberMode");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.CallBackNumber.NumberType = sipc_util_marshal_object_get_int(in_obj, "CallBackNumer.NumberType");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.CallBackNumber.NumberPlan = sipc_util_marshal_object_get_int(in_obj, "CallBackNumer.NumberPlan");
-			cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.CallBackNumber.szAddrLength = sipc_util_marshal_object_get_char(in_obj, "CallBackNumer.szAddrLength");
-			callBackNumer_szAddress = sipc_util_marshal_object_get_string(in_obj, "CallBackNumer.szAddress");
-			memcpy(&(cdmaMsg.cdmaMsgInfo.MsgData.outSubmit.CallBackNumber.szAddress[0]), callBackNumer_szAddress, SMS_MAXLENGTH_SMS_ADDRESS);
-
-			}
-			break;
-
-		case SMS_MESSAGETYPE_CANCEL: {
-			gchar *dstAddr_szAddress;
-			gchar *dstSubAddr_szAddress;
-
-			 Origination address
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.DstAddr.Digit = sipc_util_marshal_object_get_int(in_obj, "DstAddr.Digit");
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.DstAddr.NumberMode = sipc_util_marshal_object_get_int(in_obj, "DstAddr.NumberMode");
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.DstAddr.NumberType = sipc_util_marshal_object_get_int(in_obj, "DstAddr.NumberType");
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.DstAddr.NumberPlan = sipc_util_marshal_object_get_int(in_obj, "DstAddr.NumberPlan");
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.DstAddr.szAddrLength = sipc_util_marshal_object_get_char(in_obj, "DstAddr.szAddrLength");
-			dstAddr_szAddress = sipc_util_marshal_object_get_string(in_obj, "DstAddr.szAddress");
-			memcpy(&(cdmaMsg.cdmaMsgInfo.MsgData.outCancel.DstAddr.szAddress[0]), dstAddr_szAddress, SMS_MAXLENGTH_SMS_ADDRESS);
-
-			 Origination subaddress
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.DstSubAddr.SubType = sipc_util_marshal_object_get_int(in_obj, "DstSubAddr.SubType");
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.DstSubAddr.Odd = sipc_util_marshal_object_get_char(in_obj, "DstSubAddr.Odd");
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.DstSubAddr.szAddrLength = sipc_util_marshal_object_get_char(in_obj, "DstSubAddr.szAddrLength");
-			dstSubAddr_szAddress = sipc_util_marshal_object_get_string(in_obj, "DstSubAddr.szAddress");
-			memcpy(&(cdmaMsg.cdmaMsgInfo.MsgData.outCancel.DstSubAddr.szAddress[0]), dstSubAddr_szAddress, SMS_MAXLENGTH_SMS_ADDRESS);
-
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.TeleService = sipc_util_marshal_object_get_int(in_obj, "TeleService");
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.bBearerReplySeqRequest = sipc_util_marshal_object_get_int(in_obj, "bBearerReplySeqRequest");
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.ReplySeqNumber = sipc_util_marshal_object_get_char(in_obj, "ReplySeqNumber");
-			cdmaMsg.cdmaMsgInfo.MsgData.outCancel.MsgId = sipc_util_marshal_object_get_int(in_obj, "MsgId");
-
-			}
-			break;
-
-		case SMS_MESSAGETYPE_USER_ACK: {
-			gchar *dstAddr_szAddress;
-			gchar *dstSubAddr_szAddress;
-			gchar *szData;
-
-			 Origination address
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.DstAddr.Digit = sipc_util_marshal_object_get_int(in_obj, "DstAddr.Digit");
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.DstAddr.NumberMode = sipc_util_marshal_object_get_int(in_obj, "DstAddr.NumberMode");
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.DstAddr.NumberType = sipc_util_marshal_object_get_int(in_obj, "DstAddr.NumberType");
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.DstAddr.NumberPlan = sipc_util_marshal_object_get_int(in_obj, "DstAddr.NumberPlan");
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.DstAddr.szAddrLength = sipc_util_marshal_object_get_char(in_obj, "DstAddr.szAddrLength");
-			dstAddr_szAddress = sipc_util_marshal_object_get_string(in_obj, "DstAddr.szAddress");
-			memcpy(&(cdmaMsg.cdmaMsgInfo.MsgData.outAck.DstAddr.szAddress[0]), dstAddr_szAddress, SMS_MAXLENGTH_SMS_ADDRESS);
-
-			 Origination subaddress
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.DstSubAddr.SubType = sipc_util_marshal_object_get_int(in_obj, "DstSubAddr.SubType");
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.DstSubAddr.Odd = sipc_util_marshal_object_get_char(in_obj, "DstSubAddr.Odd");
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.DstSubAddr.szAddrLength = sipc_util_marshal_object_get_char(in_obj, "DstSubAddr.szAddrLength");
-			dstSubAddr_szAddress = sipc_util_marshal_object_get_string(in_obj, "DstSubAddr.szAddress");
-			memcpy(&(cdmaMsg.cdmaMsgInfo.MsgData.outAck.DstSubAddr.szAddress[0]), dstSubAddr_szAddress, SMS_MAXLENGTH_SMS_ADDRESS);
-
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.TeleService = sipc_util_marshal_object_get_int(in_obj, "TeleService");
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.bBearerReplySeqRequest = sipc_util_marshal_object_get_int(in_obj, "bBearerReplySeqRequest");
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.ReplySeqNumber = sipc_util_marshal_object_get_char(in_obj, "ReplySeqNumber");
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.MsgId = sipc_util_marshal_object_get_int(in_obj, "MsgId");
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.MsgEncoding = sipc_util_marshal_object_get_int(in_obj, "MsgEncoding");
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.MsgLength = sipc_util_marshal_object_get_int(in_obj, "MsgLength");
-			szData = sipc_util_marshal_object_get_string(in_obj, "szData");
-			memcpy(&(cdmaMsg.cdmaMsgInfo.MsgData.outAck.szData[0]), szData, SMS_MAXLENGTH_SMS_MO_USER_DATA);
-			cdmaMsg.cdmaMsgInfo.MsgData.outAck.UserResponseCode = sipc_util_marshal_object_get_char(in_obj, "UserResponseCode");
-
-			}
-			break;
-		default:
-			break;
-	}
-
-	tcore_user_request_set_data(ur, sizeof(struct treq_sms_send_cdma_msg), &cdmaMsg);
-	tcore_user_request_set_command(ur, TREQ_SMS_SEND_CDMA_MSG);
-
-	ret = tcore_communicator_dispatch_request(comm, ur);
-	if (ret != TCORE_RETURN_SUCCESS) {
-		// api_err = TAPI_API_OPERATION_FAILED;
-		err("[tcore_SMS] communicator_dispatch_request is fail [0x%x] !!!", ret);
-		return  FALSE;
-	}
-#endif
-	return TRUE;
-}
-
-*/
 
 static gboolean
 on_sms_read_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
@@ -770,10 +603,11 @@ on_sms_get_sms_ready_status(TelephonySms *sms, GDBusMethodInvocation *invocation
 	struct custom_data *ctx = user_data;
 	CoreObject *co_sms = NULL;
 	TcorePlugin *plugin = NULL;
+	char *cp_name = GET_PLUGIN_NAME(invocation);
 
 	dbg("Func Entrance");
 
-	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
+	plugin = tcore_server_find_plugin(ctx->server, cp_name);
 	co_sms = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_SMS);
 	if (!co_sms) {
 		dbg("error- co_sms is NULL");
@@ -792,6 +626,8 @@ gboolean dbus_plugin_setup_sms_interface(TelephonyObjectSkeleton *object, struct
 	sms = telephony_sms_skeleton_new();
 	telephony_object_skeleton_set_sms(object, sms);
 	g_object_unref(sms);
+
+	dbg("sms = %p", sms);
 
 	g_signal_connect(sms, "handle-send-msg", G_CALLBACK (on_sms_send_msg), ctx);
 	g_signal_connect(sms, "handle-read-msg", G_CALLBACK (on_sms_read_msg), ctx);
@@ -845,20 +681,6 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 
 			telephony_sms_complete_send_msg(dbus_info->interface_object, dbus_info->invocation, resp->result);
 
-			}
-			break;
-
-		case TRESP_SMS_SEND_CDMA_MSG: {
-			const struct tresp_sms_send_cdma_msg *resp = data;
-
-			dbg("receive TRESP_SMS_SEND_CDMA_MSG");
-			dbg("resp->result = 0x%x", resp->result);
-#if 0
-			resp->result
-			resp->causeCode.ReplySeqNumber
-			resp->causeCode.ErrClass
-			resp->causeCode.Cause
-#endif
 			}
 			break;
 
@@ -1277,195 +1099,10 @@ gboolean dbus_plugin_sms_notification(struct custom_data *ctx, const char *plugi
 			}
 			break;
 
-		case TNOTI_SMS_INCOM_EX_MSG: {
-#if 0
-			noti->cdmaMsg.ParamMask), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgType), SIPC_MARSHAL_DATA_INT_TYPE);
-
-			switch(noti->cdmaMsg.MsgType)
-			{
-				case SMS_MESSAGETYPE_DELIVER:
-					/* Origination address */
-					noti->cdmaMsg.MsgData.inDeliver.OrigAddr.Digit), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.OrigAddr.NumberMode), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.OrigAddr.NumberType), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.OrigAddr.NumberPlan), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.OrigAddr.szAddrLength), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.OrigAddr.szAddress[0]), SIPC_MARSHAL_DATA_STRING_TYPE);
-
-					/* Origination subaddress */
-					noti->cdmaMsg.MsgData.inDeliver.OrigSubAddr.SubType), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.OrigSubAddr.Odd), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.OrigSubAddr.szAddrLength), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.OrigSubAddr.szAddress[0]), SIPC_MARSHAL_DATA_STRING_TYPE);
-
-					noti->cdmaMsg.MsgData.inDeliver.TeleService), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.bBearerReplySeqRequest), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.ReplySeqNumber), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.MsgId), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.MsgEncoding), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.MsgLength), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.szData[0]), SIPC_MARSHAL_DATA_STRING_TYPE);
-
-					/* Message center time stamp */
-					void *)&(noti->cdmaMsg.MsgData.inDeliver.MessageCenterTimeStamp.year), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.MessageCenterTimeStamp.month), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.MessageCenterTimeStamp.day), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.MessageCenterTimeStamp.hours), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.MessageCenterTimeStamp.minutes), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.MessageCenterTimeStamp.seconds), SIPC_MARSHAL_DATA_INT_TYPE);
-
-					/* Validity period - Absolute */
-					noti->cdmaMsg.MsgData.inDeliver.ValidityPeriodAbs.year), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.ValidityPeriodAbs.month), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.ValidityPeriodAbs.day), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.ValidityPeriodAbs.hours), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.ValidityPeriodAbs.minutes), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.ValidityPeriodAbs.seconds), SIPC_MARSHAL_DATA_INT_TYPE);
-
-					noti->cdmaMsg.MsgData.inDeliver.ValidityPeriodRel), SIPC_MARSHAL_DATA_CHAR_TYPE);
-
-					/* Deferred delivery time - Absolute (not supported) */
-					noti->cdmaMsg.MsgData.inDeliver.DeferredDelTimeAbs.year), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.DeferredDelTimeAbs.month), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.DeferredDelTimeAbs.day), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.DeferredDelTimeAbs.hours), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.DeferredDelTimeAbs.minutes), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.DeferredDelTimeAbs.seconds), SIPC_MARSHAL_DATA_INT_TYPE);
-
-					/* Deferred delivery time - Relative (not supported) */
-					noti->cdmaMsg.MsgData.inDeliver.DeferredDelTimeRel), SIPC_MARSHAL_DATA_CHAR_TYPE);
-
-					noti->cdmaMsg.MsgData.inDeliver.Priority), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.Privacy), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.NumMsg), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.bUserAckRequest), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.bDeliveryAckRequest), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.AlertPriority), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.MsgLang), SIPC_MARSHAL_DATA_INT_TYPE);
-
-					/* Callback number address */
-					noti->cdmaMsg.MsgData.inDeliver.CallBackNumer.Digit), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.CallBackNumer.NumberMode), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.CallBackNumer.NumberType), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.CallBackNumer.NumberPlan), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.CallBackNumer.szAddrLength), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inDeliver.CallBackNumer.szAddress[0]), SIPC_MARSHAL_DATA_STRING_TYPE);
-
-					noti->cdmaMsg.MsgData.inDeliver.Display), SIPC_MARSHAL_DATA_INT_TYPE);
-
-					break;
-
-				case SMS_MESSAGETYPE_DELIVERY_ACK:
-					/* Origination address */
-					noti->cdmaMsg.MsgData.inAck.OrigAddr.Digit), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.OrigAddr.NumberMode), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.OrigAddr.NumberType), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.OrigAddr.NumberPlan), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.OrigAddr.szAddrLength), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inAck.OrigAddr.szAddress[0]), SIPC_MARSHAL_DATA_STRING_TYPE);
-
-					/* Origination subaddress */
-					noti->cdmaMsg.MsgData.inAck.OrigSubAddr.SubType), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.OrigSubAddr.Odd), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inAck.OrigSubAddr.szAddrLength), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inAck.OrigSubAddr.szAddress), SIPC_MARSHAL_DATA_CHAR_TYPE);
-
-					noti->cdmaMsg.MsgData.inAck.TeleService), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.bBearerReplySeqRequest), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.ReplySeqNumber), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inAck.MsgId), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.MsgEncoding), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.MsgLength), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.szData[0]), SIPC_MARSHAL_DATA_STRING_TYPE);
-
-					noti->cdmaMsg.MsgData.inAck.UserResponseCode), SIPC_MARSHAL_DATA_CHAR_TYPE);
-
-					/* Message center time stamp */
-					noti->cdmaMsg.MsgData.inAck.MessageCenterTimeStamp.year), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.MessageCenterTimeStamp.month), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.MessageCenterTimeStamp.day), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.MessageCenterTimeStamp.hours), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.MessageCenterTimeStamp.minutes), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inAck.MessageCenterTimeStamp.seconds), SIPC_MARSHAL_DATA_INT_TYPE);
-
-					break;
-
-				case SMS_MESSAGETYPE_USER_ACK:
-					/* Origination address */
-					noti->cdmaMsg.MsgData.inDeliverAck.OrigAddr.Digit), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.OrigAddr.NumberMode), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.OrigAddr.NumberType), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.OrigAddr.NumberPlan), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.OrigAddr.szAddrLength), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.OrigAddr.szAddress[0]), SIPC_MARSHAL_DATA_STRING_TYPE);
-
-					/* Origination subaddress */
-					noti->cdmaMsg.MsgData.inDeliverAck.OrigSubAddr.SubType), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.OrigSubAddr.Odd), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.OrigSubAddr.szAddrLength), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.OrigSubAddr.szAddress), SIPC_MARSHAL_DATA_CHAR_TYPE);
-
-					noti->cdmaMsg.MsgData.inDeliverAck.TeleService), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.bBearerReplySeqRequest), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.ReplySeqNumber), SIPC_MARSHAL_DATA_CHAR_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.MsgId), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.MsgEncoding), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.MsgLength), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.szData[0]), SIPC_MARSHAL_DATA_STRING_TYPE);
-
-					/* Message center time stamp */
-					noti->cdmaMsg.MsgData.inDeliverAck.MessageCenterTimeStamp.year), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.MessageCenterTimeStamp.month), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.MessageCenterTimeStamp.day), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.MessageCenterTimeStamp.hours), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.MessageCenterTimeStamp.minutes), SIPC_MARSHAL_DATA_INT_TYPE);
-					noti->cdmaMsg.MsgData.inDeliverAck.MessageCenterTimeStamp.seconds), SIPC_MARSHAL_DATA_INT_TYPE);
-
-					break;
-				default:
-					break;
-			}
-#endif
-			}
+		case TNOTI_SMS_INCOM_EX_MSG:
 			break;
 
-		case TNOTI_SMS_CB_INCOM_EX_MSG: {
-#if 0
-			noti->cdmaMsg.MsgData.inBc.ServiceCategory), SIPC_MARSHAL_DATA_INT_TYPE);
-
-			noti->cdmaMsg.MsgData.inBc.MsgId), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.bBearerReplySeqRequest), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.ReplySeqNumber), SIPC_MARSHAL_DATA_CHAR_TYPE);
-			noti->cdmaMsg.MsgData.inBc.MsgEncoding), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.MsgLength), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.szData[0]), SIPC_MARSHAL_DATA_STRING_TYPE);
-
-			/* Message center time stamp */
-			noti->cdmaMsg.MsgData.inBc.MessageCenterTimeStamp.year), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.MessageCenterTimeStamp.month), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.MessageCenterTimeStamp.day), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.MessageCenterTimeStamp.hours), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.MessageCenterTimeStamp.minutes), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.MessageCenterTimeStamp.seconds), SIPC_MARSHAL_DATA_INT_TYPE);
-
-			/* Validity period - Absolute */
-			noti->cdmaMsg.MsgData.inBc.ValidityPeriodAbs.year), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.ValidityPeriodAbs.month), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.ValidityPeriodAbs.day), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.ValidityPeriodAbs.hours), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.ValidityPeriodAbs.minutes), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.ValidityPeriodAbs.seconds), SIPC_MARSHAL_DATA_INT_TYPE);
-
-			noti->cdmaMsg.MsgData.inBc.ValidityPeriodRel), SIPC_MARSHAL_DATA_CHAR_TYPE);
-
-			noti->cdmaMsg.MsgData.inBc.Priority), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.AlertPriority), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.MsgLang), SIPC_MARSHAL_DATA_INT_TYPE);
-			noti->cdmaMsg.MsgData.inBc.Display), SIPC_MARSHAL_DATA_INT_TYPE);
-
-#endif
-			}
+		case TNOTI_SMS_CB_INCOM_EX_MSG:
 			break;
 
 		case TNOTI_SMS_MEMORY_STATUS: {

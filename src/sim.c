@@ -41,10 +41,10 @@
 #include "common.h"
 
 
-static gboolean dbus_sim_data_request(struct custom_data *ctx, enum tel_sim_status sim_status )
+static gboolean dbus_sim_data_request(struct custom_data *ctx, enum tel_sim_status sim_status,
+					const char *plugin_name)
 {
 	UserRequest *ur = NULL;
-	TcorePlugin *plugin = NULL;
 
 	switch(sim_status){
 		case SIM_STATUS_INITIALIZING :
@@ -59,10 +59,9 @@ static gboolean dbus_sim_data_request(struct custom_data *ctx, enum tel_sim_stat
 			if(ctx->sim_recv_first_status == FALSE) {
 				int rv = 0;
 				dbg("received sim status at first time");
-				plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
 
 				dbg("req - TREQ_SIM_GET_ECC ");
-				ur = tcore_user_request_new(ctx->comm, tcore_plugin_get_description(plugin)->name);
+				ur = tcore_user_request_new(ctx->comm, plugin_name);
 				tcore_user_request_set_command(ur, TREQ_SIM_GET_ECC);
 				rv = tcore_communicator_dispatch_request(ctx->comm, ur);
 				if(rv != TCORE_RETURN_SUCCESS) {
@@ -86,10 +85,11 @@ static gboolean on_sim_get_init_status(TelephonySim *sim, GDBusMethodInvocation 
 	gboolean b_changed = FALSE;
 	CoreObject *co_sim = NULL;
 	TcorePlugin *plugin = NULL;
+	char *cp_name = GET_PLUGIN_NAME(invocation);
 
 	dbg("Func Entrance");
 
-	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
+	plugin = tcore_server_find_plugin(ctx->server, cp_name);
 	co_sim = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_SIM);
 	if (!co_sim) {
 		dbg("error- co_sim is NULL");
@@ -112,10 +112,11 @@ static gboolean on_sim_get_card_type(TelephonySim *sim, GDBusMethodInvocation *i
 	enum tel_sim_type type = SIM_TYPE_UNKNOWN;
 	CoreObject *co_sim = NULL;
 	TcorePlugin *plugin = NULL;
+	char *cp_name = GET_PLUGIN_NAME(invocation);
 
 	dbg("Func Entrance");
 
-	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
+	plugin = tcore_server_find_plugin(ctx->server, cp_name);
 	co_sim = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_SIM);
 	if (!co_sim) {
 		dbg("error- co_sim is NULL");
@@ -136,9 +137,10 @@ static gboolean on_sim_get_imsi(TelephonySim *sim, GDBusMethodInvocation *invoca
 	struct tel_sim_imsi *n_imsi;
 	CoreObject *co_sim = NULL;
 	TcorePlugin *plugin = NULL;
+	char *cp_name = GET_PLUGIN_NAME(invocation);
 
 	dbg("Func Entrance");
-	plugin = tcore_server_find_plugin(ctx->server, TCORE_PLUGIN_DEFAULT);
+	plugin = tcore_server_find_plugin(ctx->server, cp_name);
 	co_sim = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_SIM);
 	if (!co_sim) {
 		dbg("error- co_sim is NULL");
@@ -1817,7 +1819,7 @@ gboolean dbus_plugin_sim_notification(struct custom_data *ctx, const char *plugi
 	switch (command) {
 		case TNOTI_SIM_STATUS:
 			dbg("notified sim_status[%d]", n_sim_status->sim_status);
-			dbus_sim_data_request(ctx, n_sim_status->sim_status);
+			dbus_sim_data_request(ctx, n_sim_status->sim_status, plugin_name);
 			telephony_sim_emit_status (sim, n_sim_status->sim_status);
 			break;
 

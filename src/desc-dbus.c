@@ -110,39 +110,6 @@ OUT:
 		g_free(path);
 }
 
-static void refresh_object(struct custom_data *ctx)
-{
-	GSList *plugins;
-	GSList *cur;
-	TcorePlugin *p;
-	CoreObject *co;
-
-	if (!ctx->manager) {
-		dbg("not ready..");
-		return;
-	}
-
-	plugins = tcore_server_ref_plugins(ctx->server);
-	if (!plugins)
-		return;
-
-	cur = plugins;
-	for (cur = plugins; cur; cur = cur->next) {
-		p = cur->data;
-		if (!p)
-			continue;
-
-		co = tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_MODEM);
-		if (!co)
-			continue;
-
-		if (!tcore_object_get_hal(co))
-			continue;
-
-		add_modem(ctx, p);
-	}
-}
-
 static TReturn send_response(Communicator *comm, UserRequest *ur, enum tcore_response_command command, unsigned int data_len, const void *data)
 {
 	struct custom_data *ctx = NULL;
@@ -218,6 +185,7 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 	char *plugin_name;
 	char *path;
 	TelephonyObjectSkeleton *object;
+	TcorePlugin *p = tcore_object_ref_plugin(source);
 
 	dbg("notification !!! (command = 0x%x, data_len = %d)", command, data_len);
 
@@ -227,7 +195,7 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 		return FALSE;
 	}
 
-	plugin_name = tcore_plugin_ref_plugin_name(tcore_object_ref_plugin(source));
+	plugin_name = tcore_plugin_ref_plugin_name(p);
 	if (plugin_name) {
 		path = g_strdup_printf("%s/%s", MY_DBUS_PATH, plugin_name);
 	}
@@ -264,6 +232,9 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 			break;
 
 		case TNOTI_MODEM:
+			if (command == TNOTI_MODEM_ADDED)
+				add_modem(ctx, p);
+
 			dbus_plugin_modem_notification(ctx, plugin_name, object, command, data_len, data);
 			break;
 
@@ -286,9 +257,6 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 			break;
 
 		case TNOTI_SERVER:
-			if (command == TNOTI_SERVER_RUN) {
-				refresh_object(ctx);
-			}
 			break;
 
 		default:
@@ -362,8 +330,6 @@ static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer u
 
 	info("dbus registered");
 
-	refresh_object(ctx);
-
 	/* Add interface to default object path */
 	mgr = telephony_manager_skeleton_new();
 	g_signal_connect (mgr,
@@ -436,7 +402,6 @@ static gboolean on_init(TcorePlugin *p)
 			NULL);
 
 	data->manager = g_dbus_object_manager_server_new (MY_DBUS_PATH);
-	refresh_object(data);
 
 	return TRUE;
 }

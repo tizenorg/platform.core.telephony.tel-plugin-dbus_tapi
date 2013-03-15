@@ -50,17 +50,22 @@
 static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 {
 	TelephonyObjectSkeleton *object;
+	static Storage *strg;
 	CoreObject *co_sim;
-	const char *cp_name = tcore_server_get_cp_name_by_plugin(p);
 	char *path = NULL;
-	
+	const char *cp_name;
+	gboolean rv;
 	dbg("Entry");
 
-	if (cp_name == NULL)
+	/* Get CP Name */
+	cp_name = tcore_server_get_cp_name_by_plugin(p);
+	if (cp_name == NULL) {
+		err("CP Name is NULL");
 		return;
+	}
 
 	path = g_strdup_printf("%s/%s", MY_DBUS_PATH, cp_name);
-	dbg("path = [%s]", path);
+	dbg("PATH: [%s]", path);
 
 	object = g_hash_table_lookup(ctx->objects, path);
 	if (object == NULL) {
@@ -123,9 +128,22 @@ static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 	/* Export the Object to Manager */
 	g_dbus_object_manager_server_export(ctx->manager, G_DBUS_OBJECT_SKELETON(object));
 
+	/*
+	 * Set Telephony Ready registry
+	 *
+	 * At this point we can convey upper Layer that Telephony is Ready.
+	 */
+	strg = tcore_server_find_storage(ctx->server, "vconf");
+	rv = tcore_storage_set_bool(strg, STORAGE_KEY_TELEPHONY_READY, TRUE);
+	if(rv == FALSE){
+		err("Set Telephony Ready (TRUE) to registry - FAIL");
+	} else {
+		dbg("Set Telephony Ready (TRUE) to registry - SUCCESS");
+	}
+
 OUT:
-	if (path)
-		g_free(path);
+	/* Freeing memory */
+	g_free(path);
 }
 
 static void refresh_object(struct custom_data *ctx)
@@ -136,13 +154,13 @@ static void refresh_object(struct custom_data *ctx)
 	CoreObject *co;
 	dbg("Entry");
 
-	if (!ctx->manager) {
+	if (ctx->manager == NULL) {
 		err("not ready..");
 		return;
 	}
 
 	plugins = tcore_server_ref_plugins(ctx->server);
-	if (!plugins)
+	if (plugins == NULL)
 		return;
 
 	cur = plugins;
@@ -156,7 +174,7 @@ static void refresh_object(struct custom_data *ctx)
 		}
 
 		co = tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_MODEM);
-		if (!co)
+		if (co == NULL)
 			continue;
 
 		/* Add modem */
@@ -172,7 +190,7 @@ static TReturn send_response(Communicator *comm, UserRequest *ur, enum tcore_res
 	dbg("Response Command = [0x%x], data_len = %d", command, data_len);
 
 	ctx = tcore_communicator_ref_user_data(comm);
-	if (!ctx) {
+	if (ctx == NULL) {
 		dbg("user_data is NULL");
 		return FALSE;
 	}
@@ -253,7 +271,7 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 	dbg("Notification!!! (command = 0x%x, data_len = %d)", command, data_len);
 
 	ctx = tcore_communicator_ref_user_data(comm);
-	if (!ctx) {
+	if (ctx == NULL) {
 		dbg("user_data is NULL");
 		return TCORE_RETURN_FAILURE;
 	}
@@ -395,12 +413,9 @@ on_manager_getmodems (TelephonyManager *mgr,
 
 static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
 {
-	gboolean rv = FALSE;
-	static Storage *strg;
 	struct custom_data *ctx = user_data;
 	TelephonyManager *mgr;
-
-	info("dbus registered");
+	info("DBUS Registered");
 
 	/* Add interface to default object path */
 	mgr = telephony_manager_skeleton_new();
@@ -413,16 +428,9 @@ static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer u
 
 	g_dbus_object_manager_server_set_connection (ctx->manager, conn);
 
-	//set telephony ready registry
-	strg = tcore_server_find_storage(ctx->server, "vconf");
+	dbg("Aquire DBUS - COMPLETE");
 
-	rv = tcore_storage_set_bool(strg, STORAGE_KEY_TELEPHONY_READY, TRUE);
-	if(!rv){
-		dbg("fail to set the telephony status to registry");
-	}
-
-	dbg("done to acquire the dbus");
-
+	/* Refresh Object */
 	refresh_object(ctx);
 }
 
@@ -444,13 +452,13 @@ static gboolean on_init(TcorePlugin *p)
 	struct custom_data *data;
 	guint id;
 
-	if (!p)
+	if (p == NULL)
 		return FALSE;
 
 	dbg("i'm init!");
 
 	data = calloc(sizeof(struct custom_data), 1);
-	if (!data) {
+	if (data == NULL) {
 		return FALSE;
 	}
 
@@ -487,17 +495,17 @@ static void on_unload(TcorePlugin *p)
 	struct custom_data *data;
 	Communicator *comm;
 
-	if (!p)
+	if (p == NULL)
 		return;
 
 	dbg("i'm unload");
 
 	comm = tcore_server_find_communicator(tcore_plugin_ref_server(p), "dbus");
-	if (!comm)
+	if (comm == NULL)
 		return;
 
 	data = tcore_communicator_ref_user_data(comm);
-	if (!data)
+	if (data == NULL)
 		return;
 
 	g_hash_table_destroy(data->objects);

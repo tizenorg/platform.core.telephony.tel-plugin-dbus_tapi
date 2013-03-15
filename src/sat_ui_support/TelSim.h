@@ -724,7 +724,7 @@ typedef struct {
  * This data structure defines the data for the apdu.
  */
 typedef struct {
-	unsigned char apdu_len;
+	unsigned short apdu_len;
 	unsigned char* apdu;
 } TelSimApdu_t;
 
@@ -732,7 +732,7 @@ typedef struct {
  * This data structure defines the data for the Response of sending apdu.
  */
 typedef struct {
-	unsigned char apdu_resp_len;
+	unsigned short apdu_resp_len;
 	unsigned char apdu_resp[TAPI_SIM_APDU_MAX_LEN];
 } TelSimApduResp_t;
 
@@ -740,7 +740,7 @@ typedef struct {
  * This data structure defines the data for the Response of sending apdu.
  */
 typedef struct {
-	unsigned char atr_resp_len;
+	unsigned short atr_resp_len;
 	unsigned char atr_resp[TAPI_SIM_APDU_MAX_LEN];
 } TelSimAtrResp_t;
 

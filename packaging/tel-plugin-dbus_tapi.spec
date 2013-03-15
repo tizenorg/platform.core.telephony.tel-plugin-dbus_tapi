@@ -1,6 +1,6 @@
 %define major 0
 %define minor 1
-%define patchlevel 115
+%define patchlevel 215
 Name: tel-plugin-dbus_tapi
 Summary: dbus-tapi plugin for telephony
 Version:    %{major}.%{minor}.%{patchlevel}
@@ -8,12 +8,6 @@ Release:    1
 Group:      System/Libraries
 License:    Apache
 Source0:    tel-plugin-dbus_tapi-%{version}.tar.gz
-%ifarch %ix86
-%if "%{simulator}" != "1"
-patch0: 0001-desc-dbus-create-interfaces-when-modem-is-added.patch
-patch1: 0002-sms-PDU-Trace-enhancement.patch
-%endif
-%endif
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 BuildRequires:  cmake
@@ -34,12 +28,6 @@ dbus-tapi plugin for telephony
 
 %prep
 %setup -q
-%ifarch %ix86
-%if "%{simulator}" != "1"
-%patch0 -p1
-%patch1 -p1
-%endif
-%endif
 
 %build
 versionint=$[%{major} * 1000000 + %{minor} * 1000 + %{patchlevel}]

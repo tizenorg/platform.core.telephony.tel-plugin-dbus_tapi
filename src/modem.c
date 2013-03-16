@@ -366,6 +366,9 @@ gboolean dbus_plugin_modem_notification(struct custom_data *ctx, const char *plu
 			telephony_modem_emit_dun_external_call(modem, TRUE);
 			break;
 
+		case TNOTI_MODEM_ADDED:
+			break;
+
 		default:
 			dbg("not handled command[0x%x]", command);
 		break;

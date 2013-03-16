@@ -259,6 +259,8 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 	const char *cp_name;
 	char *path = NULL;
 
+	dbg("Notification!!! (command = 0x%x, data_len = %d)", command, data_len);
+
 	if (command == TNOTI_SERVER_ADDED_PLUGIN)
 		p = (TcorePlugin *)data;
 	else
@@ -267,8 +269,7 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 	cp_name = tcore_server_get_cp_name_by_plugin(p);
 	if (cp_name == NULL)
 		return TCORE_RETURN_FAILURE;
-
-	dbg("Notification!!! (command = 0x%x, data_len = %d)", command, data_len);
+	dbg("CP Name: [%s]", cp_name);
 
 	ctx = tcore_communicator_ref_user_data(comm);
 	if (ctx == NULL) {
@@ -276,7 +277,6 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 		return TCORE_RETURN_FAILURE;
 	}
 
-	dbg("CP Name: [%s]", path);
 	if (cp_name) {
 		path = g_strdup_printf("%s/%s", MY_DBUS_PATH, cp_name);
 	}

@@ -353,7 +353,7 @@ static TReturn sat_manager_send_terminal_response(Communicator *comm, TcorePlugi
 	TReturn rv = TCORE_RETURN_SUCCESS;
 	UserRequest *ur = NULL;
 
-	ur = tcore_user_request_new(comm, tcore_plugin_get_description(target_plg)->name);
+	ur = tcore_user_request_new(comm, tcore_server_get_cp_name_by_plugin(target_plg));
 	if (!ur) {
 		dbg("ur is NULL");
 		return TCORE_RETURN_FAILURE;

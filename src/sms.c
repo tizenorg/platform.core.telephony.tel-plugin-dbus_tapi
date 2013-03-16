@@ -1032,7 +1032,7 @@ gboolean dbus_plugin_sms_notification(struct custom_data *ctx, const char *plugi
 			gchar *sca = NULL;
 			gchar *tpdu = NULL;			
 
-			sca = g_base64_encode((const guchar *)&(noti->msgInfo.sca[0]), SMS_SMSP_ADDRESS_LEN);
+			sca = g_base64_encode((const guchar *)&(noti->msgInfo.sca[0]), TAPI_SMS_ENCODED_SCA_LEN_MAX);
 			if (sca == NULL) {
 				dbg("g_base64_encode: Failed to Enocde msgInfo.sca");
 				sca = "";

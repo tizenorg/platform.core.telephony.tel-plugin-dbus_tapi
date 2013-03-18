@@ -2340,9 +2340,9 @@ static gboolean _sat_manager_handle_setup_menu_result(struct custom_data *ctx, T
 	tr->terminal_rsp_data.setup_menu.device_id.src = q_data.cmd_data.setupMenuInd.device_id.dest;
 	tr->terminal_rsp_data.setup_menu.device_id.dest = q_data.cmd_data.setupMenuInd.device_id.src;
 
-	dbg("[SAT] resp(%d)", resp);
+	dbg("[SAT] Response: [0x%02x]", resp);
 
-	switch(resp){
+	switch (resp) {
 		case RESULT_SUCCESS:
 			tr->terminal_rsp_data.setup_menu.result_type = RESULT_SUCCESS;
 			if (q_data.cmd_data.setupMenuInd.icon_id.icon_info.ics == IMAGE_CODING_SCHEME_COLOUR)

@@ -535,12 +535,12 @@ static gboolean _sat_ui_support_register_key_callback(enum tcore_storage_key key
 {
 	gboolean ret = FALSE;
 
-	if (!strg_vconf) {
-		dbg("strg_vconf is NULL !!");
+	if (strg_vconf == NULL) {
+		err("VCONF Storage is NULL!!!");
 		return ret;
 	}
 
-	dbg("set the key callback key(%d)", key);
+	dbg("Set key callback - KEY: [%d]", key);
 	ret = tcore_storage_set_key_callback(strg_vconf, key, _sat_ui_support_storage_key_callback, user_data);
 
 	return ret;
@@ -863,26 +863,26 @@ gboolean sat_ui_support_create_desktop_file(const gchar *title)
 
 	dbg("check vconf if starter is ready.");
 
-	if (!strg_vconf) {
-		dbg("strg_vconf is NULL !!");
-		return FALSE;
+	if (strg_vconf == NULL) {
+		err("VCONF Storage is NULL!!!");
+		return ret;
 	}
 
 	b_launched = tcore_storage_get_int(strg_vconf, STORAGE_KEY_IDLE_SCREEN_LAUNCHED_BOOL);
-
 	if(b_launched < 0) {
 		dbg("tcore_storage_get_int(VCONFKEY_IDLE_SCREEN_LAUNCHED) failed");
 		return FALSE;
 	}
 
+	dbg("Launch: [%s]", (b_launched ? "YES" : "NO"));
 	if(b_launched) {
-		dbg("idle screen is ready, create desktop file.");
+		dbg("Idle screen is Ready!!! Create Desktop file");
 		ret = _sat_ui_support_create_desktop_file(title);
 		if (ret)
 			return TRUE;
 	}
 
-	dbg("idle screen is not launched yet, register vconf noti for starter ready. b_launched (%d)", b_launched);
+	dbg("Idle screen is NOT launched yet!!! Register VCONF notification for Starter ready");
 	ret = _sat_ui_support_register_key_callback(STORAGE_KEY_IDLE_SCREEN_LAUNCHED_BOOL, (void *)title);
 
 	return ret;

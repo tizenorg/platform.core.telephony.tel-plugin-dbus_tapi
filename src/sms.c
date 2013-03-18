@@ -83,7 +83,7 @@ on_sms_send_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 		telephony_sms_complete_send_msg(sms, invocation, SMS_DEVICE_FAILURE);
 		tcore_user_request_unref(ur);
 	}
-		
+
 	return  TRUE;
 }
 
@@ -144,7 +144,7 @@ on_sms_save_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 
 	g_free(decoded_sca);
 	g_free(decoded_tpdu);
-	
+
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
 		telephony_sms_complete_save_msg(sms, invocation, SMS_DEVICE_FAILURE, -1);
@@ -255,7 +255,7 @@ on_sms_set_sca(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	} else {
 		gsize length;
 		guchar *decoded_sca = NULL;
-	
+
 		decoded_sca = g_base64_decode(arg_dialNumber, &length);
 		memcpy(&(setSca.scaInfo.diallingNum[0]), decoded_sca, SMS_SMSP_ADDRESS_LEN + 1);
 
@@ -264,7 +264,7 @@ on_sms_set_sca(TelephonySms *sms, GDBusMethodInvocation *invocation,
 		tcore_user_request_set_command(ur, TREQ_SMS_SET_SCA);
 
 		g_free(decoded_sca);
-		
+
 		ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 		if (ret != TCORE_RETURN_SUCCESS) {
 			telephony_sms_complete_set_sca(sms, invocation, SMS_DEVICE_FAILURE);
@@ -330,7 +330,7 @@ on_sms_set_cb_config(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	tcore_user_request_set_command(ur, TREQ_SMS_SET_CB_CONFIG);
 
 	g_free(decoded_msgId);
-	
+
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
 		telephony_sms_complete_set_cb_config(sms, invocation, SMS_DEVICE_FAILURE);
@@ -424,7 +424,7 @@ on_sms_set_delivery_report(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	gsize length;
 	guchar *decoded_sca = NULL;
 	guchar *decoded_tpdu = NULL;
-	
+
 	memset(&deliveryReport, 0, sizeof(struct treq_sms_set_delivery_report));
 
 	decoded_sca = g_base64_decode(arg_sca, &length);
@@ -496,7 +496,7 @@ on_sms_get_sms_params(TelephonySms *sms, GDBusMethodInvocation *invocation,
 
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		telephony_sms_complete_get_sms_params(sms, invocation, SMS_DEVICE_FAILURE, 
+		telephony_sms_complete_get_sms_params(sms, invocation, SMS_DEVICE_FAILURE,
 		0, 0, 0, NULL, 0, 0, -1, -1, NULL, 0, -1, -1, NULL, 0, 0, 0);
 		tcore_user_request_unref(ur);
 	}
@@ -551,7 +551,7 @@ on_sms_set_sms_params(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	setParams.params.tpSvcCntrAddr.dialNumLen = arg_svcCntrAddr_DialNumLen;
 	setParams.params.tpSvcCntrAddr.typeOfNum = arg_SvcCntrAddr_Ton;
 	setParams.params.tpSvcCntrAddr.numPlanId = arg_svcCntrAddr_Npi;
-	decoded_scaDialNum = g_base64_decode(arg_svcCntrAddr_DialNum, &length);	
+	decoded_scaDialNum = g_base64_decode(arg_svcCntrAddr_DialNum, &length);
 	memcpy(&(setParams.params.tpSvcCntrAddr.diallingNum[0]), decoded_scaDialNum, SMS_SMSP_ADDRESS_LEN + 1);
 
 	setParams.params.tpProtocolId = arg_protocolId;
@@ -613,7 +613,7 @@ on_sms_get_sms_ready_status(TelephonySms *sms, GDBusMethodInvocation *invocation
 		dbg("error- co_sms is NULL");
 		return FALSE;
 	}
-	
+
 	telephony_sms_complete_get_sms_ready_status(sms, invocation, tcore_sms_get_ready_status(co_sms));
 
 	return TRUE;
@@ -646,7 +646,7 @@ gboolean dbus_plugin_setup_sms_interface(TelephonyObjectSkeleton *object, struct
 	g_signal_connect(sms, "handle-get-sms-params", G_CALLBACK (on_sms_get_sms_params), ctx);
 	g_signal_connect(sms, "handle-set-sms-params", G_CALLBACK (on_sms_set_sms_params), ctx);
 	g_signal_connect(sms, "handle-get-sms-param-cnt", G_CALLBACK (on_sms_get_sms_param_cnt), ctx);
-	g_signal_connect(sms, "handle-get-sms-ready-status", G_CALLBACK (on_sms_get_sms_ready_status), ctx);	
+	g_signal_connect(sms, "handle-get-sms-ready-status", G_CALLBACK (on_sms_get_sms_ready_status), ctx);
 
 	return TRUE;
 }
@@ -687,7 +687,7 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 		case TRESP_SMS_READ_MSG: {
 			const struct tresp_sms_read_msg *resp = data;
 			gchar *sca = NULL;
-			gchar *tpdu = NULL;			
+			gchar *tpdu = NULL;
 
 			dbg("receive TRESP_SMS_READ_MSG");
 			dbg("resp->result = 0x%x", resp->result);
@@ -704,12 +704,12 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 				tpdu = "";
 			}
 
-			telephony_sms_complete_read_msg(dbus_info->interface_object, dbus_info->invocation, 
+			telephony_sms_complete_read_msg(dbus_info->interface_object, dbus_info->invocation,
 				resp->result,
 				resp->dataInfo.simIndex,
-				resp->dataInfo.msgStatus, 
-				sca, 
-				resp->dataInfo.smsData.msgLength, 
+				resp->dataInfo.msgStatus,
+				sca,
+				resp->dataInfo.smsData.msgLength,
 				tpdu);
 
 			if (sca)
@@ -782,7 +782,7 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 				dbg("g_base64_encode: Failed to Enocde scaAddress.diallingNum");
 				sca = "";
 			}
-			
+
 			telephony_sms_complete_get_sca(dbus_info->interface_object, dbus_info->invocation,
 				resp->result,
 				resp->scaAddress.typeOfNum,
@@ -826,17 +826,17 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 					g_variant_builder_add(&b, "{sv}", "ToMsgId", g_variant_new_uint16(resp->cbConfig.msgIDs[i].net3gpp.toMsgId));
 				} else if( resp->cbConfig.net3gppType == SMS_NETTYPE_3GPP2) {
 					g_variant_builder_add(&b, "{sv}", "CBCategory", g_variant_new_uint16(resp->cbConfig.msgIDs[i].net3gpp2.cbCategory));
-					g_variant_builder_add(&b, "{sv}", "CBLanguage", g_variant_new_uint16(resp->cbConfig.msgIDs[i].net3gpp2.cbLanguage));				
+					g_variant_builder_add(&b, "{sv}", "CBLanguage", g_variant_new_uint16(resp->cbConfig.msgIDs[i].net3gpp2.cbLanguage));
 				} else {
 					dbg("Unknown 3gpp type");
 					return FALSE;
 				}
-			
+
 				g_variant_builder_add(&b, "{sv}", "Selected", g_variant_new_byte(resp->cbConfig.msgIDs[i].net3gpp.selected));
-			
+
 				g_variant_builder_close(&b);
 			}
-			
+
 			result = g_variant_builder_end(&b);
 
 			telephony_sms_complete_get_cb_config(dbus_info->interface_object, dbus_info->invocation,
@@ -974,7 +974,7 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 
 			if(scaDialNum)
 				g_free(scaDialNum);
-			
+
 			}
 			break;
 
@@ -1030,7 +1030,7 @@ gboolean dbus_plugin_sms_notification(struct custom_data *ctx, const char *plugi
 			const struct tnoti_sms_umts_msg *noti = data;
 
 			gchar *sca = NULL;
-			gchar *tpdu = NULL;			
+			gchar *tpdu = NULL;
 
 			sca = g_base64_encode((const guchar *)&(noti->msgInfo.sca[0]), SMS_ENCODED_SCA_LEN_MAX);
 			if (sca == NULL) {
@@ -1043,7 +1043,7 @@ gboolean dbus_plugin_sms_notification(struct custom_data *ctx, const char *plugi
 				dbg("g_base64_encode: Failed to Enocde msgInfo.tpduData");
 				tpdu = "";
 			}
-			
+
 			telephony_sms_emit_incomming_msg(sms,
 				sca,
 				noti->msgInfo.msgLength,
@@ -1061,7 +1061,7 @@ gboolean dbus_plugin_sms_notification(struct custom_data *ctx, const char *plugi
 		case TNOTI_SMS_CB_INCOM_MSG: {
 			const struct tnoti_sms_cellBroadcast_msg *noti = data;
 			gchar *msgData = NULL;
-			
+
 			msgData = g_base64_encode((const guchar *)&(noti->cbMsg.msgData[0]), SMS_CB_SIZE_MAX + 1);
 			if (msgData == NULL) {
 				dbg("g_base64_encode: Failed to Enocde cbMsg.msgData");
@@ -1082,7 +1082,7 @@ gboolean dbus_plugin_sms_notification(struct custom_data *ctx, const char *plugi
 		case TNOTI_SMS_ETWS_INCOM_MSG: {
 			const struct tnoti_sms_etws_msg *noti = data;
 			gchar *msgData = NULL;
-			
+
 			msgData = g_base64_encode((const guchar *)&(noti->etwsMsg.msgData[0]), SMS_ETWS_SIZE_MAX + 1);
 			if (msgData == NULL) {
 				dbg("g_base64_encode: Failed to Enocde etwsMsg.msgData");
@@ -1115,6 +1115,8 @@ gboolean dbus_plugin_sms_notification(struct custom_data *ctx, const char *plugi
 
 		case TNOTI_SMS_DEVICE_READY: {
 			const struct tnoti_sms_ready_status *noti = data;
+
+			dbg("SMS Device Ready: [%s]", (noti->status ? "YES" : "NO"));
 
 			telephony_sms_emit_sms_ready(sms, noti->status);
 

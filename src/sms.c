@@ -695,13 +695,13 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 			sca = g_base64_encode((const guchar *)&(resp->dataInfo.smsData.sca[0]), SMS_SMSP_ADDRESS_LEN);
 			if (sca == NULL) {
 				dbg("g_base64_encode: Failed to Enocde the SCA.");
-				sca = "";
+				sca = g_strdup("");
 			}
 
 			tpdu = g_base64_encode((const guchar *)&(resp->dataInfo.smsData.tpduData[0]), SMS_SMDATA_SIZE_MAX + 1);
 			if (sca == NULL) {
 				dbg("g_base64_encode: Failed to Enocde the SCA.");
-				tpdu = "";
+				tpdu = g_strdup("");
 			}
 
 			telephony_sms_complete_read_msg(dbus_info->interface_object, dbus_info->invocation,
@@ -755,7 +755,7 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 			msgCnt = g_base64_encode((const guchar *)&(resp->storedMsgCnt.indexList[0]), SMS_GSM_SMS_MSG_NUM_MAX + 1);
 			if (msgCnt == NULL) {
 				dbg("g_base64_encode: Failed to Enocde storedMsgCnt.indexList");
-				msgCnt = "";
+				msgCnt = g_strdup("");
 			}
 
 			telephony_sms_complete_get_msg_count(dbus_info->interface_object, dbus_info->invocation,
@@ -780,7 +780,7 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 			sca = g_base64_encode((const guchar *)&(resp->scaAddress.diallingNum[0]), SMS_SMSP_ADDRESS_LEN + 1);
 			if (sca == NULL) {
 				dbg("g_base64_encode: Failed to Enocde scaAddress.diallingNum");
-				sca = "";
+				sca = g_strdup("");
 			}
 
 			telephony_sms_complete_get_sca(dbus_info->interface_object, dbus_info->invocation,
@@ -932,19 +932,19 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 			alphaId = g_base64_encode((const guchar *)&(resp->paramsInfo.szAlphaId[0]), SMS_SMSP_ALPHA_ID_LEN_MAX + 1);
 			if (alphaId == NULL) {
 				dbg("g_base64_encode: Failed to Enocde paramsInfo.szAlphaId");
-				alphaId = "";
+				alphaId = g_strdup("");
 			}
 
 			destDialNum = g_base64_encode((const guchar *)&(resp->paramsInfo.tpDestAddr.diallingNum[0]), SMS_SMSP_ADDRESS_LEN + 1);
-			if (alphaId == NULL) {
+			if (destDialNum == NULL) {
 				dbg("g_base64_encode: Failed to Enocde paramsInfo.tpDestAddr.diallingNum");
-				alphaId = "";
+				destDialNum = g_strdup("");
 			}
 
 			scaDialNum = g_base64_encode((const guchar *)&(resp->paramsInfo.tpSvcCntrAddr.diallingNum[0]), SMS_SMSP_ADDRESS_LEN + 1);
-			if (alphaId == NULL) {
+			if (scaDialNum == NULL) {
 				dbg("g_base64_encode: Failed to Enocde paramsInfo.tpSvcCntrAddr.diallingNum");
-				alphaId = "";
+				scaDialNum = g_strdup("");
 			}
 
 			telephony_sms_complete_get_sms_params(dbus_info->interface_object, dbus_info->invocation,
@@ -1035,13 +1035,13 @@ gboolean dbus_plugin_sms_notification(struct custom_data *ctx, const char *plugi
 			sca = g_base64_encode((const guchar *)&(noti->msgInfo.sca[0]), SMS_ENCODED_SCA_LEN_MAX);
 			if (sca == NULL) {
 				dbg("g_base64_encode: Failed to Enocde msgInfo.sca");
-				sca = "";
+				sca = g_strdup("");
 			}
 
 			tpdu = g_base64_encode((const guchar *)&(noti->msgInfo.tpduData[0]), SMS_SMDATA_SIZE_MAX + 1);
 			if (tpdu == NULL) {
 				dbg("g_base64_encode: Failed to Enocde msgInfo.tpduData");
-				tpdu = "";
+				tpdu = g_strdup("");
 			}
 
 			telephony_sms_emit_incomming_msg(sms,
@@ -1065,7 +1065,7 @@ gboolean dbus_plugin_sms_notification(struct custom_data *ctx, const char *plugi
 			msgData = g_base64_encode((const guchar *)&(noti->cbMsg.msgData[0]), SMS_CB_SIZE_MAX + 1);
 			if (msgData == NULL) {
 				dbg("g_base64_encode: Failed to Enocde cbMsg.msgData");
-				msgData = "";
+				msgData = g_strdup("");
 			}
 
 			telephony_sms_emit_incomming_cb_msg(sms,
@@ -1086,7 +1086,7 @@ gboolean dbus_plugin_sms_notification(struct custom_data *ctx, const char *plugi
 			msgData = g_base64_encode((const guchar *)&(noti->etwsMsg.msgData[0]), SMS_ETWS_SIZE_MAX + 1);
 			if (msgData == NULL) {
 				dbg("g_base64_encode: Failed to Enocde etwsMsg.msgData");
-				msgData = "";
+				msgData = g_strdup("");
 			}
 
 			telephony_sms_emit_incomming_etws_msg(sms,

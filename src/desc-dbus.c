@@ -50,11 +50,9 @@
 static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 {
 	TelephonyObjectSkeleton *object;
-	static Storage *strg;
 	CoreObject *co_sim;
 	char *path = NULL;
 	const char *cp_name;
-	gboolean rv;
 	dbg("Entry");
 
 	/* Get CP Name */
@@ -127,19 +125,6 @@ static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 
 	/* Export the Object to Manager */
 	g_dbus_object_manager_server_export(ctx->manager, G_DBUS_OBJECT_SKELETON(object));
-
-	/*
-	 * Set Telephony Ready registry
-	 *
-	 * At this point we can convey upper Layer that Telephony is Ready.
-	 */
-	strg = tcore_server_find_storage(ctx->server, "vconf");
-	rv = tcore_storage_set_bool(strg, STORAGE_KEY_TELEPHONY_READY, TRUE);
-	if(rv == FALSE){
-		err("Set Telephony Ready (TRUE) to registry - FAIL");
-	} else {
-		dbg("Set Telephony Ready (TRUE) to registry - SUCCESS");
-	}
 
 OUT:
 	/* Freeing memory */
@@ -415,6 +400,9 @@ static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer u
 {
 	struct custom_data *ctx = user_data;
 	TelephonyManager *mgr;
+	static Storage *strg;
+	gboolean rv;
+
 	info("DBUS Registered");
 
 	/* Add interface to default object path */
@@ -429,6 +417,18 @@ static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer u
 	g_dbus_object_manager_server_set_connection (ctx->manager, conn);
 
 	dbg("Aquire DBUS - COMPLETE");
+
+	/* Set Telephony Ready registry
+	 *
+	 * At this point we can convey upper Layer that Telephony is Ready.
+	 */
+	strg = tcore_server_find_storage(ctx->server, "vconf");
+	rv = tcore_storage_set_bool(strg, STORAGE_KEY_TELEPHONY_READY, TRUE);
+	if(rv == FALSE){
+		err("Set Telephony Ready (TRUE) to registry - FAIL");
+	} else {
+		dbg("Set Telephony Ready (TRUE) to registry - SUCCESS");
+	}
 
 	/* Refresh Object */
 	refresh_object(ctx);

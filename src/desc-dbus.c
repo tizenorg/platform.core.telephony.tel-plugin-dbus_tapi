@@ -344,20 +344,20 @@ on_manager_getmodems (TelephonyManager *mgr,
 	struct custom_data *ctx = user_data;
 	GSList *cp_name_list;
 	gchar **list;
-	char *name;
+	const char *name = NULL;
 	int count;
 	dbg("Entry");
 
 	cp_name_list = tcore_server_get_cp_name_list(ctx->server);
 	if (cp_name_list == NULL) {
-		telephony_manager_complete_get_modems(mgr, invocation, NULL);
+		telephony_manager_complete_get_modems(mgr, invocation, &name);
 		return TRUE;
 	}
 
 	count = g_slist_length(cp_name_list);
 	if (count == 0) {
 		err("No Modems present");
-		telephony_manager_complete_get_modems(mgr, invocation, NULL);
+		telephony_manager_complete_get_modems(mgr, invocation, &name);
 		return TRUE;
 	}
 
@@ -367,7 +367,7 @@ on_manager_getmodems (TelephonyManager *mgr,
 		err("Failed to allocate memory");
 		g_slist_free_full(cp_name_list, g_free);
 
-		telephony_manager_complete_get_modems(mgr, invocation, NULL);
+		telephony_manager_complete_get_modems(mgr, invocation, &name);
 		return TRUE;
 	}
 

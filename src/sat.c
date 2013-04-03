@@ -569,7 +569,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 				gboolean user_confirm = FALSE;
 				int ret;
 				dbg("text should be displayed by ui");
-				dbg("send sms is pending!!!")
+				dbg("send sms is pending!!!");
 
 				ui_info = g_variant_new("(isib)", command_id, text, text_len, user_confirm);
 				ret = sat_ui_support_launch_sat_ui(SAT_PROATV_CMD_NONE, ui_info);
@@ -613,7 +613,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 				gboolean user_confirm = FALSE;
 				int ret;
 				dbg("text should be displayed by ui");
-				dbg("send ss is pending!!!")
+				dbg("send ss is pending!!!");
 
 				ui_info = g_variant_new("(isib)", command_id, text, text_len, user_confirm);
 				ret = sat_ui_support_launch_sat_ui(SAT_PROATV_CMD_NONE, ui_info);
@@ -659,7 +659,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 				gboolean user_confirm = FALSE;
 				int ret;
 				dbg("text should be displayed by ui");
-				dbg("send ussd is pending!!!")
+				dbg("send ussd is pending!!!");
 
 				ui_info = g_variant_new("(isib)", command_id, text, text_len, user_confirm);
 				ret = sat_ui_support_launch_sat_ui(SAT_PROATV_CMD_NONE, ui_info);
@@ -702,7 +702,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 				gboolean user_confirm = TRUE;
 				int ret;
 				dbg("text should be displayed by ui");
-				dbg("setup call is pending!!!")
+				dbg("setup call is pending!!!");
 
 				ui_info = g_variant_new("(isib)", command_id, confirmed_text, confirmed_text_len, user_confirm);
 				ret = sat_ui_support_launch_sat_ui(SAT_PROATV_CMD_NONE, ui_info);
@@ -811,7 +811,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 				gboolean user_confirm = TRUE;
 				int ret;
 				dbg("text should be displayed by ui");
-				dbg("open channel text is displayed!!!")
+				dbg("open channel text is displayed!!!");
 
 				ui_info = g_variant_new("(isib)", command_id, text, text_len, user_confirm);
 				ret = sat_ui_support_launch_sat_ui(SAT_PROATV_CMD_NONE, ui_info);
@@ -1035,7 +1035,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 				gboolean user_confirm = FALSE;
 				int ret;
 				dbg("text should be displayed by ui");
-				dbg("send dtmf is displayed!!!")
+				dbg("send dtmf is displayed!!!");
 
 				ui_info = g_variant_new("(isib)", command_id, text, text_len, user_confirm);
 				ret = sat_ui_support_launch_sat_ui(SAT_PROATV_CMD_SEND_DTMF, ui_info);
@@ -1076,7 +1076,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 				gboolean user_confirm = TRUE;
 				int ret;
 				dbg("text should be displayed by ui");
-				dbg("launch browser is displayed!!!")
+				dbg("launch browser is displayed!!!");
 
 				ui_info = g_variant_new("(isib)", command_id, text, text_len, user_confirm);
 				ret = sat_ui_support_launch_sat_ui(SAT_PROATV_CMD_NONE, ui_info);

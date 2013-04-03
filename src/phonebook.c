@@ -321,7 +321,7 @@ static gboolean on_phonebook_update_record(TelephonyPhonebook *phonebook, GDBusM
 		if(tcore_util_convert_utf8_to_gsm(pb_update.number, &dest_len, (unsigned char*)arg_number, temp_len) == FALSE) {
 			return FALSE;
 		}
-		dbg("arg_number is converted successfully.")
+		dbg("arg_number is converted successfully.");
 		dbg("pb_update.number=[%s]", pb_update.number);
 	}
 	if(arg_number2 != NULL && (temp_len=strlen(arg_number2))){
@@ -338,7 +338,7 @@ static gboolean on_phonebook_update_record(TelephonyPhonebook *phonebook, GDBusM
 		if(tcore_util_convert_utf8_to_gsm(pb_update.anr1, &dest_len, (unsigned char*)arg_number2, temp_len) == FALSE) {
 			return FALSE;
 		}
-		dbg("arg_number2 is converted successfully.")
+		dbg("arg_number2 is converted successfully.");
 		dbg("pb_update.anr1=[%s]", pb_update.anr1);
 	}
 
@@ -356,7 +356,7 @@ static gboolean on_phonebook_update_record(TelephonyPhonebook *phonebook, GDBusM
 		if(tcore_util_convert_utf8_to_gsm(pb_update.anr2, &dest_len, (unsigned char*)arg_number3, temp_len) == FALSE) {
 			return FALSE;
 		}
-		dbg("arg_number3 is converted successfully.")
+		dbg("arg_number3 is converted successfully.");
 		dbg("pb_update.anr2=[%s]", pb_update.anr2);
 	}
 
@@ -374,7 +374,7 @@ static gboolean on_phonebook_update_record(TelephonyPhonebook *phonebook, GDBusM
 		if(tcore_util_convert_utf8_to_gsm(pb_update.anr3, &dest_len, (unsigned char*)arg_number4, temp_len) == FALSE) {
 			return FALSE;
 		}
-		dbg("arg_number4 is converted successfully.")
+		dbg("arg_number4 is converted successfully.");
 		dbg("pb_update.anr3=[%s]", pb_update.anr3);
 	}
 
@@ -384,7 +384,7 @@ static gboolean on_phonebook_update_record(TelephonyPhonebook *phonebook, GDBusM
 			return FALSE;
 		}
 		pb_update.email1_len = dest_len;
-		dbg("arg_email1 is converted successfully.")
+		dbg("arg_email1 is converted successfully.");
 		for(i=0; i<pb_update.email1_len; i++) {
 			dbg("pb_update.email1[%d]=[%02x]", i, pb_update.email1[i]);
 		}

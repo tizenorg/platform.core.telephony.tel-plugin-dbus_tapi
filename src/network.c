@@ -477,7 +477,7 @@ static gboolean
 on_network_set_preferred_plmn (TelephonyNetwork *network,
 		GDBusMethodInvocation *invocation,
 		gint mode,
-		gint ef_index,
+		gint index,
 		gint act,
 		const gchar *plmn,
 		gpointer user_data)
@@ -490,7 +490,7 @@ on_network_set_preferred_plmn (TelephonyNetwork *network,
 	ur = MAKE_UR(ctx, network, invocation);
 
 	req.operation = mode;
-	req.ef_index = ef_index;
+	req.index = index;
 	req.act = act;
 
 	memcpy(req.plmn, plmn, 6);
@@ -857,7 +857,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, 
 							g_variant_new_string(resp_get_preferred_plmn->list[i].plmn));
 					g_variant_builder_add(&b, "{sv}", "act", g_variant_new_int32(resp_get_preferred_plmn->list[i].act));
 					g_variant_builder_add(&b, "{sv}", "index",
-							g_variant_new_int32(resp_get_preferred_plmn->list[i].ef_index));
+							g_variant_new_int32(resp_get_preferred_plmn->list[i].index));
 
 					buf = _get_network_name_by_plmn(co_network, resp_get_preferred_plmn->list[i].plmn);
 					if (buf)

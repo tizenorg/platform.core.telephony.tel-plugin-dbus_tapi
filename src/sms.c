@@ -62,21 +62,25 @@ on_sms_send_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	memset(&sendUmtsMsg, 0 , sizeof(struct treq_sms_send_umts_msg));
 
 	decoded_sca = g_base64_decode(sca, &length);
-	memcpy(&(sendUmtsMsg.msgDataPackage.sca[0]), decoded_sca, SMS_SMSP_ADDRESS_LEN);
+	if (length > SMS_ENCODED_SCA_LEN_MAX)
+		goto invalid_param;
+	memcpy(&(sendUmtsMsg.msgDataPackage.sca[0]), decoded_sca, length);
+	g_free(decoded_sca);
 
 	sendUmtsMsg.msgDataPackage.msgLength = tpdu_length;
 	dbg("tpdu_length = 0x%x", tpdu_length);
 
 	decoded_tpdu = g_base64_decode(tpdu_data, &length);
-	memcpy(&(sendUmtsMsg.msgDataPackage.tpduData[0]), decoded_tpdu, SMS_SMDATA_SIZE_MAX + 1);
+	if (length > SMS_SMDATA_SIZE_MAX + 1)
+		goto invalid_param;
+	memcpy(&(sendUmtsMsg.msgDataPackage.tpduData[0]), decoded_tpdu, length);
+	g_free(decoded_tpdu);
+
 	sendUmtsMsg.more = moreMsg;
 
 	ur = MAKE_UR(ctx, sms, invocation);
 	tcore_user_request_set_data(ur, sizeof(struct treq_sms_send_umts_msg), &sendUmtsMsg);
 	tcore_user_request_set_command(ur, TREQ_SMS_SEND_UMTS_MSG);
-
-	g_free(decoded_sca);
-	g_free(decoded_tpdu);
 
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
@@ -84,7 +88,13 @@ on_sms_send_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 		tcore_user_request_unref(ur);
 	}
 
-	return  TRUE;
+	return TRUE;
+
+invalid_param:
+	telephony_sms_complete_send_msg(sms, invocation, SMS_INVALID_PARAMETER);
+	tcore_user_request_unref(ur);
+
+	return TRUE;
 }
 
 static gboolean
@@ -131,25 +141,35 @@ on_sms_save_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	saveMsg.msgStatus = arg_msg_status;
 
 	decoded_sca = g_base64_decode(arg_sca, &length);
-	memcpy(&(saveMsg.msgDataPackage.sca[0]), decoded_sca, SMS_SMSP_ADDRESS_LEN);
+	if (length > SMS_ENCODED_SCA_LEN_MAX)
+		goto invalid_param;
+	memcpy(&(saveMsg.msgDataPackage.sca[0]), decoded_sca, length);
+	g_free(decoded_sca);
 
 	saveMsg.msgDataPackage.msgLength = arg_tpdu_length;
 
 	decoded_tpdu = g_base64_decode(arg_tpdu_data, &length);
-	memcpy(&(saveMsg.msgDataPackage.tpduData[0]), decoded_tpdu, SMS_SMDATA_SIZE_MAX + 1);
+	if (length > SMS_SMDATA_SIZE_MAX + 1)
+		goto invalid_param;
+	memcpy(&(saveMsg.msgDataPackage.tpduData[0]), decoded_tpdu, length);
+	g_free(decoded_tpdu);
 
 	ur = MAKE_UR(ctx, sms, invocation);
 	tcore_user_request_set_data(ur, sizeof(struct treq_sms_save_msg), &saveMsg);
 	tcore_user_request_set_command(ur, TREQ_SMS_SAVE_MSG);
-
-	g_free(decoded_sca);
-	g_free(decoded_tpdu);
 
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
 		telephony_sms_complete_save_msg(sms, invocation, SMS_DEVICE_FAILURE, -1);
 		tcore_user_request_unref(ur);
 	}
+
+	return TRUE;
+
+invalid_param:
+	telephony_sms_complete_save_msg(sms, invocation,
+				SMS_INVALID_PARAMETER, -1);
+	tcore_user_request_unref(ur);
 
 	return TRUE;
 }
@@ -257,13 +277,14 @@ on_sms_set_sca(TelephonySms *sms, GDBusMethodInvocation *invocation,
 		guchar *decoded_sca = NULL;
 
 		decoded_sca = g_base64_decode(arg_dialNumber, &length);
-		memcpy(&(setSca.scaInfo.diallingNum[0]), decoded_sca, SMS_SMSP_ADDRESS_LEN + 1);
+		if (length > SMS_SMSP_ADDRESS_LEN)
+			goto invalid_param;
+		memcpy(&(setSca.scaInfo.diallingNum[0]), decoded_sca, length);
+		g_free(decoded_sca);
 
 		ur = MAKE_UR(ctx, sms, invocation);
 		tcore_user_request_set_data(ur, sizeof(struct treq_sms_set_sca), &setSca);
 		tcore_user_request_set_command(ur, TREQ_SMS_SET_SCA);
-
-		g_free(decoded_sca);
 
 		ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 		if (ret != TCORE_RETURN_SUCCESS) {
@@ -271,6 +292,12 @@ on_sms_set_sca(TelephonySms *sms, GDBusMethodInvocation *invocation,
 			tcore_user_request_unref(ur);
 		}
 	}
+
+	return TRUE;
+
+invalid_param:
+	telephony_sms_complete_set_sca(sms, invocation, SMS_INVALID_PARAMETER);
+	tcore_user_request_unref(ur);
 
 	return TRUE;
 }
@@ -323,19 +350,27 @@ on_sms_set_cb_config(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	setCbConfig.msgIdRangeCount = arg_msgIdRangeCount;
 
 	decoded_msgId = g_base64_decode(arg_msgId, &length);
-	memcpy(&(setCbConfig.msgIDs[0]), decoded_msgId, SMS_GSM_SMS_CBMI_LIST_SIZE_MAX*5);
+	if (length > SMS_GSM_SMS_CBMI_LIST_SIZE_MAX * 5)
+		goto invalid_param;
+	memcpy(&(setCbConfig.msgIDs[0]), decoded_msgId, length);
+	g_free(decoded_msgId);
 
 	ur = MAKE_UR(ctx, sms, invocation);
 	tcore_user_request_set_data(ur, sizeof(struct treq_sms_set_cb_config), &setCbConfig);
 	tcore_user_request_set_command(ur, TREQ_SMS_SET_CB_CONFIG);
-
-	g_free(decoded_msgId);
 
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
 		telephony_sms_complete_set_cb_config(sms, invocation, SMS_DEVICE_FAILURE);
 		tcore_user_request_unref(ur);
 	}
+
+	return TRUE;
+
+invalid_param:
+	telephony_sms_complete_set_cb_config(sms, invocation,
+					SMS_INVALID_PARAMETER);
+	tcore_user_request_unref(ur);
 
 	return TRUE;
 }
@@ -428,12 +463,18 @@ on_sms_set_delivery_report(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	memset(&deliveryReport, 0, sizeof(struct treq_sms_set_delivery_report));
 
 	decoded_sca = g_base64_decode(arg_sca, &length);
-	memcpy(&(deliveryReport.dataInfo.sca[0]), decoded_sca, SMS_SMSP_ADDRESS_LEN);
+	if (length > SMS_ENCODED_SCA_LEN_MAX)
+		goto invalid_param;
+	memcpy(&(deliveryReport.dataInfo.sca[0]), decoded_sca, length);
+	g_free(decoded_sca);
 
 	deliveryReport.dataInfo.msgLength = arg_tpdu_length;
 
 	decoded_tpdu = g_base64_decode(arg_tpdu_data, &length);
-	memcpy(&(deliveryReport.dataInfo.tpduData[0]), decoded_tpdu, SMS_SMDATA_SIZE_MAX + 1);
+	if (length > SMS_SMDATA_SIZE_MAX + 1)
+		goto invalid_param;
+	memcpy(&(deliveryReport.dataInfo.tpduData[0]), decoded_tpdu, length);
+	g_free(decoded_tpdu);
 
 	deliveryReport.rspType = arg_rpCause;
 
@@ -441,14 +482,18 @@ on_sms_set_delivery_report(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	tcore_user_request_set_data(ur, sizeof(struct treq_sms_set_delivery_report), &deliveryReport);
 	tcore_user_request_set_command(ur, TREQ_SMS_SET_DELIVERY_REPORT);
 
-	g_free(decoded_sca);
-	g_free(decoded_tpdu);
-
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
 		telephony_sms_complete_set_delivery_report(sms, invocation, SMS_DEVICE_FAILURE);
 		tcore_user_request_unref(ur);
 	}
+
+	return TRUE;
+
+invalid_param:
+	telephony_sms_complete_set_delivery_report(sms, invocation,
+						SMS_INVALID_PARAMETER);
+	tcore_user_request_unref(ur);
 
 	return TRUE;
 }
@@ -538,21 +583,35 @@ on_sms_set_sms_params(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	setParams.params.recordIndex = arg_recordIndex;
 	setParams.params.recordLen = arg_recordLen;
 	setParams.params.alphaIdLen = arg_alphaIdLen;
-	decoded_alphaId = g_base64_decode(arg_alphaId, &length);
-	memcpy(&(setParams.params.szAlphaId[0]), decoded_alphaId, SMS_SMSP_ALPHA_ID_LEN_MAX + 1);
-	setParams.params.paramIndicator = arg_paramIndicator;
 
+	decoded_alphaId = g_base64_decode(arg_alphaId, &length);
+	if (length > SMS_SMSP_ALPHA_ID_LEN_MAX + 1)
+		goto invalid_param;
+	memcpy(&(setParams.params.szAlphaId[0]), decoded_alphaId, length);
+	g_free(decoded_alphaId);
+
+	setParams.params.paramIndicator = arg_paramIndicator;
 	setParams.params.tpDestAddr.dialNumLen = arg_destAddr_DialNumLen;
 	setParams.params.tpDestAddr.typeOfNum = arg_destAddr_Ton;
 	setParams.params.tpDestAddr.numPlanId = arg_destAddr_Npi;
+
 	decoded_destDialNum = g_base64_decode(arg_destAddr_DiallingNum, &length);
-	memcpy(&(setParams.params.tpDestAddr.diallingNum[0]), decoded_destDialNum, SMS_SMSP_ADDRESS_LEN + 1);
+	if (length > SMS_SMSP_ADDRESS_LEN + 1)
+		goto invalid_param;
+	memcpy(&(setParams.params.tpDestAddr.diallingNum[0]),
+					decoded_destDialNum, length);
+	g_free(decoded_destDialNum);
 
 	setParams.params.tpSvcCntrAddr.dialNumLen = arg_svcCntrAddr_DialNumLen;
 	setParams.params.tpSvcCntrAddr.typeOfNum = arg_SvcCntrAddr_Ton;
 	setParams.params.tpSvcCntrAddr.numPlanId = arg_svcCntrAddr_Npi;
+
 	decoded_scaDialNum = g_base64_decode(arg_svcCntrAddr_DialNum, &length);
-	memcpy(&(setParams.params.tpSvcCntrAddr.diallingNum[0]), decoded_scaDialNum, SMS_SMSP_ADDRESS_LEN + 1);
+	if (length > SMS_SMSP_ADDRESS_LEN + 1)
+		goto invalid_param;
+	memcpy(&(setParams.params.tpSvcCntrAddr.diallingNum[0]),
+					decoded_scaDialNum, length);
+	g_free(decoded_scaDialNum);
 
 	setParams.params.tpProtocolId = arg_protocolId;
 	setParams.params.tpDataCodingScheme = arg_dataCodingScheme;
@@ -562,15 +621,18 @@ on_sms_set_sms_params(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	tcore_user_request_set_data(ur, sizeof(struct treq_sms_set_params), &setParams);
 	tcore_user_request_set_command(ur, TREQ_SMS_SET_PARAMS);
 
-	g_free(decoded_alphaId);
-	g_free(decoded_destDialNum);
-	g_free(decoded_scaDialNum);
-
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
 		telephony_sms_complete_set_sms_params(sms, invocation, SMS_DEVICE_FAILURE);
 		tcore_user_request_unref(ur);
 	}
+
+	return TRUE;
+
+invalid_param:
+	telephony_sms_complete_set_sms_params(sms, invocation,
+					SMS_INVALID_PARAMETER);
+	tcore_user_request_unref(ur);
 
 	return TRUE;
 }
@@ -692,15 +754,15 @@ gboolean dbus_plugin_sms_response(struct custom_data *ctx, UserRequest *ur, stru
 			dbg("receive TRESP_SMS_READ_MSG");
 			dbg("resp->result = 0x%x", resp->result);
 
-			sca = g_base64_encode((const guchar *)&(resp->dataInfo.smsData.sca[0]), SMS_SMSP_ADDRESS_LEN);
+			sca = g_base64_encode((const guchar *)&(resp->dataInfo.smsData.sca[0]), SMS_ENCODED_SCA_LEN_MAX);
 			if (sca == NULL) {
 				dbg("g_base64_encode: Failed to Enocde the SCA.");
 				sca = g_strdup("");
 			}
 
 			tpdu = g_base64_encode((const guchar *)&(resp->dataInfo.smsData.tpduData[0]), SMS_SMDATA_SIZE_MAX + 1);
-			if (sca == NULL) {
-				dbg("g_base64_encode: Failed to Enocde the SCA.");
+			if (tpdu == NULL) {
+				dbg("g_base64_encode: Failed to Enocde the TPDU.");
 				tpdu = g_strdup("");
 			}
 

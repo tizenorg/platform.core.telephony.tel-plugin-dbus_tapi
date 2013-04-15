@@ -47,6 +47,18 @@
 #include "generated-code.h"
 #include "common.h"
 
+static void set_telephony_ready(Server *server)
+{
+	static Storage *strg;
+	gboolean rv;
+
+	strg = tcore_server_find_storage(server, "vconf");
+	rv = tcore_storage_set_bool(strg, STORAGE_KEY_TELEPHONY_READY, TRUE);
+
+	dbg("Set Telephony Ready (TRUE) to registry - %s", rv ? "SUCCESS"
+								: "FAIL");
+}
+
 static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 {
 	TelephonyObjectSkeleton *object;
@@ -126,13 +138,17 @@ static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 	/* Export the Object to Manager */
 	g_dbus_object_manager_server_export(ctx->manager, G_DBUS_OBJECT_SKELETON(object));
 
+	if (g_dbus_object_manager_server_get_connection (ctx->manager) != NULL)
+		set_telephony_ready(ctx->server);
+
 OUT:
 	/* Freeing memory */
 	g_free(path);
 }
 
-static void refresh_object(struct custom_data *ctx)
+static gboolean refresh_object(gpointer user_data)
 {
+	struct custom_data *ctx = user_data;
 	GSList *plugins;
 	GSList *cur;
 	TcorePlugin *p;
@@ -141,12 +157,12 @@ static void refresh_object(struct custom_data *ctx)
 
 	if (ctx->manager == NULL) {
 		err("not ready..");
-		return;
+		return FALSE;
 	}
 
 	plugins = tcore_server_ref_plugins(ctx->server);
 	if (plugins == NULL)
-		return;
+		return FALSE;
 
 	cur = plugins;
 	for (cur = plugins; cur; cur = cur->next) {
@@ -165,6 +181,8 @@ static void refresh_object(struct custom_data *ctx)
 		/* Add modem */
 		add_modem(ctx, p);
 	}
+
+	return FALSE;
 }
 
 static TReturn send_response(Communicator *comm, UserRequest *ur, enum tcore_response_command command, unsigned int data_len, const void *data)
@@ -246,6 +264,25 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 
 	dbg("Notification!!! (command = 0x%x, data_len = %d)", command, data_len);
 
+	ctx = tcore_communicator_ref_user_data(comm);
+	if (ctx == NULL) {
+		dbg("user_data is NULL");
+		return TCORE_RETURN_FAILURE;
+	}
+
+	/*
+	 * Modem binary is not embedded in the platform. Telephony needs to
+	 * be set to ready for pwlock. This is temporary solution for
+	 * tizen_2.1.
+	 * This problem needs to be addressed in pwlock in the future.
+	 */
+	if (command == TNOTI_SERVER_MODEM_ERR) {
+		err("Modem interface plugin init failed");
+		set_telephony_ready(ctx->server);
+
+		return TCORE_RETURN_SUCCESS;
+	}
+
 	if (command == TNOTI_SERVER_ADDED_PLUGIN)
 		p = (TcorePlugin *)data;
 	else
@@ -255,12 +292,6 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 	if (cp_name == NULL)
 		return TCORE_RETURN_FAILURE;
 	dbg("CP Name: [%s]", cp_name);
-
-	ctx = tcore_communicator_ref_user_data(comm);
-	if (ctx == NULL) {
-		dbg("user_data is NULL");
-		return TCORE_RETURN_FAILURE;
-	}
 
 	if (cp_name) {
 		path = g_strdup_printf("%s/%s", MY_DBUS_PATH, cp_name);
@@ -323,7 +354,7 @@ static TReturn send_notification(Communicator *comm, CoreObject *source, enum tc
 			dbg("Server Notification");
 			if (command == TNOTI_SERVER_ADDED_PLUGIN) {
 				dbg("Plug-in is added... Refresh the context");
-				refresh_object(ctx);
+				g_idle_add(refresh_object, ctx);
 			}
 			break;
 
@@ -396,22 +427,6 @@ on_manager_getmodems (TelephonyManager *mgr,
 	return TRUE;
 }
 
-static gboolean _set_telephony_ready(gpointer data)
-{
-	struct custom_data *ctx = data;
-	static Storage *strg;
-	gboolean rv;
-
-	strg = tcore_server_find_storage(ctx->server, "vconf");
-	rv = tcore_storage_set_bool(strg, STORAGE_KEY_TELEPHONY_READY, TRUE);
-	if(rv == FALSE){
-		err("Set Telephony Ready (TRUE) to registry - FAIL");
-	} else {
-		dbg("Set Telephony Ready (TRUE) to registry - SUCCESS");
-	}
-	return FALSE;
-}
-
 static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
@@ -433,10 +448,7 @@ static void on_bus_acquired(GDBusConnection *conn, const gchar *name, gpointer u
 	dbg("Aquire DBUS - COMPLETE");
 
 	/* Refresh Object */
-	refresh_object(ctx);
-
-	/* Telephony ready vconf key set in idle */
-	g_idle_add(_set_telephony_ready, ctx);
+	g_idle_add(refresh_object, ctx);
 }
 
 struct tcore_communitor_operations ops = {
@@ -490,7 +502,7 @@ static gboolean on_init(TcorePlugin *p)
 
 	data->manager = g_dbus_object_manager_server_new (MY_DBUS_PATH);
 
-	refresh_object(data);
+	g_idle_add(refresh_object, data);
 
 	return TRUE;
 }

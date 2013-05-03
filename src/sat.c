@@ -51,6 +51,8 @@ static gboolean on_sat_get_main_menu_info(TelephonySAT *sat, GDBusMethodInvocati
 	gboolean b_present, b_help_info, b_updated;
 	GVariant *items;
 
+	if (check_access_control(invocation, AC_SAT, "r") == FALSE)
+		return FALSE;
 
 	if(!ctx->cached_sat_main_menu){
 		dbg("no main menu");
@@ -77,6 +79,9 @@ static gboolean on_sat_send_display_status(TelephonySAT *sat, GDBusMethodInvocat
 	struct custom_data *ctx = user_data;
 	gboolean result = FALSE;
 	gint out_param = 1;
+
+	if (check_access_control(invocation, AC_SAT, "x") == FALSE)
+		return FALSE;
 
 	plugin_name = GET_PLUGIN_NAME(invocation);
 	plg = tcore_server_find_plugin(ctx->server, plugin_name);
@@ -108,6 +113,9 @@ static gboolean on_sat_send_user_confirm(TelephonySAT *sat, GDBusMethodInvocatio
 	gboolean result = FALSE;
 	gint out_param = 1;
 	GVariant *confirm_data = NULL;
+
+	if (check_access_control(invocation, AC_SAT, "x") == FALSE)
+		return FALSE;
 
 	plugin_name = GET_PLUGIN_NAME(invocation);
 	plg = tcore_server_find_plugin(ctx->server, plugin_name);
@@ -142,6 +150,9 @@ static gboolean on_sat_send_app_exec_result(TelephonySAT *sat, GDBusMethodInvoca
 	gboolean result = FALSE;
 	gint out_param = 1;
 
+	if (check_access_control(invocation, AC_SAT, "x") == FALSE)
+		return FALSE;
+
 	plugin_name = GET_PLUGIN_NAME(invocation);
 	plg = tcore_server_find_plugin(ctx->server, plugin_name);
 	if (!plg){
@@ -172,6 +183,9 @@ static gboolean on_sat_select_menu(TelephonySAT *sat, GDBusMethodInvocation *inv
 
 	struct treq_sat_envelop_cmd_data envelop_data;
 
+	if (check_access_control(invocation, AC_SAT, "x") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sat, invocation);
 	memset(&envelop_data, 0, sizeof(struct treq_sat_envelop_cmd_data));
 	envelop_data.sub_cmd = ENVELOP_MENU_SELECTION;
@@ -198,8 +212,10 @@ static gboolean on_sat_download_event(TelephonySAT *sat, GDBusMethodInvocation *
 	TReturn rv;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
-
 	struct treq_sat_envelop_cmd_data envelop_data;
+
+	if (check_access_control(invocation, AC_SAT, "x") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, sat, invocation);
 	memset(&envelop_data, 0, sizeof(struct treq_sat_envelop_cmd_data));

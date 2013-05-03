@@ -292,6 +292,20 @@ on_ss_register_forwarding (TelephonySs *ss,
 	UserRequest *ur = NULL;
 	int ret = 0;
 
+	if (check_access_control(invocation, AC_SS, "w") == FALSE) {
+		GVariant *result = 0;
+		GVariantBuilder b;
+
+		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+		result = g_variant_builder_end(&b);
+
+		telephony_ss_complete_register_forwarding(ss, invocation,
+								result, ret);
+
+		g_variant_unref(result);
+		return TRUE;
+	}
+
 	memset(&req, 0, sizeof(struct treq_ss_forwarding));
 
 	req.class = ss_class;
@@ -338,6 +352,23 @@ on_ss_deregister_forwarding (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+
+	if (check_access_control(invocation, AC_SS, "w") == FALSE) {
+		GVariant *result = 0;
+		GVariantBuilder b;
+
+		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+		result = g_variant_builder_end(&b);
+
+		telephony_ss_complete_register_forwarding(ss, invocation,
+								result, ret);
+
+		dbg("[error]tcore_communicator_dispatch_request() : (0x%x)",
+									ret);
+
+		g_variant_unref(result);
+		return TRUE;
+	}
 
 	memset(&req, 0, sizeof(struct treq_ss_forwarding));
 
@@ -386,6 +417,23 @@ on_ss_activate_forwarding (TelephonySs *ss,
 	UserRequest *ur = NULL;
 	int ret = 0;
 
+	if (check_access_control(invocation, AC_SS, "w") == FALSE) {
+		GVariant *result = 0;
+		GVariantBuilder b;
+
+		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+		result = g_variant_builder_end(&b);
+
+		telephony_ss_complete_register_forwarding(ss, invocation,
+								result, ret);
+
+		dbg("[error]tcore_communicator_dispatch_request() : (0x%x)",
+									ret);
+
+		g_variant_unref(result);
+		return TRUE;
+	}
+
 	memset(&req, 0, sizeof(struct treq_ss_forwarding));
 
 	req.class = ss_class;
@@ -433,6 +481,23 @@ on_ss_deactivate_forwarding (TelephonySs *ss,
 	UserRequest *ur = NULL;
 	int ret = 0;
 
+	if (check_access_control(invocation, AC_SS, "w") == FALSE) {
+		GVariant *result = 0;
+		GVariantBuilder b;
+
+		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+		result = g_variant_builder_end(&b);
+
+		telephony_ss_complete_register_forwarding(ss, invocation,
+								result, ret);
+
+		dbg("[error]tcore_communicator_dispatch_request() : (0x%x)",
+									ret);
+
+		g_variant_unref(result);
+		return TRUE;
+	}
+
 	memset(&req, 0, sizeof(struct treq_ss_forwarding));
 
 	req.class = ss_class;
@@ -477,6 +542,23 @@ on_ss_get_forwarding_status (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+
+	if (check_access_control(invocation, AC_SS, "w") == FALSE) {
+		GVariant *result = 0;
+		GVariantBuilder b;
+
+		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+		result = g_variant_builder_end(&b);
+
+		telephony_ss_complete_register_forwarding(ss, invocation,
+								result, ret);
+
+		dbg("[error]tcore_communicator_dispatch_request() : (0x%x)",
+									ret);
+
+		g_variant_unref(result);
+		return TRUE;
+	}
 
 	memset(&req, 0, sizeof(struct treq_ss_forwarding));
 

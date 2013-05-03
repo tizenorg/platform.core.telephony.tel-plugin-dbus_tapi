@@ -62,6 +62,9 @@ static gboolean on_phonebook_get_init_status(TelephonyPhonebook *phonebook, GDBu
 	TcorePlugin *plugin = NULL;
 	char *cp_name = GET_PLUGIN_NAME(invocation);
 
+	if (check_access_control(invocation, AC_PHONEBOOK, "r") == FALSE)
+		return FALSE;
+
 	dbg("Func Entrance");
 
 	plugin = tcore_server_find_plugin(ctx->server, cp_name);
@@ -102,6 +105,9 @@ static gboolean on_phonebook_get_count(TelephonyPhonebook *phonebook, GDBusMetho
 	TReturn ret;
 	struct treq_phonebook_get_count pb_count;
 
+	if (check_access_control(invocation, AC_PHONEBOOK, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, phonebook, invocation);
 	memset(&pb_count, 0, sizeof(struct treq_phonebook_get_count));
 
@@ -124,6 +130,9 @@ static gboolean on_phonebook_get_info(TelephonyPhonebook *phonebook, GDBusMethod
 	TReturn ret;
 	struct treq_phonebook_get_info pb_info;
 
+	if (check_access_control(invocation, AC_PHONEBOOK, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, phonebook, invocation);
 	memset(&pb_info, 0, sizeof(struct treq_phonebook_get_info));
 
@@ -145,6 +154,10 @@ static gboolean on_phonebook_get_usim_info(TelephonyPhonebook *phonebook, GDBusM
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_PHONEBOOK, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, phonebook, invocation);
 	tcore_user_request_set_data(ur, 0, NULL);
 	tcore_user_request_set_command(ur, TREQ_PHONEBOOK_GETUSIMINFO);
@@ -168,6 +181,9 @@ static gboolean on_phonebook_read_record(TelephonyPhonebook *phonebook, GDBusMet
 	UserRequest *ur = NULL;
 	TReturn ret;
 	struct treq_phonebook_read_record pb_read;
+
+	if (check_access_control(invocation, AC_PHONEBOOK, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, phonebook, invocation);
 	memset(&pb_read, 0, sizeof(struct treq_phonebook_read_record));
@@ -204,6 +220,9 @@ static gboolean on_phonebook_update_record(TelephonyPhonebook *phonebook, GDBusM
 	int i=0;
 	int dest_len = 0;
 	int temp_len = 0;
+
+	if (check_access_control(invocation, AC_PHONEBOOK, "r") == FALSE)
+		return FALSE;
 
 	memset(&pb_update, 0, sizeof(struct treq_phonebook_update_record));
 
@@ -450,6 +469,9 @@ static gboolean on_phonebook_delete_record(TelephonyPhonebook *phonebook, GDBusM
 	UserRequest *ur = NULL;
 	TReturn ret;
 	struct treq_phonebook_delete_record pb_delete;
+
+	if (check_access_control(invocation, AC_PHONEBOOK, "x") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, phonebook, invocation);
 	memset(&pb_delete, 0, sizeof(struct treq_phonebook_delete_record));

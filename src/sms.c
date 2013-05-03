@@ -59,6 +59,9 @@ on_sms_send_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	guchar *decoded_sca = NULL;
 	guchar *decoded_tpdu = NULL;
 
+	if (check_access_control(invocation, AC_SMS, "x") == FALSE)
+		return FALSE;
+
 	memset(&sendUmtsMsg, 0 , sizeof(struct treq_sms_send_umts_msg));
 
 	decoded_sca = g_base64_decode(sca, &length);
@@ -106,6 +109,9 @@ on_sms_read_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 
+	if (check_access_control(invocation, AC_SMS, "r") == FALSE)
+		return FALSE;
+
 	readMsg.index = arg_index;
 
 	ur = MAKE_UR(ctx, sms, invocation);
@@ -136,6 +142,9 @@ on_sms_save_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	gsize length;
 	guchar *decoded_sca = NULL;
 	guchar *decoded_tpdu = NULL;
+
+	if (check_access_control(invocation, AC_SMS, "w") == FALSE)
+		return FALSE;
 
 	saveMsg.simIndex = 0xffff;
 	saveMsg.msgStatus = arg_msg_status;
@@ -183,6 +192,9 @@ on_sms_delete_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 
+	if (check_access_control(invocation, AC_SMS, "x") == FALSE)
+		return FALSE;
+
 	deleteMsg.index = arg_index;
 
 	ur = MAKE_UR(ctx, sms, invocation);
@@ -206,6 +218,9 @@ on_sms_get_msg_count(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 
+	if (check_access_control(invocation, AC_SMS, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sms, invocation);
 	tcore_user_request_set_data(ur, sizeof(struct treq_sms_get_msg_count), &getMsgCnt);
 	tcore_user_request_set_command(ur, TREQ_SMS_GET_COUNT);
@@ -227,6 +242,9 @@ on_sms_get_sca(TelephonySms *sms, GDBusMethodInvocation *invocation,
         struct treq_sms_get_sca getSca = {0,};
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
+
+	if (check_access_control(invocation, AC_SMS, "r") == FALSE)
+		return FALSE;
 
 	getSca.index = arg_index;
 
@@ -255,6 +273,9 @@ on_sms_set_sca(TelephonySms *sms, GDBusMethodInvocation *invocation,
         struct treq_sms_set_sca setSca;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
+
+	if (check_access_control(invocation, AC_SMS, "w") == FALSE)
+		return FALSE;
 
 	memset(&setSca, 0, sizeof(struct treq_sms_set_sca));
 
@@ -310,6 +331,9 @@ on_sms_get_cb_config(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 
+	if (check_access_control(invocation, AC_SMS, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sms, invocation);
 	tcore_user_request_set_data(ur, sizeof(struct treq_sms_get_cb_config), &getCbConfig);
 	tcore_user_request_set_command(ur, TREQ_SMS_GET_CB_CONFIG);
@@ -343,6 +367,9 @@ on_sms_set_cb_config(TelephonySms *sms, GDBusMethodInvocation *invocation,
 
 	gsize length;
 	guchar *decoded_msgId = NULL;
+
+	if (check_access_control(invocation, AC_SMS, "w") == FALSE)
+		return FALSE;
 
 	setCbConfig.net3gppType = arg_net3gppType;
 	setCbConfig.cbEnabled = arg_cbEnable;
@@ -384,6 +411,9 @@ on_sms_set_mem_status(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 
+	if (check_access_control(invocation, AC_SMS, "w") == FALSE)
+		return FALSE;
+
 	memStatus.memory_status = arg_memoryStatus;
 
 	ur = MAKE_UR(ctx, sms, invocation);
@@ -407,6 +437,9 @@ on_sms_get_pref_bearer(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 
+	if (check_access_control(invocation, AC_SMS, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sms, invocation);
 	tcore_user_request_set_data(ur, sizeof(struct treq_sms_get_pref_bearer), &getPrefBearer);
 	tcore_user_request_set_command(ur, TREQ_SMS_GET_PREF_BEARER);
@@ -428,6 +461,9 @@ on_sms_set_pref_bearer(TelephonySms *sms, GDBusMethodInvocation *invocation,
         struct treq_sms_set_pref_bearer setPrefBearer = {0,};
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
+
+	if (check_access_control(invocation, AC_SMS, "w") == FALSE)
+		return FALSE;
 
 	setPrefBearer.svc = arg_bearerType;
 
@@ -459,6 +495,9 @@ on_sms_set_delivery_report(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	gsize length;
 	guchar *decoded_sca = NULL;
 	guchar *decoded_tpdu = NULL;
+
+	if (check_access_control(invocation, AC_SMS, "w") == FALSE)
+		return FALSE;
 
 	memset(&deliveryReport, 0, sizeof(struct treq_sms_set_delivery_report));
 
@@ -508,6 +547,9 @@ on_sms_set_msg_status(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 
+	if (check_access_control(invocation, AC_SMS, "w") == FALSE)
+		return FALSE;
+
 	msgStatus.index = arg_index;
 	msgStatus.msgStatus = arg_msgStatus;
 
@@ -532,6 +574,9 @@ on_sms_get_sms_params(TelephonySms *sms, GDBusMethodInvocation *invocation,
         struct treq_sms_get_params getParams = {0,};
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
+
+	if (check_access_control(invocation, AC_SMS, "r") == FALSE)
+		return FALSE;
 
 	getParams.index = arg_index;
 
@@ -577,6 +622,9 @@ on_sms_set_sms_params(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	guchar *decoded_alphaId = NULL;
 	guchar *decoded_destDialNum = NULL;
 	guchar *decoded_scaDialNum = NULL;
+
+	if (check_access_control(invocation, AC_SMS, "w") == FALSE)
+		return FALSE;
 
 	memset(&setParams, 0, sizeof(struct treq_sms_set_params));
 
@@ -644,6 +692,9 @@ on_sms_get_sms_param_cnt(TelephonySms *sms, GDBusMethodInvocation *invocation,
         struct treq_sms_get_paramcnt getParamCnt;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
+
+	if (check_access_control(invocation, AC_SMS, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, sms, invocation);
 	tcore_user_request_set_data(ur, sizeof(struct treq_sms_get_paramcnt), &getParamCnt);

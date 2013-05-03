@@ -51,6 +51,9 @@ on_modem_set_power (TelephonyModem *modem,
 	UserRequest *ur = NULL;
 	TReturn ret = TCORE_RETURN_SUCCESS;
 
+	if (check_access_control(invocation, AC_MODEM, "w") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, modem, invocation);
 	tcore_user_request_set_data(ur, 0, NULL);
 
@@ -94,6 +97,9 @@ on_modem_set_flight_mode (TelephonyModem *modem,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_MODEM, "w") == FALSE)
+		return FALSE;
+
 	data.enable = enable;
 
 	ur = MAKE_UR(ctx, modem, invocation);
@@ -118,6 +124,9 @@ on_modem_get_flight_mode (TelephonyModem *modem,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_MODEM, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, modem, invocation);
 	tcore_user_request_set_data(ur, sizeof(struct treq_modem_get_flightmode), &data);
 	tcore_user_request_set_command(ur, TREQ_MODEM_GET_FLIGHTMODE);
@@ -138,6 +147,9 @@ on_modem_get_version (TelephonyModem *modem,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_MODEM, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, modem, invocation);
 	tcore_user_request_set_command(ur, TREQ_MODEM_GET_VERSION);
@@ -161,6 +173,9 @@ on_modem_get_serial_number (TelephonyModem *modem,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_MODEM, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, modem, invocation);
 	tcore_user_request_set_command(ur, TREQ_MODEM_GET_SN);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
@@ -181,6 +196,9 @@ on_modem_get_imei (TelephonyModem *modem,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_MODEM, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, modem, invocation);
 	tcore_user_request_set_command(ur, TREQ_MODEM_GET_IMEI);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
@@ -199,6 +217,9 @@ static gboolean on_modem_set_dun_pin_ctrl (TelephonyModem *modem, GDBusMethodInv
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_MODEM, "x") == FALSE)
+		return FALSE;
 
 	data.signal = arg_signal;
 	data.status = arg_status;

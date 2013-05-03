@@ -134,11 +134,14 @@ static gboolean on_call_dial(TelephonyCall *call, GDBusMethodInvocation *invocat
 {
 	struct treq_call_dial req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -166,11 +169,14 @@ static gboolean on_call_answer(TelephonyCall *call, GDBusMethodInvocation *invoc
 {
 	struct treq_call_answer req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -196,11 +202,14 @@ static gboolean on_call_end(TelephonyCall *call, GDBusMethodInvocation *invocati
 {
 	struct treq_call_end req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -226,11 +235,14 @@ static gboolean on_call_dtmf(TelephonyCall *call, GDBusMethodInvocation *invocat
 {
 	struct treq_call_dtmf req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -256,11 +268,14 @@ static gboolean on_call_active(TelephonyCall *call, GDBusMethodInvocation *invoc
 {
 	struct treq_call_active req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -285,11 +300,14 @@ static gboolean on_call_hold(TelephonyCall *call, GDBusMethodInvocation *invocat
 {
 	struct treq_call_hold req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -314,11 +332,14 @@ static gboolean on_call_swap(TelephonyCall *call, GDBusMethodInvocation *invocat
 {
 	struct treq_call_swap req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -343,11 +364,14 @@ static gboolean on_call_join(TelephonyCall *call, GDBusMethodInvocation *invocat
 {
 	struct treq_call_join req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -372,11 +396,14 @@ static gboolean on_call_split(TelephonyCall *call, GDBusMethodInvocation *invoca
 {
 	struct treq_call_split req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -401,11 +428,14 @@ static gboolean on_call_transfer(TelephonyCall *call, GDBusMethodInvocation *inv
 {
 	struct treq_call_transfer req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -430,11 +460,14 @@ static gboolean on_call_deflect(TelephonyCall *call, GDBusMethodInvocation *invo
 {
 	struct treq_call_deflect req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -469,6 +502,8 @@ static gboolean on_call_get_status(TelephonyCall *call, GDBusMethodInvocation *i
 	gint call_status;
 	gboolean call_multiparty_state;
 	char *cp_name = GET_PLUGIN_NAME(invocation);
+
+	/* OSP access this function already, can't modify this immediately */
 
 	plugin = tcore_server_find_plugin(ctx->server, cp_name);
 	if ( !plugin ) {
@@ -529,6 +564,8 @@ static gboolean on_call_get_status_all(TelephonyCall *call, GDBusMethodInvocatio
 	char *cp_name = GET_PLUGIN_NAME(invocation);
 
 	int len, i;
+
+	/* OSP access this function already, can't modify this immediately */
 
 	plugin = tcore_server_find_plugin(ctx->server, cp_name);
 	if ( !plugin ) {
@@ -611,11 +648,14 @@ static gboolean on_call_set_sound_path(TelephonyCall *call, GDBusMethodInvocatio
 {
 	struct treq_call_sound_set_path req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "w") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -641,11 +681,14 @@ static gboolean on_call_get_volume(TelephonyCall *call, GDBusMethodInvocation *i
 {
 	struct treq_call_sound_get_volume_level req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "r") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -684,11 +727,14 @@ static gboolean on_call_set_volume(TelephonyCall *call, GDBusMethodInvocation *i
 {
 	struct treq_call_sound_set_volume_level req;
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "w") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -714,11 +760,14 @@ static gboolean on_call_set_volume(TelephonyCall *call, GDBusMethodInvocation *i
 static gboolean on_call_get_mute_status(TelephonyCall *call, GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "r") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -739,11 +788,14 @@ static gboolean on_call_get_mute_status(TelephonyCall *call, GDBusMethodInvocati
 static gboolean on_call_mute(TelephonyCall *call, GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -764,11 +816,14 @@ static gboolean on_call_mute(TelephonyCall *call, GDBusMethodInvocation *invocat
 static gboolean on_call_unmute(TelephonyCall *call, GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "x") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -790,12 +845,14 @@ static gboolean on_call_set_sound_recording(TelephonyCall *call, GDBusMethodInvo
 {
 	struct custom_data *ctx = user_data;
 	struct treq_call_sound_set_recording req;
-
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "w") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -820,12 +877,14 @@ static gboolean on_call_set_sound_equalization(TelephonyCall *call, GDBusMethodI
 {
 	struct custom_data *ctx = user_data;
 	struct treq_call_sound_set_equalization req;
-
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "w") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -852,12 +911,14 @@ static gboolean on_call_set_sound_noise_reduction(TelephonyCall *call, GDBusMeth
 {
 	struct custom_data *ctx = user_data;
 	struct treq_call_sound_set_noise_reduction req;
-
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "w") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}
@@ -882,12 +943,14 @@ static gboolean on_call_set_sound_clock_status(TelephonyCall *call, GDBusMethodI
 {
 	struct custom_data *ctx = user_data;
 	struct treq_call_sound_set_clock_status req;
-
-	UserRequest *ur = MAKE_UR(ctx, call, invocation);
-
+	UserRequest *ur;
 	TReturn ret = 0;
 
-	if ( !ur ) {
+	if (check_access_control(invocation, AC_CALL, "w") == FALSE)
+		return FALSE;
+
+	ur = MAKE_UR(ctx, call, invocation);
+	if (ur == NULL) {
 		dbg("[ error ] ur : 0");
 		return FALSE;
 	}

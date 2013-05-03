@@ -47,6 +47,9 @@ static gboolean on_sap_connect(TelephonySap *sap, GDBusMethodInvocation *invocat
 	TReturn ret;
 	struct treq_sap_req_connect req_conn;
 
+	if (check_access_control(invocation, AC_SAP, "x") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sap, invocation);
 	memset(&req_conn, 0, sizeof(struct treq_sap_req_connect));
 
@@ -70,6 +73,9 @@ static gboolean on_sap_disconnect(TelephonySap *sap, GDBusMethodInvocation *invo
 	TReturn ret;
 	struct treq_sap_req_disconnect req_disconn;
 
+	if (check_access_control(invocation, AC_SAP, "x") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sap, invocation);
 	memset(&req_disconn, 0, sizeof(struct treq_sap_req_disconnect));
 
@@ -91,6 +97,9 @@ static gboolean on_sap_get_status(TelephonySap *sap, GDBusMethodInvocation *invo
 	TReturn ret;
 	struct treq_sap_req_status req_status;
 
+	if (check_access_control(invocation, AC_SAP, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sap, invocation);
 	memset(&req_status, 0, sizeof(struct treq_sap_req_status));
 
@@ -111,6 +120,9 @@ static gboolean on_sap_get_atr(TelephonySap *sap, GDBusMethodInvocation *invocat
 	UserRequest *ur = NULL;
 	TReturn ret;
 	struct treq_sap_req_atr req_atr;
+
+	if (check_access_control(invocation, AC_SAP, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, sap, invocation);
 	memset(&req_atr, 0, sizeof(struct treq_sap_req_atr));
@@ -144,6 +156,9 @@ static gboolean on_sap_transfer_apdu(TelephonySap *sap, GDBusMethodInvocation *i
 	GVariant *inner_gv = NULL;
 	guchar rt_i;
 	int i =0;
+
+	if (check_access_control(invocation, AC_SAP, "x") == FALSE)
+		return FALSE;
 
 	dbg("Func Entrance");
 	memset(&t_apdu, 0, sizeof(struct treq_sap_transfer_apdu));
@@ -190,6 +205,9 @@ static gboolean on_sap_set_protocol(TelephonySap *sap, GDBusMethodInvocation *in
 	TReturn ret;
 	struct treq_sap_set_protocol set_protocol;
 
+	if (check_access_control(invocation, AC_SAP, "w") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sap, invocation);
 	memset(&set_protocol, 0, sizeof(struct treq_sap_set_protocol));
 
@@ -214,6 +232,9 @@ static gboolean on_sap_set_power(TelephonySap *sap, GDBusMethodInvocation *invoc
 	TReturn ret;
 	struct treq_sap_set_power set_power;
 
+	if (check_access_control(invocation, AC_SAP, "w") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sap, invocation);
 	memset(&set_power, 0, sizeof(struct treq_sap_set_power));
 
@@ -236,6 +257,9 @@ static gboolean on_sap_get_card_reader_status(TelephonySap *sap, GDBusMethodInvo
 	UserRequest *ur = NULL;
 	TReturn ret;
 	struct treq_sap_req_cardreaderstatus req_reader;
+
+	if (check_access_control(invocation, AC_SAP, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, sap, invocation);
 	memset(&req_reader, 0, sizeof(struct treq_sap_req_cardreaderstatus));

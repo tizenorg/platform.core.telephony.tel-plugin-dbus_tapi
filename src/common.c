@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <glib.h>
+#include <security-server.h>
 
 #include <tcore.h>
 #include <plugin.h>
@@ -79,4 +80,66 @@ UserRequest *dbus_plugin_macro_user_request_new(struct custom_data *ctx, void *o
 	tcore_user_request_set_free_hook(ur, _free_hook);
 
 	return ur;
+}
+
+gboolean check_access_control(GDBusMethodInvocation *invoc, const char *label,
+							const char *perm)
+{
+	GDBusConnection *conn;
+	GVariant *result_pid;
+	GVariant *param;
+	GError *error = NULL;
+	const char *sender;
+	unsigned int pid;
+	int ret;
+	int result = FALSE;
+
+	conn = g_dbus_method_invocation_get_connection(invoc);
+	if (conn == NULL) {
+		err("access control denied(no connection info)");
+		goto OUT;
+	}
+
+	sender = g_dbus_method_invocation_get_sender(invoc);
+	dbg("sender: %s", sender);
+
+	param = g_variant_new("(s)", sender);
+	if (param == NULL) {
+		err("access control denied(sender info fail)");
+		goto OUT;
+	}
+
+	result_pid = g_dbus_connection_call_sync (conn, "org.freedesktop.DBus",
+				"/org/freedesktop/DBus",
+				"org.freedesktop.DBus",
+				"GetConnectionUnixProcessID",
+				param, NULL,
+				G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+
+	if (error) {
+		err("access control denied (dbus error: %d(%s))",
+					error->code, error->message);
+		g_error_free (error);
+		goto OUT;
+	}
+
+	if (result_pid == NULL) {
+		err("access control denied(fail to get pid)");
+		goto OUT;
+	}
+
+	g_variant_get(result_pid, "(u)", &pid);
+	g_variant_unref(result_pid);
+
+	dbg ("pid = %u", pid);
+
+	ret = security_server_check_privilege_by_pid(pid, label, perm);
+	if (ret != SECURITY_SERVER_API_SUCCESS)
+		err("access control(%s - %s) denied(%d)", label, perm, ret);
+	else
+		result = TRUE;
+
+OUT:
+	/* TODO: return result; */
+	return TRUE;
 }

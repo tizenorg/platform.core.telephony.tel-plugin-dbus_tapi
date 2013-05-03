@@ -227,6 +227,9 @@ on_network_search (TelephonyNetwork *network,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_NETWORK, "x") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, network, invocation);
 	tcore_user_request_set_data(ur, 0, NULL);
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SEARCH);
@@ -248,6 +251,9 @@ on_network_search_cancel (TelephonyNetwork *network,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_NETWORK, "x") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, network, invocation);
 	tcore_user_request_set_data(ur, 0, NULL);
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_CANCEL_MANUAL_SEARCH);
@@ -268,6 +274,9 @@ on_network_get_selection_mode (TelephonyNetwork *network,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_NETWORK, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, network, invocation);
 	tcore_user_request_set_data(ur, 0, NULL);
@@ -293,6 +302,9 @@ on_network_set_selection_mode (TelephonyNetwork *network,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_NETWORK, "w") == FALSE)
+		return FALSE;
 
 	memset(&req, 0, sizeof(struct treq_network_set_plmn_selection_mode));
 
@@ -341,6 +353,9 @@ on_network_set_service_domain (TelephonyNetwork *network,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_NETWORK, "w") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, network, invocation);
 
 	req.domain = domain;
@@ -365,6 +380,9 @@ on_network_get_service_domain (TelephonyNetwork *network,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_NETWORK, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, network, invocation);
 	tcore_user_request_set_data(ur, 0, NULL);
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_SERVICE_DOMAIN);
@@ -388,6 +406,9 @@ on_network_set_band (TelephonyNetwork *network,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_NETWORK, "w") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, network, invocation);
 
@@ -414,6 +435,9 @@ on_network_get_band (TelephonyNetwork *network,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_NETWORK, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, network, invocation);
 	tcore_user_request_set_data(ur, 0, NULL);
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_BAND);
@@ -436,6 +460,9 @@ on_network_set_mode (TelephonyNetwork *network,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_NETWORK, "w") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, network, invocation);
 
@@ -460,6 +487,9 @@ on_network_get_mode (TelephonyNetwork *network,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_NETWORK, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, network, invocation);
 	tcore_user_request_set_data(ur, 0, NULL);
@@ -486,6 +516,9 @@ on_network_set_preferred_plmn (TelephonyNetwork *network,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_NETWORK, "w") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, network, invocation);
 
@@ -519,6 +552,9 @@ on_network_get_preferred_plmn (TelephonyNetwork *network,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_NETWORK, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, network, invocation);
 	tcore_user_request_set_data(ur, 0, NULL);
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_PREFERRED_PLMN);
@@ -540,6 +576,9 @@ on_network_get_serving_network (TelephonyNetwork *network,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_NETWORK, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, network, invocation);
 	tcore_user_request_set_data(ur, 0, NULL);
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_SERVING_NETWORK);
@@ -560,6 +599,9 @@ on_network_get_neighboring_cell_info (TelephonyNetwork *network,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_NETWORK, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, network, invocation);
 	tcore_user_request_set_data(ur, 0, NULL);

@@ -139,6 +139,9 @@ static gboolean on_sim_get_imsi(TelephonySim *sim, GDBusMethodInvocation *invoca
 	TcorePlugin *plugin = NULL;
 	char *cp_name = GET_PLUGIN_NAME(invocation);
 
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
+
 	dbg("Func Entrance");
 	plugin = tcore_server_find_plugin(ctx->server, cp_name);
 	co_sim = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_SIM);
@@ -165,6 +168,9 @@ static gboolean on_sim_get_ecc(TelephonySim *sim, GDBusMethodInvocation *invocat
 	GVariant *gv = NULL;
 	GVariantBuilder b;
 	int i;
+
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
 
 	dbg("Func Entrance");
 
@@ -194,6 +200,9 @@ static gboolean on_sim_get_iccid(TelephonySim *sim, GDBusMethodInvocation *invoc
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
+
 	dbg("Func Entrance");
 	ur = MAKE_UR(ctx, sim, invocation);
 
@@ -214,6 +223,9 @@ static gboolean on_sim_get_language(TelephonySim *sim, GDBusMethodInvocation *in
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sim, invocation);
 
 	tcore_user_request_set_command(ur, TREQ_SIM_GET_LANGUAGE);
@@ -232,8 +244,11 @@ static gboolean on_sim_set_language(TelephonySim *sim, GDBusMethodInvocation *in
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-
 	struct treq_sim_set_language set_language;
+
+	if (check_access_control(invocation, AC_SIM, "w") == FALSE)
+		return FALSE;
+
 	memset(&set_language, 0, sizeof(struct treq_sim_set_language));
 	set_language.language = arg_language;
 
@@ -257,6 +272,9 @@ static gboolean on_sim_get_call_forwarding(TelephonySim *sim, GDBusMethodInvocat
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, sim, invocation);
 
@@ -300,6 +318,10 @@ static gboolean on_sim_set_call_forwarding(TelephonySim *sim, GDBusMethodInvocat
 	UserRequest *ur = NULL;
 	TReturn ret;
 	struct treq_sim_set_callforwarding req_cf;
+
+	if (check_access_control(invocation, AC_SIM, "w") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sim, invocation);
 
 	memset(&req_cf, 0, sizeof(struct treq_sim_set_callforwarding));
@@ -353,6 +375,9 @@ static gboolean on_sim_get_message_waiting(TelephonySim *sim, GDBusMethodInvocat
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sim, invocation);
 
 	tcore_user_request_set_command(ur, TREQ_SIM_GET_MESSAGEWAITING);
@@ -394,6 +419,10 @@ static gboolean on_sim_set_message_waiting(TelephonySim *sim, GDBusMethodInvocat
 	UserRequest *ur = NULL;
 	TReturn ret;
 	struct treq_sim_set_messagewaiting req_mw;
+
+	if (check_access_control(invocation, AC_SIM, "w") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sim, invocation);
 
 	memset(&req_mw, 0, sizeof(struct treq_sim_set_messagewaiting));
@@ -445,6 +474,9 @@ static gboolean on_sim_get_mailbox(TelephonySim *sim, GDBusMethodInvocation *inv
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sim, invocation);
 
 	tcore_user_request_set_command(ur, TREQ_SIM_GET_MAILBOX);
@@ -479,6 +511,10 @@ static gboolean on_sim_set_mailbox(TelephonySim *sim, GDBusMethodInvocation *inv
 	UserRequest *ur = NULL;
 	TReturn ret;
 	struct treq_sim_set_mailbox req_mb;
+
+	if (check_access_control(invocation, AC_SIM, "w") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sim, invocation);
 
 	memset(&req_mb, 0, sizeof(struct treq_sim_set_mailbox));
@@ -528,6 +564,9 @@ static gboolean on_sim_get_cphsinfo(TelephonySim *sim, GDBusMethodInvocation *in
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sim, invocation);
 
 	tcore_user_request_set_command(ur, TREQ_SIM_GET_CPHS_INFO);
@@ -546,6 +585,9 @@ static gboolean on_sim_get_msisdn(TelephonySim *sim, GDBusMethodInvocation *invo
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, sim, invocation);
 
@@ -571,6 +613,9 @@ static gboolean on_sim_get_oplmnwact(TelephonySim *sim, GDBusMethodInvocation *i
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sim, invocation);
 
 	tcore_user_request_set_command(ur, TREQ_SIM_GET_OPLMNWACT);
@@ -595,6 +640,9 @@ static gboolean on_sim_get_spn(TelephonySim *sim, GDBusMethodInvocation *invocat
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, sim, invocation);
 
 	tcore_user_request_set_command(ur, TREQ_SIM_GET_SPN);
@@ -613,6 +661,9 @@ static gboolean on_sim_get_cphs_netname(TelephonySim *sim, GDBusMethodInvocation
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, sim, invocation);
 
@@ -640,8 +691,11 @@ static gboolean on_sim_authentication(TelephonySim *sim, GDBusMethodInvocation *
 	guchar rt_i;
 	int i =0;
 	TReturn ret;
-
 	struct treq_sim_req_authentication req_auth;
+
+	if (check_access_control(invocation, AC_SIM, "x") == FALSE)
+		return FALSE;
+
 	memset(&req_auth, 0, sizeof(struct treq_sim_req_authentication));
 
 	req_auth.auth_type = arg_type;
@@ -709,8 +763,11 @@ static gboolean on_sim_verify_sec(TelephonySim *sim, GDBusMethodInvocation *invo
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-
 	struct treq_sim_verify_pins verify_pins;
+
+	if (check_access_control(invocation, AC_SIM, "x") == FALSE)
+		return FALSE;
+
 	memset(&verify_pins, 0, sizeof(struct treq_sim_verify_pins));
 
 	verify_pins.pin_type = arg_type;
@@ -738,8 +795,11 @@ static gboolean on_sim_verify_puk(TelephonySim *sim, GDBusMethodInvocation *invo
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-
 	struct treq_sim_verify_puks verify_puks;
+
+	if (check_access_control(invocation, AC_SIM, "x") == FALSE)
+		return FALSE;
+
 	memset(&verify_puks, 0, sizeof(struct treq_sim_verify_puks));
 
 	verify_puks.puk_type = arg_type;
@@ -769,8 +829,11 @@ static gboolean on_sim_change_pin(TelephonySim *sim, GDBusMethodInvocation *invo
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-
 	struct treq_sim_change_pins change_pins;
+
+	if (check_access_control(invocation, AC_SIM, "x") == FALSE)
+		return FALSE;
+
 	memset(&change_pins, 0, sizeof(struct treq_sim_change_pins));
 
 	change_pins.type = arg_type;
@@ -799,8 +862,11 @@ static gboolean on_sim_disable_facility(TelephonySim *sim, GDBusMethodInvocation
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-
 	struct treq_sim_disable_facility dis_facility;
+
+	if (check_access_control(invocation, AC_SIM, "x") == FALSE)
+		return FALSE;
+
 	memset(&dis_facility, 0, sizeof(struct treq_sim_disable_facility));
 
 	dbg("arg_type[%d]", arg_type);
@@ -853,8 +919,11 @@ static gboolean on_sim_enable_facility(TelephonySim *sim, GDBusMethodInvocation 
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-
 	struct treq_sim_enable_facility en_facility;
+
+	if (check_access_control(invocation, AC_SIM, "x") == FALSE)
+		return FALSE;
+
 	memset(&en_facility, 0, sizeof(struct treq_sim_enable_facility));
 
 	dbg("arg_type[%d]", arg_type);
@@ -906,8 +975,11 @@ static gboolean on_sim_get_facility(TelephonySim *sim, GDBusMethodInvocation *in
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-
 	struct treq_sim_get_facility_status facility;
+
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
+
 	memset(&facility, 0, sizeof(struct treq_sim_get_facility_status));
 
 	dbg("arg_type[%d]", arg_type);
@@ -957,8 +1029,11 @@ static gboolean on_sim_get_lock_info(TelephonySim *sim, GDBusMethodInvocation *i
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-
 	struct treq_sim_get_lock_info lock_info;
+
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
+
 	memset(&lock_info, 0, sizeof(struct treq_sim_get_lock_info));
 
 	dbg("arg_type[%d]", arg_type);
@@ -1008,12 +1083,14 @@ static gboolean on_sim_transfer_apdu(TelephonySim *sim, GDBusMethodInvocation *i
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	struct treq_sim_transmit_apdu send_apdu;
-
 	GVariantIter *iter = NULL;
 	GVariant *inner_gv = NULL;
 	guchar rt_i;
 	int i =0;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_SIM, "x") == FALSE)
+		return FALSE;
 
 	dbg("Func Entrance");
 	memset(&send_apdu, 0, sizeof(struct treq_sim_transmit_apdu));
@@ -1057,6 +1134,9 @@ static gboolean on_sim_get_atr(TelephonySim *sim, GDBusMethodInvocation *invocat
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+
+	if (check_access_control(invocation, AC_SIM, "r") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, sim, invocation);
 

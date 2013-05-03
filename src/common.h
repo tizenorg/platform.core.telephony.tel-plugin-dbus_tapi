@@ -32,6 +32,18 @@
 #define MY_DBUS_PATH "/org/tizen/telephony"
 #define MY_DBUS_SERVICE "org.tizen.telephony"
 
+#define AC_MANAGER	"telephony_framework::api_manager"
+#define AC_CALL		"telephony_framework::api_call"
+#define AC_GPS		"telephony_framework::api_gps"
+#define AC_MODEM	"telephony_framework::api_modem"
+#define AC_NETWORK	"telephony_framework::api_network"
+#define AC_PHONEBOOK	"telephony_framework::api_phonebook"
+#define AC_SAP		"telephony_framework::api_sap"
+#define AC_SAT		"telephony_framework::api_sat"
+#define AC_SIM		"telephony_framework::api_sim"
+#define AC_SMS		"telephony_framework::api_sms"
+#define AC_SS		"telephony_framework::api_ss"
+
 struct custom_data {
 	TcorePlugin *plugin;
 	Communicator *comm;
@@ -57,6 +69,7 @@ struct dbus_request_info {
 
 char *dbus_plugin_get_plugin_name_by_object_path(const char *object_path);
 UserRequest *dbus_plugin_macro_user_request_new(struct custom_data *ctx, void *object, GDBusMethodInvocation *invocation);
+gboolean check_access_control(GDBusMethodInvocation *invoc, const char *label, const char *perm);
 
 gboolean dbus_plugin_setup_network_interface(TelephonyObjectSkeleton *object, struct custom_data *ctx);
 gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur, struct dbus_request_info *dbus_info, enum tcore_response_command command, unsigned int data_len, const void *data);

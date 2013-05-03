@@ -51,6 +51,9 @@ on_gps_set_frequency_aiding (TelephonyGps *gps,
 	UserRequest *ur = NULL;
 	TReturn ret;
 
+	if (check_access_control(invocation, AC_GPS, "w") == FALSE)
+		return FALSE;
+
 	ur = MAKE_UR(ctx, gps, invocation);
 	dbg("data=%d",data);
 
@@ -77,6 +80,9 @@ on_gps_confirm_measure_pos (TelephonyGps *gps,
 	gboolean result = TRUE;
 	guchar *decoded_data = NULL;
 	gsize length;
+
+	if (check_access_control(invocation, AC_GPS, "w") == FALSE)
+		return FALSE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
 

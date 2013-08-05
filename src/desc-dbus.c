@@ -62,7 +62,6 @@ static void set_telephony_ready(Server *server)
 static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 {
 	TelephonyObjectSkeleton *object;
-	CoreObject *co_sim;
 	char *path = NULL;
 	const char *cp_name;
 	dbg("Entry");
@@ -114,14 +113,12 @@ static void add_modem(struct custom_data *ctx, TcorePlugin *p)
 		dbus_plugin_setup_sms_interface(object, ctx);
 
 	/* SIM */
-	co_sim = tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_SIM);
-	if (co_sim != NULL)
+	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_SIM) != NULL)
 		dbus_plugin_setup_sim_interface(object, ctx);
 
 	/* SAT */
-	if ((co_sim != NULL) && (tcore_sim_get_status(co_sim) >= SIM_STATUS_INITIALIZING))
-		if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_SAT) != NULL)
-			dbus_plugin_setup_sat_interface(object, ctx);
+	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_SAT) != NULL)
+		dbus_plugin_setup_sat_interface(object, ctx);
 
 	/* PHONEBOOK */
 	if (tcore_plugin_ref_core_object(p, CORE_OBJECT_TYPE_PHONEBOOK) != NULL)

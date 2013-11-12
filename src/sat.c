@@ -34,6 +34,8 @@
 #include <user_request.h>
 #include <util.h>
 #include <co_sat.h>
+#include <aul.h>
+
 
 #include "generated-code.h"
 #include "common.h"
@@ -417,9 +419,18 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx, const char *plugi
 						&high_priority, &user_rsp_required, &immediately_rsp, &icon_id);
 
 			ret = sat_ui_support_launch_sat_ui(SAT_PROATV_CMD_DISPLAY_TEXT, display_text);
+			if (!aul_app_is_running("org.tizen.sat-ui")) {
+				GVariant *confirm_data;
+				confirm_data = g_variant_new("(iiv)", command_id,
+							USER_CONFIRM_YES, g_variant_new("()"));
+				sat_manager_handle_user_confirm(ctx, plg, confirm_data);
+			}
+
 			if(!ret) {
 				int rv;
+
 				dbg("fail to launch sat-ui, remove the queued data!!\n");
+
 				rv = sat_manager_remove_cmd_by_id(ctx, command_id);
 				if(!rv)
 					dbg("fail to dequeue data\n");

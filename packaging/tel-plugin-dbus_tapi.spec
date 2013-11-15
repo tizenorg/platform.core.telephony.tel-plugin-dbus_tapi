@@ -6,7 +6,7 @@ Summary: dbus-tapi plugin for telephony
 Version:    %{major}.%{minor}.%{patchlevel}
 Release:    1
 Group:      System/Libraries
-License:    Apache
+License:    Apache-2.0
 Source0:    tel-plugin-dbus_tapi-%{version}.tar.gz
 Source1001: 	tel-plugin-dbus_tapi.manifest
 Requires(post): /sbin/ldconfig
@@ -45,6 +45,7 @@ make %{?jobs:-j%jobs}
 rm -rf %{buildroot}
 %make_install
 mkdir -p %{buildroot}/usr/share/license
+cp LICENSE %{buildroot}/usr/share/license/%{name}
 
 %files
 %manifest %{name}.manifest
@@ -52,4 +53,4 @@ mkdir -p %{buildroot}/usr/share/license
 #%doc COPYING
 %{_libdir}/telephony/plugins/*
 %{_prefix}/etc/dbus-1/system.d/*
-/usr/share/license/tel-plugin-dbus_tapi
+/usr/share/license/%{name}

@@ -40,43 +40,6 @@
 #include "generated-code.h"
 #include "common.h"
 
-
-static gboolean dbus_sim_data_request(struct custom_data *ctx, enum tel_sim_status sim_status,
-					const char *plugin_name)
-{
-	UserRequest *ur = NULL;
-
-	switch(sim_status){
-		case SIM_STATUS_INITIALIZING :
-		case SIM_STATUS_PIN_REQUIRED :
-		case SIM_STATUS_PUK_REQUIRED :
-		case SIM_STATUS_CARD_BLOCKED :
-		case SIM_STATUS_NCK_REQUIRED :
-		case SIM_STATUS_NSCK_REQUIRED :
-		case SIM_STATUS_SPCK_REQUIRED :
-		case SIM_STATUS_CCK_REQUIRED :
-		case SIM_STATUS_LOCK_REQUIRED :
-			if(ctx->sim_recv_first_status == FALSE) {
-				int rv = 0;
-				dbg("received sim status at first time");
-
-				dbg("req - TREQ_SIM_GET_ECC ");
-				ur = tcore_user_request_new(ctx->comm, plugin_name);
-				tcore_user_request_set_command(ur, TREQ_SIM_GET_ECC);
-				rv = tcore_communicator_dispatch_request(ctx->comm, ur);
-				if(rv != TCORE_RETURN_SUCCESS) {
-					dbg("dispatch_request failed. return value = %d", rv);
-				}
-				ctx->sim_recv_first_status = TRUE;
-			}
-			break;
-
-		default :
-			break;
-	}
-	return TRUE;
-}
-
 static gboolean on_sim_get_init_status(TelephonySim *sim, GDBusMethodInvocation *invocation,
 		gpointer user_data)
 {
@@ -174,21 +137,37 @@ static gboolean on_sim_get_ecc(TelephonySim *sim, GDBusMethodInvocation *invocat
 
 	dbg("Func Entrance");
 
-	g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+        if (ctx->cached_sim_ecc.ecc_count == 0) {
+		UserRequest *ur = NULL;
+		TReturn ret;
 
-	for (i = 0; i < ctx->cached_sim_ecc.ecc_count; i++) {
-		g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
-		g_variant_builder_add(&b, "{sv}", "name", g_variant_new_string(ctx->cached_sim_ecc.ecc[i].ecc_string));
-		g_variant_builder_add(&b, "{sv}", "number", g_variant_new_string(ctx->cached_sim_ecc.ecc[i].ecc_num));
-		g_variant_builder_add(&b, "{sv}", "category", g_variant_new_int32(ctx->cached_sim_ecc.ecc[i].ecc_category));
-		g_variant_builder_close(&b);
+		dbg("ecc_count is 0. Request to modem");
+
+		ur = MAKE_UR(ctx, sim, invocation);
+		tcore_user_request_set_command(ur, TREQ_SIM_GET_ECC);
+		ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+		if (ret != TCORE_RETURN_SUCCESS) {
+			telephony_sim_complete_get_ecc(sim, invocation, gv);
+			tcore_user_request_unref(ur);
+		}
+	} else {
+		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+
+		for (i = 0; i < ctx->cached_sim_ecc.ecc_count; i++) {
+			g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
+			g_variant_builder_add(&b, "{sv}", "name", g_variant_new_string(ctx->cached_sim_ecc.ecc[i].ecc_string));
+			g_variant_builder_add(&b, "{sv}", "number", g_variant_new_string(ctx->cached_sim_ecc.ecc[i].ecc_num));
+			g_variant_builder_add(&b, "{sv}", "category", g_variant_new_int32(ctx->cached_sim_ecc.ecc[i].ecc_category));
+			g_variant_builder_close(&b);
+		}
+		gv = g_variant_builder_end(&b);
+
+		if (!gv)
+			dbg("error - ecc gv is NULL");
+
+		telephony_sim_complete_get_ecc(sim, invocation, gv);
+		g_variant_unref(gv);
 	}
-	gv = g_variant_builder_end(&b);
-
-	if (!gv)
-		dbg("error - ecc gv is NULL");
-
-	telephony_sim_complete_get_ecc(sim, invocation, gv);
 
 	return TRUE;
 }
@@ -1331,10 +1310,42 @@ gboolean dbus_plugin_sim_response(struct custom_data *ctx, UserRequest *ur,
 	dbg("Command = [0x%x], data_len = %d", command, data_len);
 
 	switch (command) {
-		case TRESP_SIM_GET_ECC:
+		case TRESP_SIM_GET_ECC: {
+			GVariant *gv;
+			GVariantBuilder b;
+			int i;
+
 			dbg("resp comm - TRESP_SIM_GET_ECC");
-			memcpy((void*)&ctx->cached_sim_ecc, (const void*)&resp_read->data.ecc, sizeof(struct tel_sim_ecc_list));
-			break;
+
+			if (resp_read == NULL) {
+				err("resp_read is NULL");
+				telephony_sim_complete_get_ecc(dbus_info->interface_object, dbus_info->invocation, NULL);
+				break;
+			}
+
+			g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
+			if (resp_read->result == SIM_ACCESS_SUCCESS) {
+				for (i = 0; i < resp_read->data.ecc.ecc_count; i++) {
+					dbg("ECC info, Name: [%s], Number: [%s], Category: [0x%x]",
+							resp_read->data.ecc.ecc[i].ecc_string,
+							resp_read->data.ecc.ecc[i].ecc_num,
+							resp_read->data.ecc.ecc[i].ecc_category);
+					g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
+					g_variant_builder_add(&b, "{sv}", "category", g_variant_new_int32(resp_read->data.ecc.ecc[i].ecc_category));
+					g_variant_builder_add(&b, "{sv}", "number", g_variant_new_string(resp_read->data.ecc.ecc[i].ecc_num));
+					g_variant_builder_add(&b, "{sv}", "name", g_variant_new_string(resp_read->data.ecc.ecc[i].ecc_string));
+					g_variant_builder_close(&b);
+				}
+				memcpy((void *)&ctx->cached_sim_ecc,
+					(const void *)&resp_read->data.ecc,
+					sizeof(struct tel_sim_ecc_list));
+			} else {
+				ctx->cached_sim_ecc.ecc_count = 0;
+			}
+			gv = g_variant_builder_end(&b);
+			telephony_sim_complete_get_ecc(dbus_info->interface_object, dbus_info->invocation, gv);
+			g_variant_unref(gv);
+		} break;
 
 		case TRESP_SIM_GET_ICCID:
 			dbg("resp comm - TRESP_SIM_GET_ICCID");
@@ -1899,7 +1910,6 @@ gboolean dbus_plugin_sim_notification(struct custom_data *ctx, const char *plugi
 	switch (command) {
 		case TNOTI_SIM_STATUS:
 			dbg("notified sim_status[%d]", n_sim_status->sim_status);
-			dbus_sim_data_request(ctx, n_sim_status->sim_status, plugin_name);
 			telephony_sim_emit_status (sim, n_sim_status->sim_status);
 			break;
 

@@ -56,7 +56,6 @@ struct custom_data {
 	gint sat_character_format;
 	gpointer cached_sat_main_menu;
 	struct tel_sim_ecc_list cached_sim_ecc;
-	gboolean sim_recv_first_status;
 };
 
 struct dbus_request_info {

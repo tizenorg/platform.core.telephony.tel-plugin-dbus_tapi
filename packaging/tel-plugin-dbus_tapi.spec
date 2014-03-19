@@ -23,6 +23,7 @@ BuildRequires:  pkgconfig(appsvc)
 BuildRequires:  pkgconfig(security-server)
 BuildRequires:  python
 BuildRequires:  python-xml
+BuildRequires:  pkgconfig(libtzplatform-config)
 
 %description
 dbus-tapi plugin for telephony
@@ -35,6 +36,9 @@ cp %{SOURCE1001} .
 versionint=$[%{major} * 1000000 + %{minor} * 1000 + %{patchlevel}]
 cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DVERSION=$versionint
 make %{?jobs:-j%jobs}
+
+%cmake . \
+-DTZ_SYS_USER_GROUP=%TZ_SYS_USER_GROUP
 
 %post
 /sbin/ldconfig

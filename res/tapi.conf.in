@@ -6,7 +6,7 @@
         <allow send_destination="org.tizen.telephony"/>
         <allow send_interface="org.tizen.telephony"/>
     </policy>
-    <policy user="app">
+    <policy group="@TZ_SYS_USER_GROUP@">
         <allow own="org.tizen.telephony"/>
         <allow send_destination="org.tizen.telephony"/>
         <allow send_interface="org.tizen.telephony"/>

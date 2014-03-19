@@ -11,7 +11,7 @@ SET(CMAKE_INSTALL_PREFIX "${PREFIX}")
 
 # Set required packages
 INCLUDE(FindPkgConfig)
-pkg_check_modules(pkgs REQUIRED glib-2.0 gobject-2.0 gio-2.0 gio-unix-2.0 tcore dlog aul appsvc security-server)
+pkg_check_modules(pkgs REQUIRED glib-2.0 gobject-2.0 gio-2.0 gio-unix-2.0 tcore dlog aul appsvc security-server libtzplatform-config)
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
@@ -58,6 +58,7 @@ TARGET_LINK_LIBRARIES(dbus-tapi-plugin ${pkgs_LDFLAGS})
 SET_TARGET_PROPERTIES(dbus-tapi-plugin PROPERTIES PREFIX "" OUTPUT_NAME dbus-tapi-plugin)
 ADD_DEPENDENCIES(dbus-tapi-plugin XXX)
 
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/res/tapi.conf.in ${CMAKE_CURRENT_SOURCE_DIR}/res/tapi.conf)
 
 # install
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/res/tapi.conf DESTINATION ${PREFIX}/etc/dbus-1/system.d)

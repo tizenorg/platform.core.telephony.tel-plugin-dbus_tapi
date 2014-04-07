@@ -1,126 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE node PUBLIC
+  "-//freedesktop//DTD D-Bus Object Introspection 1.0//EN"
+  "http://standards.freedesktop.org/dbus/1.0/introspect.dtd">
+
 <node>
 
-	<interface name="org.tizen.telephony.Ss">
-		<method name="ActivateBarring">
-			<arg direction="in" type="i" name="ss_class"/>
-			<arg direction="in" type="i" name="barring_mode"/>
-			<arg direction="in" type="s" name="barring_password"/>
-			<arg direction="out" type="aa{sv}" name="barring_list"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+    <interface name="org.tizen.telephony.Ss">
 
-		<method name="DeactivateBarring">
-			<arg direction="in" type="i" name="ss_class"/>
-			<arg direction="in" type="i" name="barring_mode"/>
-			<arg direction="in" type="s" name="barring_password"/>
-			<arg direction="out" type="aa{sv}" name="barring_list"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+        <!-- Refer to TAPI API: tapi_ss_set_barring () -->
+        <method name="SetBarring">
+            <arg direction="in" type="i" name="class"/>
+            <arg direction="in" type="b" name="enable"/>
+            <arg direction="in" type="i" name="type"/>
+            <arg direction="in" type="s" name="pwd"/>
+            <arg direction="out" type="i" name="result"/>
+        </method>
 
-		<method name="ChangeBarringPassword">
-			<arg direction="in" type="s" name="barring_password"/>
-			<arg direction="in" type="s" name="barring_password_new"/>
-			<arg direction="in" type="s" name="barring_password_confirm"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+        <!-- Refer to TAPI API: tapi_ss_get_barring_status () -->
+        <method name="GetBarringStatus">
+            <arg direction="in" type="i" name="class"/>
+            <arg direction="in" type="i" name="type"/>
+            <arg direction="out" type="i" name="result"/>
+            <arg direction="out" type="u" name="record_num"/>
+            <arg direction="out" type="aa{sv}" name="records"/>
+        </method>
 
-		<method name="GetBarringStatus">
-			<arg direction="in" type="i" name="ss_class"/>
-			<arg direction="in" type="i" name="barring_mode"/>
-			<arg direction="out" type="aa{sv}" name="barring_list"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+        <!-- Refer to TAPI API: tapi_ss_change_barring_password () -->
+        <method name="ChangeBarringPassword">
+            <arg direction="in" type="s" name="old_pwd"/>
+            <arg direction="in" type="s" name="new_pwd"/>
+            <arg direction="out" type="i" name="result"/>
+        </method>
 
-		<method name="RegisterForwarding">
-			<arg direction="in" type="i" name="ss_class"/>
-			<arg direction="in" type="i" name="forward_mode"/>
-			<arg direction="in" type="i" name="forward_no_reply_time"/>
-			<arg direction="in" type="s" name="forward_number"/>
-			<arg direction="out" type="aa{sv}" name="forward_list"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+        <!-- Refer to TAPI API: tapi_ss_set_forwarding () -->
+        <method name="SetForwarding">
+            <arg direction="in" type="i" name="class"/>
+            <arg direction="in" type="i" name="mode"/>
+            <arg direction="in" type="i" name="condition"/>
+            <arg direction="in" type="s" name="number"/>
+            <arg direction="in" type="u" name="wait_time"/>
+            <arg direction="out" type="i" name="result"/>
+        </method>
 
-		<method name="DeregisterForwarding">
-			<arg direction="in" type="i" name="ss_class"/>
-			<arg direction="in" type="i" name="forward_mode"/>
-			<arg direction="in" type="i" name="forward_no_reply_time"/>
-			<arg direction="in" type="s" name="forward_number"/>
-			<arg direction="out" type="aa{sv}" name="forward_list"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+        <!-- Refer to TAPI API: tapi_ss_get_forwarding_status () -->
+        <method name="GetForwardingStatus">
+           <arg direction="in" type="i" name="class"/>
+           <arg direction="in" type="i" name="condition"/>
+           <arg direction="out" type="i" name="result"/>
+           <arg direction="out" type="u" name="record_num"/>
+           <arg direction="out" type="aa{sv}" name="records"/>
+        </method>
 
-		<method name="ActivateForwarding">
-			<arg direction="in" type="i" name="ss_class"/>
-			<arg direction="in" type="i" name="forward_mode"/>
-			<arg direction="in" type="i" name="forward_no_reply_time"/>
-			<arg direction="in" type="s" name="forward_number"/>
-			<arg direction="out" type="aa{sv}" name="forward_list"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+        <!-- Refer to TAPI API: tapi_ss_set_waiting () -->
+        <method name="SetWaiting">
+           <arg direction="in" type="i" name="class"/>
+           <arg direction="in" type="b" name="enable"/>
+           <arg direction="out" type="i" name="result"/>
+        </method>
 
-		<method name="DeactivateForwarding">
-			<arg direction="in" type="i" name="ss_class"/>
-			<arg direction="in" type="i" name="forward_mode"/>
-			<arg direction="in" type="i" name="forward_no_reply_time"/>
-			<arg direction="in" type="s" name="forward_number"/>
-			<arg direction="out" type="aa{sv}" name="forward_list"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+        <!-- Refer to TAPI API: tapi_ss_get_waiting_status () -->
+        <method name="GetWaitingStatus">
+           <arg direction="in" type="i" name="class"/>
+           <arg direction="out" type="i" name="result"/>
+           <arg direction="out" type="u" name="record_num"/>
+           <arg direction="out" type="aa{sv}" name="records"/>
+        </method>
 
-		<method name="GetForwardingStatus">
-			<arg direction="in" type="i" name="ss_class"/>
-			<arg direction="in" type="i" name="forward_mode"/>
-			<arg direction="out" type="aa{sv}" name="forward_list"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+        <!-- Refer to TAPI API: tapi_ss_set_cli () -->
+        <method name="SetCli">
+            <arg direction="in" type="i" name="type"/>
+            <arg direction="in" type="i" name="status"/>
+            <arg direction="out" type="i" name="result"/>
+        </method>
 
-		<method name="ActivateWaiting">
-			<arg direction="in" type="i" name="ss_class"/>
-			<arg direction="out" type="aa{sv}" name="waiting_list"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+        <!-- Refer to TAPI API: tapi_ss_get_cli_status () -->
+        <method name="GetCliStatus">
+            <arg direction="in" type="i" name="type"/>
+            <arg direction="out" type="i" name="result"/>
+            <arg direction="out" type="i" name="type"/>
+            <arg direction="out" type="i" name="net_status"/>
+            <arg direction="out" type="i" name="dev_status"/>
+        </method>
 
-		<method name="DeactivateWaiting">
-			<arg direction="in" type="i" name="ss_class"/>
-			<arg direction="out" type="aa{sv}" name="waiting_list"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+        <!-- Refer to TAPI API: tapi_ss_send_ussd_request () -->
+        <method name="SendUssdRequest">
+            <arg direction="in" type="i" name="type"/>
+            <arg direction="in" type="s" name="str"/>
+            <arg direction="out" type="i" name="result"/>
+            <arg direction="out" type="i" name="type"/>
+            <arg direction="out" type="i" name="status"/>
+            <arg direction="out" type="s" name="str"/>
+        </method>
 
-		<method name="GetWaitingStatus">
-			<arg direction="in" type="i" name="ss_class"/>
-			<arg direction="out" type="aa{sv}" name="waiting_list"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+        <!-- Refer to TEL_NOTI_SS_USSD event -->
+        <signal name="NotifyUssd">
+            <arg type="i" name="status"/>
+            <arg type="s" name="str"/>
+        </signal>
 
-		<method name="GetCLIStatus">
-			<arg direction="in" type="i" name="cli_type"/>
-			<arg direction="out" type="i" name="result"/>
-			<arg direction="out" type="i" name="cli_type"/>
-			<arg direction="out" type="i" name="cli_status"/>
-		</method>
-
-		<method name="SendUSSD">
-			<arg direction="in" type="i" name="ussd_type"/>
-			<arg direction="in" type="i" name="ussd_len"/>
-			<arg direction="in" type="s" name="ussd_string"/>
-			<arg direction="out" type="i" name="result"/>
-			<arg direction="out" type="i" name="ussd_type"/>
-			<arg direction="out" type="i" name="ussd_status"/>
-			<arg direction="out" type="i" name="ussd_len"/>
-			<arg direction="out" type="s" name="ussd_string"/>
-		</method>
-
-		<signal name="NotifyUSSD">
-			<arg type="i" name="ussd_status"/>
-			<arg type="i" name="ussd_len"/>
-			<arg type="s" name="ussd_string"/>
-		</signal>
-
-		<signal name="ReleaseComplete">
-			<arg type="i" name="data_len"/>
-			<arg type="v" name="data"/>
-		</signal>
-
-	</interface>
+    </interface>
 
 </node>

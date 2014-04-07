@@ -17,51 +17,71 @@ FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
 ENDFOREACH(flag)
 
-
-INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/include/ ${CMAKE_SOURCE_DIR}/cmake_tmp ${CMAKE_SOURCE_DIR}/src/sat_ui_support/)
+INCLUDE_DIRECTORIES(
+	${CMAKE_BINARY_DIR}
+	${CMAKE_SOURCE_DIR}/include/
+	${CMAKE_SOURCE_DIR}/sat-manager/include/
+)
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wdeclaration-after-statement -Wmissing-declarations -Wcast-align")
 
 ADD_DEFINITIONS("-DFEATURE_DLOG_DEBUG")
 ADD_DEFINITIONS("-DTCORE_LOG_TAG=\"DBUS_TAPI\"")
 ADD_DEFINITIONS("-DPLUGIN_VERSION=${VERSION}")
+ADD_DEFINITIONS("-DEXPORT_API=__attribute__((visibility(\"default\")))")
 
 MESSAGE(${CMAKE_C_FLAGS})
 MESSAGE(${CMAKE_EXE_LINKER_FLAGS})
 
 SET(SRCS
-		src/desc-dbus.c
-		src/common.c
-		src/network.c
-		src/phonebook.c
-		src/sim.c
-		src/sap.c
-		src/sms.c
-		src/sat.c
-		src/sat_manager.c
-		src/sat_ui_support/sat_ui_support.c
-		src/ss.c
-		src/call.c
-		src/modem.c
-		src/gps.c
+	src/desc.c
+	src/dtapi_util.c
+	src/dtapi_main.c
+	src/dtapi_call.c
+	src/dtapi_gps.c
+	src/dtapi_manager.c
+	src/dtapi_modem.c
+	src/dtapi_network.c
+	src/dtapi_phonebook.c
+	src/dtapi_sap.c
+	src/dtapi_sat.c
+	src/dtapi_sim.c
+	src/dtapi_sms.c
+	src/dtapi_ss.c
+	sat-manager/src/sat_manager.c
+	sat-manager/src/sat_ui_support.c
+#	sat-manager/src/sat_util.c
 )
 
-ADD_CUSTOM_COMMAND(
-	OUTPUT ${CMAKE_BINARY_DIR}/generated-code.c
-	COMMAND gdbus-codegen --interface-prefix org.tizen.telephony. --generate-c-code generated-code --c-namespace Telephony --c-generate-object-manager --generate-docbook generated-docs ${CMAKE_SOURCE_DIR}/introspection/manager.xml ${CMAKE_SOURCE_DIR}/introspection/network.xml ${CMAKE_SOURCE_DIR}/introspection/sim.xml ${CMAKE_SOURCE_DIR}/introspection/phonebook.xml ${CMAKE_SOURCE_DIR}/introspection/sap.xml ${CMAKE_SOURCE_DIR}/introspection/sat.xml ${CMAKE_SOURCE_DIR}/introspection/sms.xml ${CMAKE_SOURCE_DIR}/introspection/call.xml ${CMAKE_SOURCE_DIR}/introspection/ss.xml ${CMAKE_SOURCE_DIR}/introspection/modem.xml ${CMAKE_SOURCE_DIR}/introspection/gps.xml
+SET(INTROSPECTION_PATH ${CMAKE_SOURCE_DIR}/introspection)
+
+ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/generated-code.c
+	COMMAND gdbus-codegen
+	--interface-prefix org.tizen.telephony.
+	--generate-c-code generated-code
+	--c-namespace Telephony
+	--c-generate-object-manager
+	${INTROSPECTION_PATH}/manager.xml
+	${INTROSPECTION_PATH}/network.xml
+	${INTROSPECTION_PATH}/sim.xml
+	${INTROSPECTION_PATH}/phonebook.xml
+	${INTROSPECTION_PATH}/sap.xml
+	${INTROSPECTION_PATH}/sat.xml
+	${INTROSPECTION_PATH}/sms.xml
+	${INTROSPECTION_PATH}/call.xml
+	${INTROSPECTION_PATH}/ss.xml
+	${INTROSPECTION_PATH}/modem.xml
+	${INTROSPECTION_PATH}/gps.xml
 	COMMENT "Generating GDBus .c/.h")
 
 # library build
-ADD_LIBRARY(dbus-tapi-plugin SHARED ${SRCS}
-	${CMAKE_BINARY_DIR}/generated-code.c)
-TARGET_LINK_LIBRARIES(dbus-tapi-plugin ${pkgs_LDFLAGS})
-SET_TARGET_PROPERTIES(dbus-tapi-plugin PROPERTIES PREFIX "" OUTPUT_NAME dbus-tapi-plugin)
-ADD_DEPENDENCIES(dbus-tapi-plugin XXX)
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${SRCS} ${CMAKE_BINARY_DIR}/generated-code.c)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${pkgs_LDFLAGS})
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "" OUTPUT_NAME ${PROJECT_NAME})
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/res/tapi.conf.in ${CMAKE_CURRENT_SOURCE_DIR}/res/tapi.conf)
 
 # install
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/res/tapi.conf DESTINATION ${PREFIX}/etc/dbus-1/system.d)
-INSTALL(TARGETS dbus-tapi-plugin
-		LIBRARY DESTINATION lib/telephony/plugins)
+INSTALL(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/telephony/plugins)
 INSTALL(FILES ${CMAKE_SOURCE_DIR}/LICENSE DESTINATION /usr/share/license RENAME tel-plugin-dbus_tapi)

@@ -1,115 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE node PUBLIC
+  "-//freedesktop//DTD D-Bus Object Introspection 1.0//EN"
+  "http://standards.freedesktop.org/dbus/1.0/introspect.dtd">
+
 <node>
-	<!--
-		org.tizen.telephony.Modem:
+  <interface name="org.tizen.telephony.Modem">
 
-		Modem interface.
+    <!-- Refer to TAPI API: tapi_modem_set_power_status() -->
+    <method name="SetPowerStatus">
+      <arg direction="in" type="i" name="status"/>
+      <arg direction="out" type="i" name="result"/>
+    </method>
 
-	-->
-	<interface name="org.tizen.telephony.Modem">
+    <!-- Refer to TAPI API: tapi_modem_set_flight_mode() -->
+    <method name="SetFlightMode">
+      <arg direction="in" type="b" name="enable"/>
+      <arg direction="out" type="i" name="result"/>
+    </method>
 
-		<!--
-			SetPower:
-			@result: Success(0)
-			@mode: Off(0), On(1), Reset(2)
+    <!-- Refer to TAPI API: tapi_modem_get_flight_mode() -->
+    <method name="GetFlightMode">
+      <arg direction="out" type="i" name="result"/>
+      <arg direction="out" type="b" name="enable"/>
+    </method>
 
-			Request to ...
-		-->
-		<method name="SetPower">
-			<arg direction="in" type="i" name="mode"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+    <!-- Refer to TAPI API: tapi_modem_get_version() -->
+      <method name="GetVersion">
+      <arg direction="out" type="i" name="result"/>
+      <arg direction="out" type="s" name="software_version"/>
+      <arg direction="out" type="s" name="hardware_version"/>
+      <arg direction="out" type="s" name="calibration_date"/>
+      <arg direction="out" type="s" name="product_code"/>
+    </method>
 
-		<!--
-			SetFlightMode:
-			@result: Success(0)
-			@enable: Flight mode Off (FLASE), Flight mode On (TRUE)
+    <!-- Refer to TAPI API: tapi_modem_get_imei() -->
+    <method name="GetImei">
+      <arg direction="out" type="i" name="result"/>
+      <arg direction="out" type="s" name="imei"/>
+    </method>
 
-			Request to ...
-		-->
-		<method name="SetFlightMode">
-			<arg direction="in" type="b" name="enable"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+    <!-- Caches power status -->
+    <property name="status" type="i" access="read"/>
 
-		<!--
-			GetFlightMode:
-			@result: Success(0)
-			@enable: Flight mode Off (FLASE), Flight mode On (TRUE)
+    <!-- Caches flight mode status -->
+    <property name="flight_mode_status" type="i" access="read"/>
 
-			Request to ...
-		-->
-		<method name="GetFlightMode">
-			<arg direction="out" type="b" name="enable"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
+    <!-- Caches IMEI value -->
+    <property name="imei" type="s" access="read"/>
 
-		<!--
-			GetVersion:
-			@result: Success(0)
-			@software: Software version
-			@hardware: Hardware version
+    <!--
+         Version information
+         @version: software_version, hardware_version, calibration_date, product_code
+    -->
+    <property name="version" type="a{sv}" access="read"/>
 
-			Request to ...
-		-->
-		<method name="GetVersion">
-			<arg direction="out" type="i" name="result"/>
-			<arg direction="out" type="s" name="software"/>
-			<arg direction="out" type="s" name="hardware"/>
-			<arg direction="out" type="s" name="rf_cal_date"/>
-			<arg direction="out" type="s" name="product_code"/>
-		</method>
-
-		<!--
-			GetSerialNumber:
-			@result: Success(0)
-			@sn: serial number
-
-			Request to ...
-		-->
-		<method name="GetSerialNumber">
-			<arg direction="out" type="i" name="result"/>
-			<arg direction="out" type="s" name="sn"/>
-		</method>
-
-		<!--
-			GetIMEI:
-			@result: Success(0)
-			@imei: IMEI
-
-			Request to ...
-		-->
-		<method name="GetIMEI">
-			<arg direction="out" type="i" name="result"/>
-			<arg direction="out" type="s" name="imei"/>
-		</method>
-
-		<method name="SetDunPinCtrl">
-			<arg direction="in" type="i" name="signal"/>
-			<arg direction="in" type="b" name="status"/>
-			<arg direction="out" type="i" name="result"/>
-		</method>
-
-		<!--
-			Power:
-			@status: Online(0), Offline(1), Error(2)
-		-->
-		<signal name="Power">
-			<arg type="i" name="status"/>
-		</signal>
-
-		<signal name="DunPinCtrl">
-			<arg type="i" name="signal"/>
-			<arg type="b" name="status"/>
-		</signal>
-
-		<signal name="DunExternalCall">
-			<arg type="b" name="external_call"/>
-		</signal>
-
-		<!-- power: Power status -->
-		<property name="power" type="i" access="read"/>
-		<property name="imei" type="i" access="read"/>
-
-	</interface>
-
+  </interface>
 </node>

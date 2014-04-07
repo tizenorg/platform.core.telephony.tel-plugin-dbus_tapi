@@ -1,53 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE node PUBLIC
+  "-//freedesktop//DTD D-Bus Object Introspection 1.0//EN"
+  "http://standards.freedesktop.org/dbus/1.0/introspect.dtd">
+
 <node>
 
 	<interface name="org.tizen.telephony.Sap">
 
-		<method name="Connect">
-			<arg direction="in" type="i" name="req_max_size"/>
+		<!-- Refer to TAPI API: tapi_sap_req_connect() -->
+		<method name="ReqConnect">
+			<arg direction="in" type="u" name="max_msg_size"/>
 			<arg direction="out" type="i" name="result"/>
-			<arg direction="out" type="i" name="resp_max_size"/>
+			<arg direction="out" type="u" name="max_msg_size_resp"/>
 		</method>
 
-		<method name="Disconnect">
+		<!-- Refer to TAPI API: tapi_sap_req_disconnect() -->
+		<method name="ReqDisconnect">
 			<arg direction="out" type="i" name="result"/>
 		</method>
 
-		<method name="GetStatus">
-			<arg direction="out" type="i" name="status"/>
-		</method>
-
-		<method name="GetATR">
+		<!-- Refer to TAPI API: tapi_sap_get_atr() -->
+		<method name="GetAtr">
 			<arg direction="out" type="i" name="result"/>
-			<arg direction="out" type="v" name="atr"/>
+			<arg direction="out" type="s" name="atr"/>
 		</method>
 
-		<method name="TransferAPDU">
-			<arg direction="in" type="v" name="req_apdu"/>
+		<!-- Refer to TAPI API: tapi_sap_req_transfer_apdu() -->
+		<method name="ReqTransferApdu">
+			<arg direction="in" type="s" name="apdu"/>
 			<arg direction="out" type="i" name="result"/>
-			<arg direction="out" type="v" name="resp_apdu"/>
+			<arg direction="out" type="s" name="apdu_resp"/>
 		</method>
 
-		<method name="SetProtocol">
+		<!-- Refer to TAPI API: tapi_sap_req_transport_protocol() -->
+		<method name="ReqTransportProtocol">
 			<arg direction="in" type="i" name="protocol"/>
 			<arg direction="out" type="i" name="result"/>
 		</method>
 
-		<method name="SetPower">
-			<arg direction="in" type="i" name="mode"/>
+		<!-- Refer to TAPI API: tapi_sap_req_power_operation() -->
+		<method name="ReqPowerOperation">
+			<arg direction="in" type="i" name="power_mode"/>
 			<arg direction="out" type="i" name="result"/>
 		</method>
 
+		<!-- Refer to TAPI API: tapi_sap_get_cardreader_status() -->
 		<method name="GetCardReaderStatus">
 			<arg direction="out" type="i" name="result"/>
 			<arg direction="out" type="i" name="status"/>
 		</method>
 
-		<signal name="status">
+		<signal name="Status">
 			<arg type="i" name="status"/>
-		</signal>
-
-		<signal name="disconnect">
-			<arg type="i" name="type"/>
 		</signal>
 
 	</interface>

@@ -70,13 +70,13 @@ static void on_response_dtapi_modem_get_flight_mode(gint result,
 	telephony_modem_complete_get_flight_mode(rsp_cb_data->interface_object,
 		rsp_cb_data->invocation, result, enable);
 
-	tcore_free(rsp_cb_data);
-
 	if (enable == TRUE)
 		flight_mode_status = TEL_MODEM_FLIGHT_MODE_ON;
 
 	/* Update property */
 	telephony_modem_set_flight_mode_status(rsp_cb_data->interface_object, flight_mode_status);
+
+	tcore_free(rsp_cb_data);
 }
 
 static void on_response_dtapi_modem_get_version(gint result,
@@ -138,10 +138,10 @@ static void on_response_dtapi_modem_get_imei(gint result,
 	telephony_modem_complete_get_imei(rsp_cb_data->interface_object,
 		rsp_cb_data->invocation, result, imei);
 
-	tcore_free(rsp_cb_data);
-
 	/* Update property */
 	telephony_modem_set_imei(rsp_cb_data->interface_object, imei);
+
+	tcore_free(rsp_cb_data);
 }
 
 static gboolean dtapi_modem_set_power_status(TelephonyModem *modem,

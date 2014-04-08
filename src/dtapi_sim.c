@@ -311,7 +311,7 @@ static void on_response_dtapi_sim_get_call_forwarding_info(gint result,
 
 			g_variant_builder_close(&variant_builder);
 
-			dbg("[%d] : Profile ID: [%s]", count,
+			dbg("[%d] : Profile ID: [%d]", count,
 				cf_list->cf[count].profile_id);
 		}
 	}

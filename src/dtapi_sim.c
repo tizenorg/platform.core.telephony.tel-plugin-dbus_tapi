@@ -508,7 +508,7 @@ static void on_response_dtapi_sim_get_mailbox_info(gint result,
 		tcore_check_return_assert(mb_list != NULL);
 		dbg("Mailbox list count: [%d]", mb_list->count);
 
-		for (count = 0; count < count; count++) {
+		for (count = 0; count < mb_list->count; count++) {
 			g_variant_builder_open(&variant_builder, G_VARIANT_TYPE("a{sv}"));
 
 			g_variant_builder_add(&variant_builder, "{sv}",

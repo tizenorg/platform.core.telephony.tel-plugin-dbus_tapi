@@ -11,7 +11,7 @@ SET(CMAKE_INSTALL_PREFIX "${PREFIX}")
 
 # Set required packages
 INCLUDE(FindPkgConfig)
-pkg_check_modules(pkgs REQUIRED glib-2.0 gobject-2.0 gio-2.0 gio-unix-2.0 tcore dlog aul appsvc security-server libtzplatform-config)
+pkg_check_modules(pkgs REQUIRED glib-2.0 gobject-2.0 gio-2.0 gio-unix-2.0 tcore aul appsvc security-server libtzplatform-config)
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
@@ -25,7 +25,7 @@ INCLUDE_DIRECTORIES(
 
 SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wdeclaration-after-statement -Wmissing-declarations -Wcast-align")
 
-ADD_DEFINITIONS("-DFEATURE_DLOG_DEBUG")
+ADD_DEFINITIONS("-DFEATURE_TLOG_DEBUG")
 ADD_DEFINITIONS("-DTCORE_LOG_TAG=\"DBUS_TAPI\"")
 ADD_DEFINITIONS("-DPLUGIN_VERSION=${VERSION}")
 ADD_DEFINITIONS("-DEXPORT_API=__attribute__((visibility(\"default\")))")

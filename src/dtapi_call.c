@@ -799,9 +799,9 @@ dtapi_call_get_status(TelephonyCall *call,
 	gboolean mpty;
 	TelCallCliValidity cli_validity;
 	gchar num[TEL_CALL_CALLING_NUMBER_LEN_MAX + 1] = {0, };
-	TelCallCniValidity cni_validity;
+	TelCallCniValidity cni_validity = TEL_CALL_CNI_VALIDITY_NOT_AVAILABLE;
 	gchar name[TEL_CALL_CALLING_NAME_LEN_MAX + 1] = {0, };
-	gboolean forward;
+	gboolean forward = FALSE;
 	TelCallActiveLine active_line;
 
 	if (dtapi_check_access_control(invocation, AC_CALL, "r") == FALSE)

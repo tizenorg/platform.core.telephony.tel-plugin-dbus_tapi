@@ -22,6 +22,7 @@ BuildRequires:  pkgconfig(gobject-2.0)
 BuildRequires:  pkgconfig(libtzplatform-config)
 BuildRequires:  pkgconfig(security-server)
 BuildRequires:  pkgconfig(tcore)
+BuildRequires:  pkgconfig(tel-headers)
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 

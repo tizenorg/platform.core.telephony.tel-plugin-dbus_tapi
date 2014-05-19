@@ -30,7 +30,8 @@
 #include "dtapi_ss.h"
 #include "dtapi_util.h"
 #include "dtapi_manager.h"
-#include "generated-code.h"
+
+#include <tel_generated_code.h>
 
 #include <glib.h>
 #include <tcore.h>

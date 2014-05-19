@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "generated-code.h"
+#include <tel_generated_code.h>
 
 #include <glib.h>
 #include <tcore.h>

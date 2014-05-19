@@ -220,10 +220,10 @@ static void on_response_dtapi_phonebook_read_record(gint result,
 	dbg("Result: [%d]", result);
 
 	tcore_check_return_assert(NULL != rsp_cb_data);
+	tcore_check_return_assert(NULL != read_record);
 
 	g_variant_builder_init(&read_builder, G_VARIANT_TYPE("a{sv}"));
-	if (TEL_PB_RESULT_SUCCESS == result
-			&& read_record != NULL) {
+	if (TEL_PB_RESULT_SUCCESS == result) {
 		if (read_record->pb_type == TEL_PB_USIM) {
 			GVariant *var_anr = NULL, *var_email = NULL;
 			GVariantBuilder anr_builder, email_builder;

@@ -66,7 +66,7 @@ static gboolean dtapi_sms_send(TelephonySms *sms,
 	}
 
 	decoded_tpdu = g_base64_decode(tpdu, &decoded_tpdu_length);
-	if (decoded_tpdu_length > (TEL_SMS_SMDATA_SIZE_MAX + 1)) {
+	if (decoded_tpdu_length > TEL_SMS_SMDATA_SIZE_MAX) {
 		dtapi_return_error(invocation, G_DBUS_ERROR_FAILED, "Tpdu Decoding Failed");
 		tcore_free(decoded_tpdu);
 		return TRUE;
@@ -696,7 +696,7 @@ static gboolean dtapi_sms_send_deliver_report(TelephonySms *sms,
 	}
 
 	decoded_tpdu = g_base64_decode(tpdu, &decoded_tpdu_length);
-	if (decoded_tpdu_length > (TEL_SMS_SMDATA_SIZE_MAX + 1)) {
+	if (decoded_tpdu_length > TEL_SMS_SMDATA_SIZE_MAX) {
 		dtapi_return_error(invocation, G_DBUS_ERROR_FAILED, "Tpdu Decoding Failed");
 		tcore_free(decoded_tpdu);
 		return TRUE;

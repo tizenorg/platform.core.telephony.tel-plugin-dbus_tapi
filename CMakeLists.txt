@@ -11,7 +11,7 @@ SET(CMAKE_INSTALL_PREFIX "${PREFIX}")
 
 # Set required packages
 INCLUDE(FindPkgConfig)
-pkg_check_modules(pkgs REQUIRED glib-2.0 gobject-2.0 gio-2.0 gio-unix-2.0 tcore aul appsvc security-server libtzplatform-config)
+pkg_check_modules(pkgs REQUIRED glib-2.0 gobject-2.0 gio-2.0 gio-unix-2.0 tcore tel-headers aul appsvc security-server libtzplatform-config)
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")
@@ -53,29 +53,8 @@ SET(SRCS
 #	sat-manager/src/sat_util.c
 )
 
-SET(INTROSPECTION_PATH ${CMAKE_SOURCE_DIR}/introspection)
-
-ADD_CUSTOM_COMMAND(OUTPUT ${CMAKE_BINARY_DIR}/generated-code.c
-	COMMAND gdbus-codegen
-	--interface-prefix org.tizen.telephony.
-	--generate-c-code generated-code
-	--c-namespace Telephony
-	--c-generate-object-manager
-	${INTROSPECTION_PATH}/manager.xml
-	${INTROSPECTION_PATH}/network.xml
-	${INTROSPECTION_PATH}/sim.xml
-	${INTROSPECTION_PATH}/phonebook.xml
-	${INTROSPECTION_PATH}/sap.xml
-	${INTROSPECTION_PATH}/sat.xml
-	${INTROSPECTION_PATH}/sms.xml
-	${INTROSPECTION_PATH}/call.xml
-	${INTROSPECTION_PATH}/ss.xml
-	${INTROSPECTION_PATH}/modem.xml
-	${INTROSPECTION_PATH}/gps.xml
-	COMMENT "Generating GDBus .c/.h")
-
 # library build
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${SRCS} ${CMAKE_BINARY_DIR}/generated-code.c)
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${SRCS})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${pkgs_LDFLAGS})
 SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES PREFIX "" OUTPUT_NAME ${PROJECT_NAME})
 

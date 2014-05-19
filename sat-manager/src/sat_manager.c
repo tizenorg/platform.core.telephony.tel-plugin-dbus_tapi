@@ -35,7 +35,8 @@
 #include <dtapi_call.h>
 #include <dtapi_sim.h>
 
-#include "generated-code.h"
+#include <tel_generated_code.h>
+
 #include "sat_manager.h"
 #include "sat_ui_support.h"
 
@@ -2090,6 +2091,7 @@ GVariant *sat_manager_provide_local_info_noti(TcorePlugin *plugin, TcorePlugin *
 			sat_data = (DtapiSatPrivateData *)tcore_plugin_ref_user_data(comm_plugin);
 			if (!sat_data) {
 				err("sat_data is null");
+				g_free(tr);
 				return NULL;
 			}
 
@@ -4246,6 +4248,7 @@ static gboolean _sat_manager_handle_launch_browser_confirm(TcorePlugin *plugin, 
 			sat_data = (DtapiSatPrivateData *)tcore_plugin_ref_user_data(comm_plugin);
 			if (!sat_data) {
 				err("sat_data is null");
+				g_free(tr);
 				return result;
 			}
 

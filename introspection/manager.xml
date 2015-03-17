@@ -1,0 +1,12 @@
+<node>
+
+	<interface name="org.tizen.telephony.Manager">
+		<method name="GetModems">
+			<arg direction="out" type="as" name="list"/>
+		</method>
+		<signal name="SimInserted">
+			<arg type="i" name="count"/>
+		</signal>
+	</interface>
+
+</node>

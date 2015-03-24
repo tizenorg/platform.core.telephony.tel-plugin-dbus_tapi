@@ -34,7 +34,10 @@ dbus-tapi plugin for telephony
 %build
 versionint=$[%{major} * 1000000 + %{minor} * 1000 + %{patchlevel}]
 
-cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DVERSION=$versionint  -DSYSCONFDIR=%{_sysconfdir} \
+cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} \
+	-DLIB_INSTALL_DIR=%{_libdir} \
+	-DVERSION=$versionint \
+	-DSYSCONFDIR=%{_sysconfdir}
 
 make %{?_smp_mflags}
 

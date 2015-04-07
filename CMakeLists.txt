@@ -20,8 +20,9 @@ pkg_check_modules(pkgs REQUIRED
 	tcore
 	aul
 	appsvc
-	security-server
 	pkgmgr
+	cynara-client
+	cynara-session
 )
 
 FOREACH(flag ${pkgs_CFLAGS})

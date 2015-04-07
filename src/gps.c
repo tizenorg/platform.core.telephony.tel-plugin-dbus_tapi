@@ -31,8 +31,9 @@ on_gps_set_frequency_aiding (TelephonyGps *gps,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_GPS, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
@@ -61,8 +62,9 @@ on_gps_confirm_measure_pos (TelephonyGps *gps,
 	gboolean result = TRUE;
 	guchar *decoded_data = NULL;
 	gsize length;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_GPS, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
@@ -93,8 +95,9 @@ on_enable_smart_assistant(TelephonyGps *gps,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_GPS, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
@@ -117,8 +120,9 @@ on_disable_smart_assistant(TelephonyGps *gps,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_GPS, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
@@ -144,6 +148,7 @@ on_sync_smart_assistant_area_list(TelephonyGps *gps,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	GVariantIter *iter = NULL;
 	GVariant *b = NULL;
@@ -151,7 +156,7 @@ on_sync_smart_assistant_area_list(TelephonyGps *gps,
 	gint item1, item2;
 	dbg("enter count=%d", count);
 
-	if (!check_access_control (invocation, AC_GPS, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
@@ -198,13 +203,14 @@ on_del_smart_assistant_area_list(TelephonyGps *gps,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	GVariantIter *iter = NULL;
 	GVariant *b = NULL;
 	int i = 0;
 	gint item1, item2;
 
-	if (!check_access_control (invocation, AC_GPS, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
@@ -251,8 +257,9 @@ on_add_smart_assistant_area(TelephonyGps *gps,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_GPS, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
@@ -281,8 +288,9 @@ on_modify_smart_assistant_area(TelephonyGps *gps,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_GPS, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
@@ -312,8 +320,9 @@ on_set_smart_assistant_info(TelephonyGps *gps,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_GPS, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);

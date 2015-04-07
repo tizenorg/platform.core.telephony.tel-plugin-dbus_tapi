@@ -58,8 +58,9 @@ static gboolean on_phonebook_get_init_status(TelephonyPhonebook *phonebook, GDBu
 	GSList *co_list = NULL;
 	CoreObject *co_pb = NULL;
 	TcorePlugin *plugin = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_PHONEBOOK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_PHONEBOOK, "r"))
 		return TRUE;
 
 	plugin = tcore_server_find_plugin(ctx->server, GET_CP_NAME(invocation));
@@ -108,8 +109,9 @@ static gboolean on_phonebook_get_count(TelephonyPhonebook *phonebook, GDBusMetho
 	GSList *co_list = NULL;
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_PHONEBOOK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_PHONEBOOK, "r"))
 		return TRUE;
 
 	plugin = tcore_server_find_plugin(ctx->server, GET_CP_NAME(invocation));
@@ -155,8 +157,9 @@ static gboolean on_phonebook_get_info(TelephonyPhonebook *phonebook, GDBusMethod
 	GSList *co_list = NULL;
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_PHONEBOOK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_PHONEBOOK, "r"))
 		return TRUE;
 
 	plugin = tcore_server_find_plugin(ctx->server, GET_CP_NAME(invocation));
@@ -203,8 +206,9 @@ static gboolean on_phonebook_get_usim_info(TelephonyPhonebook *phonebook, GDBusM
 	GSList *co_list = NULL;
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_PHONEBOOK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_PHONEBOOK, "r"))
 		return TRUE;
 
 	plugin = tcore_server_find_plugin(ctx->server, GET_CP_NAME(invocation));
@@ -252,8 +256,9 @@ static gboolean on_phonebook_read_record(TelephonyPhonebook *phonebook, GDBusMet
 	GSList *co_list = NULL;
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_PHONEBOOK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_PHONEBOOK, "r"))
 		return TRUE;
 
 	plugin = tcore_server_find_plugin(ctx->server, GET_CP_NAME(invocation));
@@ -312,8 +317,9 @@ static gboolean on_phonebook_update_record(TelephonyPhonebook *phonebook, GDBusM
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
 	int temp_len = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_PHONEBOOK, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_PHONEBOOK, "x"))
 		return TRUE;
 
 	plugin = tcore_server_find_plugin(ctx->server, GET_CP_NAME(invocation));
@@ -417,8 +423,9 @@ static gboolean on_phonebook_delete_record(TelephonyPhonebook *phonebook, GDBusM
 	GSList *co_list = NULL;
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_PHONEBOOK, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_PHONEBOOK, "x"))
 		return TRUE;
 
 	plugin = tcore_server_find_plugin(ctx->server, GET_CP_NAME(invocation));

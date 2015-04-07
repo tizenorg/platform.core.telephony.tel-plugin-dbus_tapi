@@ -53,12 +53,13 @@ on_sms_send_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	int i = 0;
 	GVariantIter *iter = 0;
 	GVariant *inner_gv = 0;
 
-	if (!check_access_control (invocation, AC_SMS, "x"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "x"))
 		return TRUE;
 
 	memset(&sendMsg, 0 , sizeof(struct treq_sms_send_msg));
@@ -119,8 +120,9 @@ on_sms_read_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
 		return TRUE;
 
 	readMsg.index = arg_index;
@@ -151,12 +153,13 @@ on_sms_save_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	int i = 0;
 	GVariantIter *iter = 0;
 	GVariant *inner_gv = 0;
 
-	if (!check_access_control (invocation, AC_SMS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
 		return TRUE;
 
 	if (SMS_NETTYPE_3GPP == format) {
@@ -216,8 +219,9 @@ on_sms_delete_msg(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "x"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "x"))
 		return TRUE;
 
 	deleteMsg.index = arg_index;
@@ -242,8 +246,9 @@ on_sms_get_msg_count(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sms, invocation);
@@ -268,8 +273,9 @@ on_sms_get_sca(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
 		return TRUE;
 
 	getSca.index = arg_index;
@@ -300,12 +306,13 @@ on_sms_set_sca(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	int i = 0;
 	GVariantIter *iter = 0;
 	GVariant *inner_gv = 0;
 
-	if (!check_access_control (invocation, AC_SMS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
 		return TRUE;
 
 	memset(&setSca, 0, sizeof(struct treq_sms_set_sca));
@@ -361,8 +368,9 @@ on_sms_get_cb_config(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sms, invocation);
@@ -391,6 +399,7 @@ on_sms_set_cb_config(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	GVariant *value = NULL;
 	GVariant *inner_gv = 0;
@@ -399,7 +408,7 @@ on_sms_set_cb_config(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	const gchar *key = NULL;
 	int i = 0;
 
-	if (!check_access_control (invocation, AC_SMS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
 		return TRUE;
 
 	setCbConfig.net3gppType = arg_net3gppType;
@@ -457,8 +466,9 @@ on_sms_set_mem_status(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
 		return TRUE;
 
 	memStatus.memory_status = arg_memoryStatus;
@@ -484,8 +494,9 @@ on_sms_get_pref_bearer(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sms, invocation);
@@ -510,8 +521,9 @@ on_sms_set_pref_bearer(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
 		return TRUE;
 
 	setPrefBearer.svc = arg_bearerType;
@@ -542,6 +554,7 @@ on_sms_set_delivery_report(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	guchar *decoded_sca = NULL;
 	guchar *decoded_tpdu = NULL;
@@ -549,7 +562,7 @@ on_sms_set_delivery_report(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	gsize decoded_sca_len = 0;
 	gsize decoded_tpdu_len = 0;
 
-	if (!check_access_control (invocation, AC_SMS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
 		return TRUE;
 
 	memset(&deliveryReport, 0, sizeof(struct treq_sms_set_delivery_report));
@@ -628,8 +641,9 @@ on_sms_set_msg_status(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
 		return TRUE;
 
 	msgStatus.index = arg_index;
@@ -657,8 +671,9 @@ on_sms_get_sms_params(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
 		return TRUE;
 
 	getParams.index = arg_index;
@@ -700,12 +715,13 @@ on_sms_set_sms_params(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	int i = 0;
 	GVariantIter *iter = 0;
 	GVariant *inner_gv = 0;
 
-	if (!check_access_control (invocation, AC_SMS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
 		return TRUE;
 
 	memset(&setParams, 0, sizeof(struct treq_sms_set_params));
@@ -777,8 +793,9 @@ on_sms_get_sms_param_cnt(TelephonySms *sms, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn	ret = TCORE_RETURN_SUCCESS;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sms, invocation);
@@ -803,8 +820,9 @@ on_sms_get_sms_ready_status(TelephonySms *sms, GDBusMethodInvocation *invocation
 	CoreObject *co_sms = NULL;
 	TcorePlugin *plugin = NULL;
 	gboolean ready_status = FALSE;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SMS, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
 		return TRUE;
 
 	plugin = tcore_server_find_plugin(ctx->server, GET_CP_NAME(invocation));

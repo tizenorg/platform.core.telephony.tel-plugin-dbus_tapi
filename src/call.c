@@ -224,10 +224,11 @@ static gboolean on_call_dial(TelephonyCall *call, GDBusMethodInvocation *invocat
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	memset(&req, 0x0,sizeof(req));
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -260,8 +261,9 @@ static gboolean on_call_answer(TelephonyCall *call, GDBusMethodInvocation *invoc
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -288,8 +290,9 @@ static gboolean on_call_end(TelephonyCall *call, GDBusMethodInvocation *invocati
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -316,8 +319,9 @@ static gboolean on_call_start_cont_dtmf(TelephonyCall *call, GDBusMethodInvocati
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -343,8 +347,9 @@ static gboolean on_call_stop_cont_dtmf(TelephonyCall *call, GDBusMethodInvocatio
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -367,8 +372,9 @@ static gboolean on_call_send_burst_dtmf(TelephonyCall *call, GDBusMethodInvocati
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -406,8 +412,9 @@ static gboolean on_call_active(TelephonyCall *call, GDBusMethodInvocation *invoc
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -433,8 +440,9 @@ static gboolean on_call_hold(TelephonyCall *call, GDBusMethodInvocation *invocat
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -460,8 +468,9 @@ static gboolean on_call_swap(TelephonyCall *call, GDBusMethodInvocation *invocat
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -487,8 +496,9 @@ static gboolean on_call_join(TelephonyCall *call, GDBusMethodInvocation *invocat
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -514,8 +524,9 @@ static gboolean on_call_split(TelephonyCall *call, GDBusMethodInvocation *invoca
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -541,8 +552,9 @@ static gboolean on_call_transfer(TelephonyCall *call, GDBusMethodInvocation *inv
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -568,8 +580,9 @@ static gboolean on_call_deflect(TelephonyCall *call, GDBusMethodInvocation *invo
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -596,8 +609,9 @@ static gboolean on_call_get_privacy_mode(TelephonyCall *call, GDBusMethodInvocat
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -619,8 +633,9 @@ static gboolean on_call_set_privacy_mode(TelephonyCall *call, GDBusMethodInvocat
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -647,6 +662,7 @@ static gboolean on_call_get_status(TelephonyCall *call, GDBusMethodInvocation *i
 	GSList *o_list = 0;
 	CoreObject *o = 0;
 	CallObject *co = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	gchar call_number[MAX_CALL_NUMBER_LEN];
 	gint call_type;
@@ -654,7 +670,7 @@ static gboolean on_call_get_status(TelephonyCall *call, GDBusMethodInvocation *i
 	gint call_status;
 	gboolean call_multiparty_state;
 
-	if (!check_access_control (invocation, AC_CALL, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "r"))
 		return TRUE;
 
 	plugin = tcore_server_find_plugin(ctx->server, GET_CP_NAME(invocation));
@@ -703,6 +719,7 @@ static gboolean on_call_get_status_all(TelephonyCall *call, GDBusMethodInvocatio
 	GSList *list = 0;
 	CoreObject *o = 0;
 	CallObject *co = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	GVariant *gv = 0;
 	GVariantBuilder b;
@@ -716,7 +733,7 @@ static gboolean on_call_get_status_all(TelephonyCall *call, GDBusMethodInvocatio
 
 	int len, i;
 
-	if (!check_access_control (invocation, AC_CALL, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "r"))
 		return TRUE;
 
 	plugin = tcore_server_find_plugin(ctx->server, GET_CP_NAME(invocation));
@@ -834,8 +851,9 @@ static gboolean on_call_set_sound_path(TelephonyCall *call, GDBusMethodInvocatio
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -862,8 +880,9 @@ static gboolean on_call_get_sound_volume_level(TelephonyCall *call, GDBusMethodI
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -902,8 +921,9 @@ static gboolean on_call_set_sound_volume_level(TelephonyCall *call, GDBusMethodI
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -930,8 +950,9 @@ static gboolean on_call_get_sound_mute_status(TelephonyCall *call, GDBusMethodIn
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -954,8 +975,9 @@ static gboolean on_call_set_sound_mute_status(TelephonyCall *call, GDBusMethodIn
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -984,8 +1006,9 @@ static gboolean on_call_set_sound_recording(TelephonyCall *call, GDBusMethodInvo
 	struct treq_call_set_sound_recording req;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -1011,8 +1034,9 @@ static gboolean on_call_set_sound_equalization(TelephonyCall *call, GDBusMethodI
 	struct treq_call_set_sound_equalization req;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -1040,8 +1064,9 @@ static gboolean on_call_set_sound_noise_reduction(TelephonyCall *call, GDBusMeth
 	struct treq_call_set_sound_noise_reduction req;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -1068,8 +1093,9 @@ static gboolean on_call_set_sound_clock_status(TelephonyCall *call, GDBusMethodI
 	struct treq_call_set_sound_clock_status req;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -1096,8 +1122,9 @@ static gboolean on_call_set_preferred_voice_subscription(TelephonyCall *call, GD
 	struct treq_call_set_preferred_voice_subscription req;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -1122,8 +1149,9 @@ static gboolean on_call_get_preferred_voice_subscription(TelephonyCall *call, GD
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_CALL, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_CALL, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -1148,8 +1176,9 @@ static gboolean on_call_modify(TelephonyCall *call,
 	struct treq_call_modify req = {0};
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control(invocation, AC_CALL, "x"))
+	if (!check_access_control(p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);
@@ -1177,8 +1206,9 @@ static gboolean on_call_confirm_modify(TelephonyCall *call,
 	struct treq_call_confirm_modify req = {0};
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control(invocation, AC_CALL, "x"))
+	if (!check_access_control(p_cynara, invocation, AC_CALL, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, call, invocation);

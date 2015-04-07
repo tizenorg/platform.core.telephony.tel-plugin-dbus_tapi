@@ -558,17 +558,27 @@ static gboolean on_init(TcorePlugin *p)
 	Communicator *comm;
 	struct custom_data *data;
 	guint id;
+	cynara *p_cynara = NULL;
 
 	if (!p)
 		return FALSE;
 
 	dbg("i'm init!");
 
+	/* Initialize cynara handle */
+	if (CYNARA_API_SUCCESS == cynara_initialize(&p_cynara, NULL)) {
+		dbg("cynara handle is successfully initialized.");
+	} else {
+		err("Failed to initialize cynara handle.");
+		return FALSE;
+	}
+
 	data = calloc(1, sizeof(struct custom_data));
 	if (!data) {
 		return FALSE;
 	}
 
+	data->p_cynara = p_cynara;
 	data->plugin = p;
 
 	comm = tcore_communicator_new(p, "dbus", &ops);
@@ -636,6 +646,11 @@ static void on_unload(TcorePlugin *p)
 		g_free(object);
 	}
 	g_slist_free(data->cached_data);
+
+	if (data->p_cynara) {
+		cynara_finish(data->p_cynara);
+		data->p_cynara = NULL;
+	}
 
 	free(data);
 

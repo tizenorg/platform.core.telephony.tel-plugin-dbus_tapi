@@ -106,7 +106,9 @@ static gboolean on_sat_get_main_menu_info(TelephonySAT *sat, GDBusMethodInvocati
 	GVariant *icon_id = NULL;
 	GVariant *icon_list = NULL;
 #endif
-	if (!check_access_control (invocation, AC_SAT, "r"))
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+
+	if (!check_access_control (p_cynara, invocation, AC_SAT, "r"))
 		return TRUE;
 
 	main_menu = _sat_get_main_menu(ctx, GET_CP_NAME(invocation));
@@ -144,8 +146,9 @@ static gboolean on_sat_send_display_status(TelephonySAT *sat, GDBusMethodInvocat
 	struct custom_data *ctx = user_data;
 	gboolean result = FALSE;
 	gint out_param = 1;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SAT, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SAT, "x"))
 		return TRUE;
 
 	cp_name = GET_CP_NAME(invocation);
@@ -174,12 +177,13 @@ static gboolean on_sat_send_user_confirm(TelephonySAT *sat, GDBusMethodInvocatio
 	TcorePlugin *plg = NULL;
 	char *cp_name;
 	struct custom_data *ctx = user_data;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	gboolean result = FALSE;
 	gint out_param = 1;
 	GVariant *confirm_data = NULL;
 
-	if (!check_access_control (invocation, AC_SAT, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SAT, "x"))
 		return TRUE;
 
 	cp_name = GET_CP_NAME(invocation);
@@ -211,11 +215,12 @@ static gboolean on_sat_send_app_exec_result(TelephonySAT *sat, GDBusMethodInvoca
 	TcorePlugin *plg = NULL;
 	char *cp_name;
 	struct custom_data *ctx = user_data;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	gboolean result = FALSE;
 	gint out_param = 1;
 
-	if (!check_access_control (invocation, AC_SAT, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SAT, "x"))
 		return TRUE;
 
 	cp_name = GET_CP_NAME(invocation);
@@ -246,8 +251,9 @@ static gboolean on_sat_select_menu(TelephonySAT *sat, GDBusMethodInvocation *inv
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	struct treq_sat_envelop_cmd_data envelop_data;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SAT, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SAT, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sat, invocation);
@@ -278,10 +284,11 @@ static gboolean on_sat_download_event(TelephonySAT *sat, GDBusMethodInvocation *
 	TReturn rv;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	struct treq_sat_envelop_cmd_data envelop_data;
 
-	if (!check_access_control (invocation, AC_SAT, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SAT, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sat, invocation);

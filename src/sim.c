@@ -374,8 +374,9 @@ static gboolean on_sim_get_init_status(TelephonySim *sim, GDBusMethodInvocation 
 	enum tel_sim_status sim_status = SIM_STATUS_UNKNOWN;
 	gboolean sim_changed = FALSE;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -396,8 +397,9 @@ static gboolean on_sim_get_card_type(TelephonySim *sim, GDBusMethodInvocation *i
 	struct custom_data *ctx = user_data;
 	enum tel_sim_type sim_type = SIM_TYPE_UNKNOWN;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -416,8 +418,9 @@ static gboolean on_sim_get_imsi(TelephonySim *sim, GDBusMethodInvocation *invoca
 	struct custom_data *ctx = user_data;
 	struct tel_sim_imsi *n_imsi;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -441,8 +444,9 @@ static gboolean on_sim_get_ecc(TelephonySim *sim, GDBusMethodInvocation *invocat
 	struct custom_data *ctx = user_data;
 	CoreObject *co_sim = NULL;
 	struct tel_sim_ecc_list *ecc_list = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -497,10 +501,11 @@ static gboolean on_sim_get_iccid(TelephonySim *sim, GDBusMethodInvocation *invoc
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct tel_sim_iccid* iccid = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	dbg("Func Entrance");
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -536,8 +541,9 @@ static gboolean on_sim_get_language(TelephonySim *sim, GDBusMethodInvocation *in
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -565,8 +571,9 @@ static gboolean on_sim_set_language(TelephonySim *sim, GDBusMethodInvocation *in
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct treq_sim_set_language set_language;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "w"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -598,8 +605,9 @@ static gboolean on_sim_get_call_forwarding(TelephonySim *sim, GDBusMethodInvocat
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -637,8 +645,9 @@ static gboolean on_sim_set_call_forwarding(TelephonySim *sim, GDBusMethodInvocat
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct treq_sim_set_callforwarding req_cf;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "w"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -691,8 +700,9 @@ static gboolean on_sim_get_message_waiting(TelephonySim *sim, GDBusMethodInvocat
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -729,8 +739,9 @@ static gboolean on_sim_set_message_waiting(TelephonySim *sim, GDBusMethodInvocat
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct treq_sim_set_messagewaiting req_mw;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "w"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -788,8 +799,9 @@ static gboolean on_sim_get_mailbox(TelephonySim *sim, GDBusMethodInvocation *inv
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -825,8 +837,9 @@ static gboolean on_sim_set_mailbox(TelephonySim *sim, GDBusMethodInvocation *inv
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct treq_sim_set_mailbox req_mb;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "w"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -883,8 +896,9 @@ static gboolean on_sim_get_cphsinfo(TelephonySim *sim, GDBusMethodInvocation *in
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -910,8 +924,9 @@ static gboolean on_sim_get_service_table(TelephonySim *sim, GDBusMethodInvocatio
 	struct custom_data *ctx = user_data;
 	CoreObject *co_sim = NULL;
 	struct tel_sim_service_table *svct = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -987,8 +1002,9 @@ static gboolean on_sim_get_msisdn(TelephonySim *sim, GDBusMethodInvocation *invo
 	CoreObject *co_sim = NULL;
 	struct tel_sim_msisdn_list *msisdn_list = NULL;
 	gboolean read_from_modem = FALSE;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1059,8 +1075,9 @@ static gboolean on_sim_get_oplmnwact(TelephonySim *sim, GDBusMethodInvocation *i
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1088,8 +1105,9 @@ static gboolean on_sim_get_spn(TelephonySim *sim, GDBusMethodInvocation *invocat
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct tel_sim_spn* spn = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1125,8 +1143,9 @@ static gboolean on_sim_get_cphs_netname(TelephonySim *sim, GDBusMethodInvocation
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct tel_sim_cphs_netname *cphs_netname = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1162,8 +1181,9 @@ static gboolean on_sim_get_gid(TelephonySim *sim, GDBusMethodInvocation *invocat
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1199,8 +1219,9 @@ static gboolean on_sim_authentication(TelephonySim *sim, GDBusMethodInvocation *
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct treq_sim_req_authentication req_auth;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "x"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1275,8 +1296,9 @@ static gboolean on_sim_verify_sec(TelephonySim *sim, GDBusMethodInvocation *invo
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct treq_sim_verify_pins verify_pins;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "x"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1313,8 +1335,9 @@ static gboolean on_sim_verify_puk(TelephonySim *sim, GDBusMethodInvocation *invo
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct treq_sim_verify_puks verify_puks;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "x"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1353,8 +1376,9 @@ static gboolean on_sim_change_pin(TelephonySim *sim, GDBusMethodInvocation *invo
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct treq_sim_change_pins change_pins;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "x"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1392,8 +1416,9 @@ static gboolean on_sim_disable_facility(TelephonySim *sim, GDBusMethodInvocation
 	TReturn ret;
 	struct treq_sim_disable_facility dis_facility;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "x"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1455,8 +1480,9 @@ static gboolean on_sim_enable_facility(TelephonySim *sim, GDBusMethodInvocation 
 	TReturn ret;
 	struct treq_sim_enable_facility en_facility;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "x"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1517,8 +1543,9 @@ static gboolean on_sim_get_facility(TelephonySim *sim, GDBusMethodInvocation *in
 	TReturn ret;
 	struct treq_sim_get_facility_status facility;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1578,8 +1605,9 @@ static gboolean on_sim_get_lock_info(TelephonySim *sim, GDBusMethodInvocation *i
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct treq_sim_get_lock_info lock_info;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1642,8 +1670,9 @@ static gboolean on_sim_transfer_apdu(TelephonySim *sim, GDBusMethodInvocation *i
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	int i =0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "x"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1686,8 +1715,9 @@ static gboolean on_sim_get_atr(TelephonySim *sim, GDBusMethodInvocation *invocat
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1718,10 +1748,11 @@ static gboolean on_sim_get_fields(TelephonySim *sim, GDBusMethodInvocation *invo
 	CoreObject *co_sim = NULL;
 	GVariantBuilder b;
 	GVariant *gv_fields = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	dbg("Func Entrance");
 
-	if (!check_access_control (invocation, AC_SIM, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1768,8 +1799,9 @@ static gboolean on_sim_set_power_state(TelephonySim *sim, GDBusMethodInvocation 
 	TReturn ret;
 	CoreObject *co_sim = NULL;
 	struct treq_sim_set_powerstate set_powerstate;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SIM, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_SIM, "w"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1800,8 +1832,9 @@ static gboolean on_sim_get_impi(TelephonySim *sim,
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control(invocation, AC_SIM, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1827,8 +1860,9 @@ static gboolean on_sim_get_impu(TelephonySim *sim,
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control(invocation, AC_SIM, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1854,8 +1888,9 @@ static gboolean on_sim_get_domain(TelephonySim *sim,
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control(invocation, AC_SIM, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1881,8 +1916,9 @@ static gboolean on_sim_get_pcscf(TelephonySim *sim,
 	UserRequest *ur = NULL;
 	TReturn ret;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control(invocation, AC_SIM, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1907,10 +1943,11 @@ static gboolean on_sim_get_app_list(TelephonySim *sim,
 	struct custom_data *ctx = user_data;
 	CoreObject *co_sim = NULL;
 	unsigned char app_list = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	dbg("Func Entrance");
 
-	if (!check_access_control(invocation, AC_SIM, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);
@@ -1927,10 +1964,11 @@ static gboolean on_sim_get_isim_service_table(TelephonySim *sim,
 	struct custom_data *ctx = user_data;
 	struct tel_sim_ist *ist = NULL;
 	CoreObject *co_sim = NULL;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	dbg("Func Entrance");
 
-	if (!check_access_control(invocation, AC_SIM, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SIM, "r"))
 		return TRUE;
 
 	DBUS_SIM_GET_COSIM(invocation, co_sim, ctx->server);

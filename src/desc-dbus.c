@@ -558,6 +558,8 @@ static gboolean on_init(TcorePlugin *p)
 	Communicator *comm;
 	struct custom_data *data;
 	guint id;
+	cynara *p_cynara = NULL;
+	cynara_configuration *conf = NULL;
 
 	if (!p)
 		return FALSE;
@@ -579,6 +581,15 @@ static gboolean on_init(TcorePlugin *p)
 
 	data->objects = g_hash_table_new(g_str_hash, g_str_equal);
 	data->cached_data = NULL;
+
+	if (CYNARA_API_SUCCESS == cynara_initialize(&p_cynara, conf)) {
+		dbg("cynara handle is successfully initialized.");
+	} else {
+		err("Failed to initialize cynara handle.");
+		return FALSE;
+	}
+	data->p_cynara = p_cynara;
+	data->conf = conf;
 
 	dbg("data = %p", data);
 
@@ -636,6 +647,11 @@ static void on_unload(TcorePlugin *p)
 		g_free(object);
 	}
 	g_slist_free(data->cached_data);
+
+	if (data->p_cynara) {
+		cynara_finish(data->p_cynara);
+		data->p_cynara = NULL;
+	}
 
 	free(data);
 

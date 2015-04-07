@@ -580,6 +580,13 @@ static gboolean on_init(TcorePlugin *p)
 	data->objects = g_hash_table_new(g_str_hash, g_str_equal);
 	data->cached_data = NULL;
 
+	if (CYNARA_API_SUCCESS == cynara_initialize(&(data->p_cynara), data->conf)) {
+		// initialization is successful
+		dbg("cynara is successfully initialized.");
+	} else {
+		err("Failed to initialize cynara handle !");
+	}
+
 	dbg("data = %p", data);
 
 	id = g_bus_own_name (G_BUS_TYPE_SYSTEM,
@@ -636,6 +643,11 @@ static void on_unload(TcorePlugin *p)
 		g_free(object);
 	}
 	g_slist_free(data->cached_data);
+
+	if (data->p_cynara) {
+		cynara_finish(data->p_cynara);
+		data->p_cynara = NULL;
+	}
 
 	free(data);
 

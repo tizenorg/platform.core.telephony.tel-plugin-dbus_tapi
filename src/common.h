@@ -24,6 +24,10 @@
 #include <glib.h>
 #include <gio/gio.h>
 
+#include <cynara-client.h>
+#include <cynara-session.h>
+#include <cynara-creds-dbus.h>
+
 #include "type/sim.h"
 
 #include "generated-code.h"
@@ -69,6 +73,9 @@ struct custom_data {
 
 	gboolean name_acquired;
 	guint owner_id;
+
+	cynara *p_cynara;
+	cynara_configuration *conf;
 };
 
 struct dbus_request_info {

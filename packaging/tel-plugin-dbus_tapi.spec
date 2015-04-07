@@ -19,8 +19,11 @@ BuildRequires:  pkgconfig(gio-unix-2.0)
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(libxml-2.0)
 BuildRequires:  pkgconfig(pkgmgr)
-BuildRequires:  pkgconfig(security-server)
 BuildRequires:  pkgconfig(tcore)
+BuildRequires:  pkgconfig(cynara-client)
+BuildRequires:  pkgconfig(cynara-creds-dbus)
+BuildRequires:  pkgconfig(dbus-1)
+
 
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig

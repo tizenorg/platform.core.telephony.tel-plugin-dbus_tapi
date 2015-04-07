@@ -151,8 +151,9 @@ on_ss_activate_barring (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "x"))
+	if (!check_access_control(p_cynara, invocation, AC_SS, "x"))
 		return TRUE;
 
 	memset(&req, 0, sizeof(struct treq_ss_barring));
@@ -195,8 +196,9 @@ on_ss_deactivate_barring (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "x"))
+	if (!check_access_control(p_cynara, invocation, AC_SS, "x"))
 		return TRUE;
 
 	memset(&req, 0, sizeof(struct treq_ss_barring));
@@ -238,8 +240,9 @@ on_ss_change_barring_password (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "x"))
+	if (!check_access_control(p_cynara, invocation, AC_SS, "x"))
 		return TRUE;
 
 	memset(&req, 0, sizeof(struct treq_ss_barring_change_password));
@@ -280,8 +283,9 @@ on_ss_get_barring_status (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_SS, "r"))
 		return TRUE;
 
 	memset(&req, 0, sizeof(struct treq_ss_barring));
@@ -320,8 +324,9 @@ on_ss_register_forwarding (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "w")) {
+	if (!check_access_control(p_cynara, invocation, AC_SS, "w")) {
 		return TRUE;
 	}
 
@@ -366,8 +371,9 @@ on_ss_deregister_forwarding (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "w")) {
+	if (!check_access_control(p_cynara, invocation, AC_SS, "w")) {
 		return TRUE;
 	}
 
@@ -412,8 +418,9 @@ on_ss_activate_forwarding (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "w")) {
+	if (!check_access_control(p_cynara, invocation, AC_SS, "w")) {
 		return TRUE;
 	}
 
@@ -458,8 +465,9 @@ on_ss_deactivate_forwarding (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "w")) {
+	if (!check_access_control(p_cynara, invocation, AC_SS, "w")) {
 		return TRUE;
 	}
 
@@ -500,8 +508,9 @@ on_ss_get_forwarding_status (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "r")) {
+	if (!check_access_control(p_cynara, invocation, AC_SS, "r")) {
 		return TRUE;
 	}
 
@@ -537,8 +546,9 @@ on_ss_activate_waiting (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "w")) {
+	if (!check_access_control(p_cynara, invocation, AC_SS, "w")) {
 		return TRUE;
 	}
 
@@ -572,8 +582,9 @@ on_ss_deactivate_waiting (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "w")) {
+	if (!check_access_control(p_cynara, invocation, AC_SS, "w")) {
 		return TRUE;
 	}
 	memset(&req, 0, sizeof(struct treq_ss_waiting));
@@ -606,8 +617,9 @@ on_ss_get_waiting_status (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "r")) {
+	if (!check_access_control(p_cynara, invocation, AC_SS, "r")) {
 		return TRUE;
 	}
 
@@ -642,8 +654,9 @@ on_ss_set_cli_status (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "w")) {
+	if (!check_access_control(p_cynara, invocation, AC_SS, "w")) {
 		return TRUE;
 	}
 
@@ -679,8 +692,9 @@ on_ss_get_cli_status (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "r")) {
+	if (!check_access_control(p_cynara, invocation, AC_SS, "r")) {
 		return TRUE;
 	}
 
@@ -717,8 +731,9 @@ on_ss_send_ussd (TelephonySs *ss,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	int ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SS, "x")) {
+	if (!check_access_control(p_cynara, invocation, AC_SS, "x")) {
 		return TRUE;
 	}
 	memset(&req, 0, sizeof(struct treq_ss_ussd));

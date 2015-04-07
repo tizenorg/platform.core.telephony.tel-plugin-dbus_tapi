@@ -45,8 +45,9 @@ static gboolean on_sap_connect(TelephonySap *sap, GDBusMethodInvocation *invocat
 	UserRequest *ur = NULL;
 	TReturn ret;
 	struct treq_sap_req_connect req_conn;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SAP, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SAP, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sap, invocation);
@@ -71,8 +72,9 @@ static gboolean on_sap_disconnect(TelephonySap *sap, GDBusMethodInvocation *invo
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SAP, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SAP, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sap, invocation);
@@ -93,8 +95,9 @@ static gboolean on_sap_get_status(TelephonySap *sap, GDBusMethodInvocation *invo
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SAP, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SAP, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sap, invocation);
@@ -115,8 +118,9 @@ static gboolean on_sap_get_atr(TelephonySap *sap, GDBusMethodInvocation *invocat
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SAP, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SAP, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sap, invocation);
@@ -143,10 +147,11 @@ static gboolean on_sap_transfer_apdu(TelephonySap *sap, GDBusMethodInvocation *i
 	GVariant *inner_gv = NULL;
 	guchar rt_i;
 	int i =0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
 	dbg("Func Entrance");
 
-	if (!check_access_control (invocation, AC_SAP, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_SAP, "x"))
 		return TRUE;
 
 	memset(&t_apdu, 0, sizeof(struct treq_sap_transfer_apdu));
@@ -186,8 +191,9 @@ static gboolean on_sap_set_protocol(TelephonySap *sap, GDBusMethodInvocation *in
 	UserRequest *ur = NULL;
 	TReturn ret;
 	struct treq_sap_set_protocol set_protocol;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SAP, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_SAP, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sap, invocation);
@@ -214,8 +220,9 @@ static gboolean on_sap_set_power(TelephonySap *sap, GDBusMethodInvocation *invoc
 	UserRequest *ur = NULL;
 	TReturn ret;
 	struct treq_sap_set_power set_power;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SAP, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_SAP, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sap, invocation);
@@ -240,8 +247,9 @@ static gboolean on_sap_get_card_reader_status(TelephonySap *sap, GDBusMethodInvo
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_SAP, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_SAP, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, sap, invocation);

@@ -465,8 +465,9 @@ on_network_search (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -488,8 +489,9 @@ on_network_search_cancel (TelephonyNetwork *network, GDBusMethodInvocation *invo
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "x"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -511,8 +513,9 @@ on_network_get_selection_mode (TelephonyNetwork *network, GDBusMethodInvocation 
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -535,8 +538,9 @@ on_network_set_selection_mode (TelephonyNetwork *network, GDBusMethodInvocation 
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	memset(&req, 0, sizeof(struct treq_network_set_plmn_selection_mode));
@@ -577,8 +581,9 @@ on_network_set_service_domain (TelephonyNetwork *network, GDBusMethodInvocation 
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -603,8 +608,9 @@ on_network_get_service_domain (TelephonyNetwork *network, GDBusMethodInvocation 
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -627,8 +633,9 @@ on_network_set_band (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -654,8 +661,9 @@ on_network_get_band (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -678,8 +686,9 @@ on_network_set_mode (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -704,8 +713,9 @@ on_network_get_mode (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -728,8 +738,9 @@ on_network_set_preferred_plmn (TelephonyNetwork *network, GDBusMethodInvocation 
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -762,8 +773,9 @@ on_network_get_preferred_plmn (TelephonyNetwork *network, GDBusMethodInvocation 
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -785,8 +797,9 @@ on_network_get_serving_network (TelephonyNetwork *network, GDBusMethodInvocation
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -808,8 +821,9 @@ on_network_get_neighboring_cell_info (TelephonyNetwork *network, GDBusMethodInvo
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -831,8 +845,9 @@ on_network_set_default_data_subscription (TelephonyNetwork *network, GDBusMethod
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -854,8 +869,9 @@ on_network_get_default_data_subscription (TelephonyNetwork *network, GDBusMethod
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -876,8 +892,9 @@ static gboolean on_network_set_default_subs(TelephonyNetwork *network, GDBusMeth
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -899,8 +916,9 @@ static gboolean on_network_get_default_subs(TelephonyNetwork *network, GDBusMeth
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -926,8 +944,9 @@ on_network_set_emergency_callback_mode (TelephonyNetwork *network,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -955,8 +974,9 @@ on_network_set_roaming_preference (TelephonyNetwork *network,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "w"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -982,8 +1002,9 @@ on_network_get_roaming_preference (TelephonyNetwork *network,
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (invocation, AC_NETWORK, "r"))
+	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);

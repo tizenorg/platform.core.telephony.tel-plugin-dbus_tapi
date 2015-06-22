@@ -22,6 +22,7 @@ pkg_check_modules(pkgs REQUIRED
 	appsvc
 	pkgmgr
 	cynara-client
+	cynara-creds-gdbus
 	cynara-session
 )
 

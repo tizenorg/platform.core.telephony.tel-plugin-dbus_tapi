@@ -21,6 +21,7 @@ BuildRequires:  pkgconfig(libxml-2.0)
 BuildRequires:  pkgconfig(pkgmgr)
 BuildRequires:  pkgconfig(tcore)
 BuildRequires:  pkgconfig(cynara-client)
+BuildRequires:  pkgconfig(cynara-creds-gdbus)
 BuildRequires:  pkgconfig(cynara-session)
 
 

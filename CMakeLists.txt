@@ -20,7 +20,7 @@ pkg_check_modules(pkgs REQUIRED
 	tcore
 	aul
 	appsvc
-	pkgmgr
+	capi-appfw-app-manager
 	cynara-client
 	cynara-creds-gdbus
 	cynara-session

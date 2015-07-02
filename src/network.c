@@ -140,15 +140,15 @@ static int __convert_name_priority_to_option(enum tcore_network_name_priority pr
 {
 	switch (priority) {
 	case TCORE_NETWORK_NAME_PRIORITY_SPN:
-		return 1; // NETWORK_NAME_OPTION_SPN
+		return 1; /* NETWORK_NAME_OPTION_SPN */
 	case TCORE_NETWORK_NAME_PRIORITY_NETWORK:
-		return 2; // NETWORK_NAME_OPTION_OPERATOR
+		return 2; /* NETWORK_NAME_OPTION_OPERATOR */
 	case TCORE_NETWORK_NAME_PRIORITY_ANY:
-		return 3; // NETWORK_NAME_OPTION_ANY
+		return 3; /* NETWORK_NAME_OPTION_ANY */
 	default:
-	break;
+		break;
 	}
-	return 0; // NETWORK_NAME_OPTION_NONE
+	return 0; /* NETWORK_NAME_OPTION_NONE */
 }
 
 static void __get_current_network_status(CoreObject *o,
@@ -159,33 +159,29 @@ static void __get_current_network_status(CoreObject *o,
 
 	if (req_type & NET_PROP_SVC_TYPE) {
 		enum telephony_network_service_type svc_type;
-		tcore_network_get_service_type (o, &svc_type);
+		tcore_network_get_service_type(o, &svc_type);
 		current->svc_type = svc_type;
 	}
 
-	if (req_type & NET_PROP_ROAM) {
+	if (req_type & NET_PROP_ROAM)
 		current->roaming = tcore_network_get_roaming_state(o);
-	}
 
-	if (req_type & NET_PROP_PLMN) {
+	if (req_type & NET_PROP_PLMN)
 		current->plmn = tcore_network_get_plmn(o);
-	}
 
 	if (req_type & NET_PROP_NAME_OPTION) {
 		enum tcore_network_name_priority priority = TCORE_NETWORK_NAME_PRIORITY_UNKNOWN;
-		tcore_network_get_network_name_priority (o, &priority);
+		tcore_network_get_network_name_priority(o, &priority);
 		current->name_option = __convert_name_priority_to_option(priority);
 	}
 
-	if (req_type & NET_PROP_SPN) {
+	if (req_type & NET_PROP_SPN)
 		current->spn = tcore_network_get_network_name(o, TCORE_NETWORK_NAME_TYPE_SPN);
-	}
 
 	if (req_type & NET_PROP_NWNAME) {
 		char *nwname = tcore_network_get_network_name(o, TCORE_NETWORK_NAME_TYPE_FULL);
-		if (!nwname || strlen(nwname) == 0) {
+		if (!nwname || strlen(nwname) == 0)
 			nwname = tcore_network_get_network_name(o, TCORE_NETWORK_NAME_TYPE_SHORT);
-		}
 		current->nwname = nwname;
 	}
 
@@ -203,7 +199,7 @@ static void __get_current_network_status(CoreObject *o,
 
 	if (req_type & NET_PROP_ACT) {
 		enum telephony_network_access_technology act = NETWORK_ACT_UNKNOWN;
-		tcore_network_get_access_technology (o, &act);
+		tcore_network_get_access_technology(o, &act);
 		current->act = __convert_act_to_systemtype(act);
 	}
 }
@@ -219,66 +215,57 @@ static int __check_property_change(TelephonyNetwork *network, CoreObject *o,
 	__get_current_network_status(o, current, req_type);
 
 	if (req_type & NET_PROP_SVC_TYPE) {
-		if (telephony_network_get_service_type(network) != current->svc_type) {
+		if (telephony_network_get_service_type(network) != current->svc_type)
 			changed_type |= NET_PROP_SVC_TYPE;
-		}
 	}
 
 	if (req_type & NET_PROP_ROAM) {
-		if (telephony_network_get_roaming_status(network) != current->roaming) {
+		if (telephony_network_get_roaming_status(network) != current->roaming)
 			changed_type |= NET_PROP_ROAM;
-		}
 	}
 
 	if (req_type & NET_PROP_PLMN) {
 		const gchar *prev_plmn = telephony_network_get_plmn(network);
 		if (current->plmn) {
-			if (!prev_plmn || strcmp(prev_plmn,current->plmn) !=0) {
+			if (!prev_plmn || strcmp(prev_plmn, current->plmn) != 0)
 				changed_type |= NET_PROP_PLMN;
-			}
 		}
 	}
 
 	if (req_type & NET_PROP_NAME_OPTION) {
-		if (telephony_network_get_name_option(network) != current->name_option) {
+		if (telephony_network_get_name_option(network) != current->name_option)
 			changed_type |= NET_PROP_NAME_OPTION;
-		}
 	}
 
 	if (req_type & NET_PROP_SPN) {
 		const gchar *prev_spn = telephony_network_get_spn_name(network);
 		if (current->spn) {
-			if (!prev_spn || strcmp(prev_spn,current->spn) !=0) {
+			if (!prev_spn || strcmp(prev_spn, current->spn) != 0)
 				changed_type |= NET_PROP_SPN;
-			}
 		}
 	}
 
 	if (req_type & NET_PROP_NWNAME) {
 		const gchar *prev_nwname = telephony_network_get_network_name(network);
 		if (current->nwname) {
-			if (!prev_nwname || strcmp(prev_nwname,current->nwname) !=0) {
+			if (!prev_nwname || strcmp(prev_nwname, current->nwname) != 0)
 				changed_type |= NET_PROP_NWNAME;
-			}
 		}
 	}
 
 	if (req_type & NET_PROP_CS) {
-		if (telephony_network_get_circuit_status(network) != current->cs) {
+		if (telephony_network_get_circuit_status(network) != current->cs)
 			changed_type |= NET_PROP_CS;
-		}
 	}
 
 	if (req_type & NET_PROP_PS) {
-		if (telephony_network_get_packet_status(network) != current->ps) {
+		if (telephony_network_get_packet_status(network) != current->ps)
 			changed_type |= NET_PROP_PS;
-		}
 	}
 
 	if (req_type & NET_PROP_ACT) {
-		if (telephony_network_get_access_technology(network) != current->act) {
+		if (telephony_network_get_access_technology(network) != current->act)
 			changed_type |= NET_PROP_ACT;
-		}
 	}
 
 	return changed_type;
@@ -292,49 +279,40 @@ static void __update_network_properties(TelephonyNetwork *network,
 
 	if (update_type & NET_PROP_SVC_TYPE) {
 		telephony_network_set_service_type(network, current->svc_type);
-		if (current->svc_type != NETWORK_SERVICE_TYPE_3G) {
-			telephony_network_set_ps_type (network, TELEPHONY_HSDPA_OFF);
-		}
+		if (current->svc_type != NETWORK_SERVICE_TYPE_3G)
+			telephony_network_set_ps_type(network, TELEPHONY_HSDPA_OFF);
 	}
 
-	if (update_type & NET_PROP_ROAM) {
+	if (update_type & NET_PROP_ROAM)
 		telephony_network_set_roaming_status(network, current->roaming);
-	}
 
-	if (update_type & NET_PROP_PLMN) {
+	if (update_type & NET_PROP_PLMN)
 		telephony_network_set_plmn(network, current->plmn);
-	}
 
-	if (update_type & NET_PROP_NAME_OPTION) {
+	if (update_type & NET_PROP_NAME_OPTION)
 		telephony_network_set_name_option(network, current->name_option);
-	}
 
-	if (update_type & NET_PROP_SPN) {
+	if (update_type & NET_PROP_SPN)
 		telephony_network_set_spn_name(network, current->spn);
-	}
 
-	if (update_type & NET_PROP_NWNAME) {
+	if (update_type & NET_PROP_NWNAME)
 		telephony_network_set_network_name(network, current->nwname);
-	}
 
-	if (update_type & NET_PROP_CS) {
+	if (update_type & NET_PROP_CS)
 		telephony_network_set_circuit_status(network, current->cs);
-	}
 
-	if (update_type & NET_PROP_PS) {
+	if (update_type & NET_PROP_PS)
 		telephony_network_set_packet_status(network, current->ps);
-	}
 
-	if (update_type & NET_PROP_ACT) {
+	if (update_type & NET_PROP_ACT)
 		telephony_network_set_access_technology(network, current->act);
-	}
 }
 
 static int __add_default_property_type(TelephonyNetwork *network, CoreObject *o, int req_type)
 {
 	/* If SVC_TYPE was changed, another properties (ACT,OPTION,SPN,NWNAME) may be changed together */
 	if (req_type & NET_PROP_SVC_TYPE) {
-		struct network_prop_info current = {0,-1,-1, 0,-1,-1,-1,-1,NULL,NULL,NULL};
+		struct network_prop_info current = {0, -1, -1, 0, -1, -1, -1, -1, NULL, NULL, NULL};
 		if (__check_property_change(network, o, &current, NET_PROP_SVC_TYPE)) {
 			/* If SVC_TYPE was really changed, we should add anothers to default checking value */
 			req_type |= (NET_PROP_ACT|NET_PROP_NAME_OPTION|NET_PROP_SPN|NET_PROP_NWNAME);
@@ -343,7 +321,7 @@ static int __add_default_property_type(TelephonyNetwork *network, CoreObject *o,
 
 	/* If PLMN was changed, Another properties (ROAM,OPTION,SPN,NWNAME) may be changed together */
 	if (req_type & NET_PROP_PLMN) {
-		struct network_prop_info current = {0,-1,-1, 0,-1,-1,-1,-1,NULL,NULL,NULL};
+		struct network_prop_info current = {0, -1, -1, 0, -1, -1, -1, -1, NULL, NULL, NULL};
 		if (__check_property_change(network, o, &current, NET_PROP_PLMN)) {
 			/* If PLMN was really changed, we should add anothers to default checking value */
 			req_type |= (NET_PROP_ROAM|NET_PROP_NAME_OPTION|NET_PROP_SPN|NET_PROP_NWNAME);
@@ -353,34 +331,27 @@ static int __add_default_property_type(TelephonyNetwork *network, CoreObject *o,
 	return req_type;
 }
 
-static void __check_network_properties (TelephonyNetwork *network, CoreObject *o,
+static void __check_network_properties(TelephonyNetwork *network, CoreObject *o,
 	const char *cp_name, int req_type)
 {
 	int changed_type = NET_PROP_NONE;
 	int emit_type = NET_PROP_NONE;
-	struct network_prop_info current = {0,-1,-1, 0,-1,-1,-1,-1,NULL,NULL,NULL};
+	struct network_prop_info current = {0, -1, -1, 0, -1, -1, -1, -1, NULL, NULL, NULL};
 
 	req_type = __add_default_property_type(network, o, req_type);
 	changed_type = __check_property_change(network, o, &current, req_type);
 
-	if (changed_type) {
+	if (changed_type)
 		__update_network_properties(network, cp_name, &current, changed_type);
-	}
 
 	emit_type = (changed_type & NET_PROP_EMIT);
 	if (emit_type) {
-		info("[DBUSINFO][%s][PROPTYPE:%04x] svc[%d] roam[%d] plmn[%s] prio[%d] spn[%s] nwname[%s]",
-			cp_name, emit_type, current.svc_type,current.roaming, current.plmn,
+		info("[%s][PROPTYPE:%04x] svc[%d] roam[%d] plmn[%s] prio[%d] spn[%s] nwname[%s]",
+			cp_name, emit_type, current.svc_type, current.roaming, current.plmn,
 			current.name_option, current.spn, current.nwname);
-		telephony_network_emit_property_info(network,
-				emit_type,
-				current.svc_type,
-				current.roaming,
-				current.name_option,
-				current.plmn,
-				current.spn,
-				current.nwname
-			);
+		telephony_network_emit_property_info(network, emit_type,
+			current.svc_type, current.roaming, current.name_option,
+			current.plmn, current.spn, current.nwname);
 	}
 	g_free(current.plmn);
 	g_free(current.spn);
@@ -407,7 +378,7 @@ static enum tcore_hook_return on_hook_ps_protocol_status(Server *s,
 		return TCORE_HOOK_RETURN_CONTINUE;
 	}
 
-	info("[DBUSINFO][%s] PS_PROTOCOL_STATUS (status:[%d])", cp_name, protocol_status->status);
+	info("[%s] PS_PROTOCOL_STATUS (status:[%d])", cp_name, protocol_status->status);
 
 	path = g_strdup_printf("%s/%s", MY_DBUS_PATH, cp_name);
 
@@ -420,11 +391,21 @@ static enum tcore_hook_return on_hook_ps_protocol_status(Server *s,
 	}
 
 	network = telephony_object_peek_network(TELEPHONY_OBJECT(object));
+	if (network == NULL) {
+		err("Network object is NULL!!!");
+		return TCORE_HOOK_RETURN_CONTINUE;
+	}
 
+	/*
+	 * Do not check service_type.
+	 * In case of +CGREG is invoked before +CREG(Z1 device),
+	 * ps_type is not set because service_type is unknown yet.
+	 *
 	if (telephony_network_get_service_type (network) < NETWORK_SERVICE_TYPE_2G) {
 		telephony_network_set_ps_type(network, TELEPHONY_HSDPA_OFF);
 		return TCORE_HOOK_RETURN_CONTINUE;
 	}
+	*/
 
 	switch (protocol_status->status) {
 	case TELEPHONY_HSDPA_OFF:
@@ -448,26 +429,24 @@ static enum tcore_hook_return on_hook_ps_protocol_status(Server *s,
 		break;
 	default:
 		err("Unhandled protocol status!");
-	break;
+		break;
 	}
 
-	/* Check and Set - To avoid double update */
-	if (telephony_network_get_ps_type(network) != (gint)ps_protocol_status)
-		telephony_network_set_ps_type(network, ps_protocol_status);
+	telephony_network_set_ps_type(network, ps_protocol_status);
 
 	return TCORE_HOOK_RETURN_CONTINUE;
 }
 
 static gboolean
-on_network_search (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_search(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "x"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -475,7 +454,7 @@ on_network_search (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SEARCH);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -483,15 +462,15 @@ on_network_search (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 }
 
 static gboolean
-on_network_search_cancel (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_search_cancel(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "x"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -499,7 +478,7 @@ on_network_search_cancel (TelephonyNetwork *network, GDBusMethodInvocation *invo
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_CANCEL_MANUAL_SEARCH);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -507,15 +486,15 @@ on_network_search_cancel (TelephonyNetwork *network, GDBusMethodInvocation *invo
 }
 
 static gboolean
-on_network_get_selection_mode (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_get_selection_mode(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -523,7 +502,7 @@ on_network_get_selection_mode (TelephonyNetwork *network, GDBusMethodInvocation 
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_PLMN_SELECTION_MODE);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -531,30 +510,28 @@ on_network_get_selection_mode (TelephonyNetwork *network, GDBusMethodInvocation 
 }
 
 static gboolean
-on_network_set_selection_mode (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_set_selection_mode(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 		gint mode, const gchar *plmn, gint act, gpointer user_data)
 {
 	struct treq_network_set_plmn_selection_mode req;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	memset(&req, 0, sizeof(struct treq_network_set_plmn_selection_mode));
 
 	if (mode == 0) {	/* Automatic */
 		req.mode = NETWORK_SELECT_MODE_AUTOMATIC;
-	}
-	else if (mode == 1) {	/* Manual */
+	} else if (mode == 1) {	/* Manual */
 		req.mode = NETWORK_SELECT_MODE_MANUAL;
 		snprintf(req.plmn, 7, "%s", plmn);
 		req.act = act;
-	}
-	else {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+	} else {
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		return TRUE;
 	}
 	dbg("Mode: [%d] PLMN: [%s] AcT: [%d]", req.mode, req.plmn, req.act);
@@ -565,7 +542,7 @@ on_network_set_selection_mode (TelephonyNetwork *network, GDBusMethodInvocation 
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_PLMN_SELECTION_MODE);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -574,16 +551,16 @@ on_network_set_selection_mode (TelephonyNetwork *network, GDBusMethodInvocation 
 
 
 static gboolean
-on_network_set_service_domain (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_set_service_domain(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gint domain, gpointer user_data)
 {
 	struct treq_network_set_service_domain req;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -594,7 +571,7 @@ on_network_set_service_domain (TelephonyNetwork *network, GDBusMethodInvocation 
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_SERVICE_DOMAIN);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -602,15 +579,15 @@ on_network_set_service_domain (TelephonyNetwork *network, GDBusMethodInvocation 
 }
 
 static gboolean
-on_network_get_service_domain (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_get_service_domain(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -618,7 +595,7 @@ on_network_get_service_domain (TelephonyNetwork *network, GDBusMethodInvocation 
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_SERVICE_DOMAIN);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -626,16 +603,16 @@ on_network_get_service_domain (TelephonyNetwork *network, GDBusMethodInvocation 
 }
 
 static gboolean
-on_network_set_band (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_set_band(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gint band, gint mode, gpointer user_data)
 {
 	struct treq_network_set_band req;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -647,7 +624,7 @@ on_network_set_band (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_BAND);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -655,15 +632,15 @@ on_network_set_band (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 }
 
 static gboolean
-on_network_get_band (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_get_band(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -671,7 +648,7 @@ on_network_get_band (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_BAND);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -679,16 +656,16 @@ on_network_get_band (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 }
 
 static gboolean
-on_network_set_mode (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_set_mode(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gint mode, gpointer user_data)
 {
 	struct treq_network_set_mode req;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -699,7 +676,7 @@ on_network_set_mode (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_MODE);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -707,15 +684,15 @@ on_network_set_mode (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 }
 
 static gboolean
-on_network_get_mode (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
-	gpointer user_data)
+on_network_get_mode(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -723,7 +700,7 @@ on_network_get_mode (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_MODE);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -731,16 +708,16 @@ on_network_get_mode (TelephonyNetwork *network, GDBusMethodInvocation *invocatio
 }
 
 static gboolean
-on_network_set_preferred_plmn (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_set_preferred_plmn(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gint mode, gint ef_index, gint act, const gchar *plmn, gpointer user_data)
 {
 	struct treq_network_set_preferred_plmn req;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -751,15 +728,14 @@ on_network_set_preferred_plmn (TelephonyNetwork *network, GDBusMethodInvocation 
 
 	memcpy(req.plmn, plmn, 6);
 
-	if (strlen(plmn) <= 5) {
+	if (strlen(plmn) <= 5)
 		req.plmn[5] = '#';
-	}
 
 	tcore_user_request_set_data(ur, sizeof(struct treq_network_set_preferred_plmn), &req);
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_PREFERRED_PLMN);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -767,15 +743,15 @@ on_network_set_preferred_plmn (TelephonyNetwork *network, GDBusMethodInvocation 
 }
 
 static gboolean
-on_network_get_preferred_plmn (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_get_preferred_plmn(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -783,7 +759,7 @@ on_network_get_preferred_plmn (TelephonyNetwork *network, GDBusMethodInvocation 
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_PREFERRED_PLMN);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -791,15 +767,15 @@ on_network_get_preferred_plmn (TelephonyNetwork *network, GDBusMethodInvocation 
 }
 
 static gboolean
-on_network_get_serving_network (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_get_serving_network(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -807,7 +783,7 @@ on_network_get_serving_network (TelephonyNetwork *network, GDBusMethodInvocation
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_SERVING_NETWORK);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -815,15 +791,15 @@ on_network_get_serving_network (TelephonyNetwork *network, GDBusMethodInvocation
 }
 
 static gboolean
-on_network_get_neighboring_cell_info (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_get_neighboring_cell_info(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -831,7 +807,7 @@ on_network_get_neighboring_cell_info (TelephonyNetwork *network, GDBusMethodInvo
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_NEIGHBORING_CELL_INFO);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -839,15 +815,15 @@ on_network_get_neighboring_cell_info (TelephonyNetwork *network, GDBusMethodInvo
 }
 
 static gboolean
-on_network_set_default_data_subscription (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_set_default_data_subscription(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -855,7 +831,7 @@ on_network_set_default_data_subscription (TelephonyNetwork *network, GDBusMethod
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_DEFAULT_DATA_SUBSCRIPTION);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -863,23 +839,23 @@ on_network_set_default_data_subscription (TelephonyNetwork *network, GDBusMethod
 }
 
 static gboolean
-on_network_get_default_data_subscription (TelephonyNetwork *network, GDBusMethodInvocation *invocation,
+on_network_get_default_data_subscription(TelephonyNetwork *network, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
 
-	tcore_user_request_set_command( ur, TREQ_NETWORK_GET_DEFAULT_DATA_SUBSCRIPTION );
+	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_DEFAULT_DATA_SUBSCRIPTION);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -892,17 +868,17 @@ static gboolean on_network_set_default_subs(TelephonyNetwork *network, GDBusMeth
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
 
-	tcore_user_request_set_command( ur, TREQ_NETWORK_SET_DEFAULT_SUBSCRIPTION );
-	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
-	if ( ret != TCORE_RETURN_SUCCESS ) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_DEFAULT_SUBSCRIPTION);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
 		tcore_user_request_unref(ur);
 	}
@@ -916,17 +892,17 @@ static gboolean on_network_get_default_subs(TelephonyNetwork *network, GDBusMeth
 	struct custom_data *ctx = user_data;
 	UserRequest *ur;
 	TReturn ret = 0;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
 
-	tcore_user_request_set_command( ur, TREQ_NETWORK_GET_DEFAULT_SUBSCRIPTION );
-	ret = tcore_communicator_dispatch_request( ctx->comm, ur );
-	if ( ret != TCORE_RETURN_SUCCESS ) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_DEFAULT_SUBSCRIPTION);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		dbg("[ error ] tcore_communicator_dispatch_request() : (0x%x)", ret);
 		tcore_user_request_unref(ur);
 	}
@@ -935,18 +911,18 @@ static gboolean on_network_get_default_subs(TelephonyNetwork *network, GDBusMeth
 }
 
 static gboolean
-on_network_set_emergency_callback_mode (TelephonyNetwork *network,
-		GDBusMethodInvocation *invocation,
-		gint mode,
-		gpointer user_data)
+on_network_set_emergency_callback_mode(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation,
+	gint mode,
+	gpointer user_data)
 {
 	struct treq_network_set_emergency_callback_mode req;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -957,7 +933,7 @@ on_network_set_emergency_callback_mode (TelephonyNetwork *network,
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_EMERGENCY_CALLBACK_MODE);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -965,18 +941,18 @@ on_network_set_emergency_callback_mode (TelephonyNetwork *network,
 }
 
 static gboolean
-on_network_set_roaming_preference (TelephonyNetwork *network,
-		GDBusMethodInvocation *invocation,
-		gint roam_pref,
-		gpointer user_data)
+on_network_set_roaming_preference(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation,
+	gint roam_pref,
+	gpointer user_data)
 {
 	struct treq_network_set_roaming_preference req;
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -987,7 +963,7 @@ on_network_set_roaming_preference (TelephonyNetwork *network,
 	tcore_user_request_set_command(ur, TREQ_NETWORK_SET_ROAMING_PREFERENCE);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -995,16 +971,16 @@ on_network_set_roaming_preference (TelephonyNetwork *network,
 }
 
 static gboolean
-on_network_get_roaming_preference (TelephonyNetwork *network,
-		GDBusMethodInvocation *invocation,
-		gpointer user_data)
+on_network_get_roaming_preference(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation,
+	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
 	UserRequest *ur = NULL;
 	TReturn ret;
-	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_NETWORK, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, network, invocation);
@@ -1012,7 +988,7 @@ on_network_get_roaming_preference (TelephonyNetwork *network,
 	tcore_user_request_set_command(ur, TREQ_NETWORK_GET_ROAMING_PREFERENCE);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -1027,110 +1003,89 @@ gboolean dbus_plugin_setup_network_interface(TelephonyObjectSkeleton *object, st
 	telephony_object_skeleton_set_network(object, network);
 	g_object_unref(network);
 
-	g_signal_connect (network,
-			"handle-search",
-			G_CALLBACK (on_network_search),
-			ctx);
+	g_signal_connect(network,
+		"handle-search",
+		G_CALLBACK(on_network_search), ctx);
 
-	g_signal_connect (network,
-			"handle-search-cancel",
-			G_CALLBACK (on_network_search_cancel),
-			ctx);
+	g_signal_connect(network,
+		"handle-search-cancel",
+		G_CALLBACK(on_network_search_cancel), ctx);
 
-	g_signal_connect (network,
-			"handle-set-selection-mode",
-			G_CALLBACK (on_network_set_selection_mode),
-			ctx);
+	g_signal_connect(network,
+		"handle-set-selection-mode",
+		G_CALLBACK(on_network_set_selection_mode), ctx);
 
-	g_signal_connect (network,
-			"handle-get-selection-mode",
-			G_CALLBACK (on_network_get_selection_mode),
-			ctx);
+	g_signal_connect(network,
+		"handle-get-selection-mode",
+		G_CALLBACK(on_network_get_selection_mode), ctx);
 
-	g_signal_connect (network,
-			"handle-set-service-domain",
-			G_CALLBACK (on_network_set_service_domain),
-			ctx);
+	g_signal_connect(network,
+		"handle-set-service-domain",
+		G_CALLBACK(on_network_set_service_domain), ctx);
 
-	g_signal_connect (network,
-			"handle-get-service-domain",
-			G_CALLBACK (on_network_get_service_domain),
-			ctx);
+	g_signal_connect(network,
+		"handle-get-service-domain",
+		G_CALLBACK(on_network_get_service_domain), ctx);
 
-	g_signal_connect (network,
-			"handle-set-band",
-			G_CALLBACK (on_network_set_band),
-			ctx);
+	g_signal_connect(network,
+		"handle-set-band",
+		G_CALLBACK(on_network_set_band), ctx);
 
-	g_signal_connect (network,
-			"handle-get-band",
-			G_CALLBACK (on_network_get_band),
-			ctx);
+	g_signal_connect(network,
+		"handle-get-band",
+		G_CALLBACK(on_network_get_band), ctx);
 
-	g_signal_connect (network,
-			"handle-set-mode",
-			G_CALLBACK (on_network_set_mode),
-			ctx);
+	g_signal_connect(network,
+		"handle-set-mode",
+		G_CALLBACK(on_network_set_mode), ctx);
 
-	g_signal_connect (network,
-			"handle-get-mode",
-			G_CALLBACK (on_network_get_mode),
-			ctx);
+	g_signal_connect(network,
+		"handle-get-mode",
+		G_CALLBACK(on_network_get_mode), ctx);
 
-	g_signal_connect (network,
-			"handle-set-preferred-plmn",
-			G_CALLBACK (on_network_set_preferred_plmn),
-			ctx);
+	g_signal_connect(network,
+		"handle-set-preferred-plmn",
+		G_CALLBACK(on_network_set_preferred_plmn), ctx);
 
-	g_signal_connect (network,
-			"handle-get-preferred-plmn",
-			G_CALLBACK (on_network_get_preferred_plmn),
-			ctx);
+	g_signal_connect(network,
+		"handle-get-preferred-plmn",
+		G_CALLBACK(on_network_get_preferred_plmn), ctx);
 
-	g_signal_connect (network,
-			"handle-get-serving-network",
-			G_CALLBACK (on_network_get_serving_network),
-			ctx);
+	g_signal_connect(network,
+		"handle-get-serving-network",
+		G_CALLBACK(on_network_get_serving_network), ctx);
 
-	g_signal_connect (network,
-			"handle-get-ngbr-cell-info",
-			G_CALLBACK (on_network_get_neighboring_cell_info),
-			ctx);
+	g_signal_connect(network,
+		"handle-get-ngbr-cell-info",
+		G_CALLBACK(on_network_get_neighboring_cell_info), ctx);
 
-	g_signal_connect (network,
-			"handle-set-default-data-subscription",
-			G_CALLBACK (on_network_set_default_data_subscription),
-			ctx);
+	g_signal_connect(network,
+		"handle-set-default-data-subscription",
+		G_CALLBACK(on_network_set_default_data_subscription), ctx);
 
-	g_signal_connect (network,
-			"handle-get-default-data-subscription",
-			G_CALLBACK (on_network_get_default_data_subscription),
-			ctx);
+	g_signal_connect(network,
+		"handle-get-default-data-subscription",
+		G_CALLBACK(on_network_get_default_data_subscription), ctx);
 
-	g_signal_connect (network,
-			"handle-set-default-subscription",
-			G_CALLBACK (on_network_set_default_subs),
-			ctx);
+	g_signal_connect(network,
+		"handle-set-default-subscription",
+		G_CALLBACK(on_network_set_default_subs), ctx);
 
-	g_signal_connect (network,
-			"handle-get-default-subscription",
-			G_CALLBACK (on_network_get_default_subs),
-			ctx);
+	g_signal_connect(network,
+		"handle-get-default-subscription",
+		G_CALLBACK(on_network_get_default_subs), ctx);
 
-	g_signal_connect (network,
-			"handle-set-emergency-callback-mode",
-			G_CALLBACK (on_network_set_emergency_callback_mode),
-			ctx);
+	g_signal_connect(network,
+		"handle-set-emergency-callback-mode",
+		G_CALLBACK(on_network_set_emergency_callback_mode), ctx);
 
-	g_signal_connect (network,
-			"handle-set-roaming-preference",
-			G_CALLBACK (on_network_set_roaming_preference),
-			ctx);
+	g_signal_connect(network,
+		"handle-set-roaming-preference",
+		G_CALLBACK(on_network_set_roaming_preference), ctx);
 
-	g_signal_connect (network,
-			"handle-get-roaming-preference",
-			G_CALLBACK (on_network_get_roaming_preference),
-			ctx);
+	g_signal_connect(network,
+		"handle-get-roaming-preference",
+		G_CALLBACK(on_network_get_roaming_preference), ctx);
 
 	/* initialize dbus properties */
 	telephony_network_set_access_technology(network, NETWORK_ACT_UNKNOWN);
@@ -1160,8 +1115,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	struct dbus_request_info *dbus_info, enum tcore_response_command command,
 	unsigned int data_len, const void *data)
 {
-	dbg("Response!!! Command: [0x%x] CP Name: [%s]",
-		command, GET_CP_NAME(dbus_info->invocation));
+	char *cpname = dbus_info ? GET_CP_NAME(dbus_info->invocation) : "";
 
 	switch (command) {
 	case TRESP_NETWORK_SEARCH: {
@@ -1170,8 +1124,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 		GVariantBuilder b;
 		int i = 0;
 
-		dbg("TRESP_NETWORK_SEARCH - Result: [%s] Count: [%d]",
-			(resp_network_search->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
+		info("[%s] SEARCH - [%s] Count: [%d]",
+			cpname, (resp_network_search->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
 			resp_network_search->list_count);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
@@ -1195,8 +1149,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_SET_PLMN_SELECTION_MODE: {
 		const struct tresp_network_set_plmn_selection_mode *resp_set_plmn_selection_mode = data;
 
-		dbg("TRESP_SET_PLMN_SELECTION_MODE - Result: [%s]",
-			(resp_set_plmn_selection_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		info("[%s] SET_PLMN_SELECTION_MODE - [%s]",
+			cpname, (resp_set_plmn_selection_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_network_complete_set_selection_mode(dbus_info->interface_object, dbus_info->invocation,
 			resp_set_plmn_selection_mode->result);
@@ -1206,8 +1160,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_GET_PLMN_SELECTION_MODE: {
 		const struct tresp_network_get_plmn_selection_mode *resp_get_plmn_selection_mode = data;
 
-		dbg("TRESP_GET_PLMN_SELECTION_MODE - Result: [%s] Mode: [%s]",
-			(resp_get_plmn_selection_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
+		info("[%s] GET_PLMN_SELECTION_MODE - [%s] Mode: [%s]",
+			cpname, (resp_get_plmn_selection_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
 			(resp_get_plmn_selection_mode->mode == NETWORK_SELECT_MODE_AUTOMATIC ? "Auto" :
 			(resp_get_plmn_selection_mode->mode == NETWORK_SELECT_MODE_MANUAL ? "Manual" :
 			"Unknown")));
@@ -1234,8 +1188,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_SET_SERVICE_DOMAIN: {
 		const struct tresp_network_set_service_domain *resp_set_service_domain = data;
 
-		dbg("TRESP_NETWORK_SET_SERVICE_DOMAIN - Result: [%s]",
-			(resp_set_service_domain->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		dbg("[%s] SET_SERVICE_DOMAIN - [%s]",
+			cpname, (resp_set_service_domain->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_network_complete_set_service_domain(dbus_info->interface_object, dbus_info->invocation,
 			resp_set_service_domain->result);
@@ -1245,8 +1199,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_GET_SERVICE_DOMAIN: {
 		const struct tresp_network_get_service_domain *resp_get_service_domain = data;
 
-		dbg("TRESP_NETWORK_GET_SERVICE_DOMAIN - Result: [%s] Domain: [%d]",
-			(resp_get_service_domain->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
+		dbg("[%s] GET_SERVICE_DOMAIN - [%s] Domain: [%d]",
+			cpname, (resp_get_service_domain->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
 			resp_get_service_domain->domain);
 
 		telephony_network_complete_get_service_domain(dbus_info->interface_object, dbus_info->invocation,
@@ -1257,8 +1211,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_SET_BAND: {
 		const struct tresp_network_set_band *resp_set_band = data;
 
-		dbg("TRESP_NETWORK_SET_BAND - Result: [%s]",
-			(resp_set_band->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		dbg("[%s] SET_BAND - [%s]",
+			cpname, (resp_set_band->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_network_complete_set_band(dbus_info->interface_object, dbus_info->invocation,
 			resp_set_band->result);
@@ -1268,8 +1222,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_GET_BAND: {
 		const struct tresp_network_get_band *resp_get_band = data;
 
-		dbg("TRESP_NETWORK_GET_BAND - Result: [%s] Mode: [%s] Band: [%d]",
-			(resp_get_band->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
+		dbg("[%s] GET_BAND - [%s] Mode: [%s] Band: [%d]",
+			cpname, (resp_get_band->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
 			(resp_get_band->mode == NETWORK_BAND_MODE_PREFERRED ? "Preferred" :
 			(resp_get_band->mode == NETWORK_BAND_MODE_ONLY ? "Only" :
 			"Unknown")), resp_get_band->band);
@@ -1282,8 +1236,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_SET_MODE: {
 		const struct tresp_network_set_mode *resp_set_mode = data;
 
-		dbg("TRESP_NETWORK_SET_MODE - Result: [%s]",
-			(resp_set_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		dbg("[%s] SET_MODE - [%s]",
+			cpname, (resp_set_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_network_complete_set_mode(dbus_info->interface_object, dbus_info->invocation,
 			resp_set_mode->result);
@@ -1293,8 +1247,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_GET_MODE: {
 		const struct tresp_network_get_mode *resp_get_mode = data;
 
-		dbg("TRESP_NETWORK_GET_MODE - Result: [%s] Mode: [%d]",
-			(resp_get_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
+		dbg("[%s] GET_MODE - [%s] Mode: [%d]",
+			cpname, (resp_get_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
 			resp_get_mode->mode);
 
 		telephony_network_complete_get_mode(dbus_info->interface_object, dbus_info->invocation,
@@ -1310,8 +1264,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 		enum telephony_network_access_technology act;
 		int i = 0;
 
-		dbg("TRESP_NETWORK_GET_NEIGHBORING_CELL_INFO - Result: [%s]",
-			(resp_get_ngbr_cell_info->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		dbg("[%s] GET_NEIGHBORING_CELL_INFO - [%s]",
+			cpname, (resp_get_ngbr_cell_info->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		act = resp_get_ngbr_cell_info->info.serving.act;
 
@@ -1336,9 +1290,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 			g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
 			g_variant_builder_add(&b, "{sv}", "g_serving", value);
 			g_variant_builder_close(&b);
-
-		}
-		else if (act >= NETWORK_ACT_UMTS && act <= NETWORK_ACT_GSM_UTRAN) {
+		} else if (act >= NETWORK_ACT_UMTS && act <= NETWORK_ACT_GSM_UTRAN) {
 			value = g_variant_new("(iiiii)",
 					resp_get_ngbr_cell_info->info.serving.cell.umts.cell_id,
 					resp_get_ngbr_cell_info->info.serving.cell.umts.lac,
@@ -1348,8 +1300,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 			g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
 			g_variant_builder_add(&b, "{sv}", "u_serving", value);
 			g_variant_builder_close(&b);
-		}
-		else if (act == NETWORK_ACT_LTE) {
+		} else if (act == NETWORK_ACT_LTE) {
 			value = g_variant_new("(iiiii)",
 					resp_get_ngbr_cell_info->info.serving.cell.lte.cell_id,
 					resp_get_ngbr_cell_info->info.serving.cell.lte.lac,
@@ -1359,15 +1310,14 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 			g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
 			g_variant_builder_add(&b, "{sv}", "l_serving", value);
 			g_variant_builder_close(&b);
-		}
-		else if(act >= NETWORK_ACT_IS95A && act <= NETWORK_ACT_EHRPD) {
+		} else if (act >= NETWORK_ACT_IS95A && act <= NETWORK_ACT_EHRPD) {
 			value = g_variant_new("(uuuuii)",
-					resp_get_ngbr_cell_info->info.serving.cell.cdma.sid,
-					resp_get_ngbr_cell_info->info.serving.cell.cdma.nid,
-					resp_get_ngbr_cell_info->info.serving.cell.cdma.base_id,
-					resp_get_ngbr_cell_info->info.serving.cell.cdma.refpn,
-					resp_get_ngbr_cell_info->info.serving.cell.cdma.base_lat,
-					resp_get_ngbr_cell_info->info.serving.cell.cdma.base_long);
+				resp_get_ngbr_cell_info->info.serving.cell.cdma.sid,
+				resp_get_ngbr_cell_info->info.serving.cell.cdma.nid,
+				resp_get_ngbr_cell_info->info.serving.cell.cdma.base_id,
+				resp_get_ngbr_cell_info->info.serving.cell.cdma.refpn,
+				resp_get_ngbr_cell_info->info.serving.cell.cdma.base_lat,
+				resp_get_ngbr_cell_info->info.serving.cell.cdma.base_long);
 			g_variant_builder_open(&b, G_VARIANT_TYPE("a{sv}"));
 			g_variant_builder_add(&b, "{sv}", "c_serving", value);
 			g_variant_builder_close(&b);
@@ -1408,8 +1358,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_SET_PREFERRED_PLMN: {
 		const struct tresp_network_set_preferred_plmn *resp_set_preferred_plmn = data;
 
-		dbg("TRESP_NETWORK_SET_PREFERRED_PLMN - Result: [%s]",
-			(resp_set_preferred_plmn->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		dbg("[%s] SET_PREFERRED_PLMN - [%s]",
+			cpname, (resp_set_preferred_plmn->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_network_complete_set_preferred_plmn(dbus_info->interface_object, dbus_info->invocation,
 			resp_set_preferred_plmn->result);
@@ -1422,8 +1372,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 		GVariantBuilder b;
 		int i = 0;
 
-		dbg("TRESP_NETWORK_GET_PREFERRED_PLMN - Result: [%s] Count: [%d]",
-			(resp_get_preferred_plmn->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
+		dbg("[%s] GET_PREFERRED_PLMN - [%s] Count: [%d]",
+			cpname, (resp_get_preferred_plmn->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
 			resp_get_preferred_plmn->list_count);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
@@ -1449,8 +1399,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_SET_CANCEL_MANUAL_SEARCH: {
 		const struct tresp_network_set_cancel_manual_search *resp_set_cancel_manual_search = data;
 
-		dbg("TRESP_NETWORK_SET_CANCEL_MANUAL_SEARCH - Result: [%s]",
-			(resp_set_cancel_manual_search->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		info("[%s] SET_CANCEL_MANUAL_SEARCH - [%s]",
+			cpname, (resp_set_cancel_manual_search->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_network_complete_search_cancel(dbus_info->interface_object, dbus_info->invocation,
 			resp_set_cancel_manual_search->result);
@@ -1465,8 +1415,8 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 
 		enum telephony_network_access_technology act;
 
-		dbg("TRESP_NETWORK_GET_SERVING_NETWORK - Result: [%s] AcT: [%d] PLMN: [%s] LAC: [%d])",
-			(resp_get_serving_network->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
+		dbg("[%s] GET_SERVING_NETWORK - [%s] AcT: [%d] PLMN: [%s] LAC: [%d])",
+			cpname, (resp_get_serving_network->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
 			resp_get_serving_network->act, resp_get_serving_network->plmn, resp_get_serving_network->gsm.lac);
 
 		act = resp_get_serving_network->act;
@@ -1483,8 +1433,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 			value = g_variant_new("(i)",
 					resp_get_serving_network->gsm.lac);
 			g_variant_builder_add(&b, "{sv}", "g_serving", value);
-		}
-		else if(act >= NETWORK_ACT_IS95A && act <= NETWORK_ACT_EHRPD) {
+		} else if (act >= NETWORK_ACT_IS95A && act <= NETWORK_ACT_EHRPD) {
 			dbg("carrier:[%d] sid:[%d] nid:[%d] bs_id:[%d] bs_lat:[%d] bs_long:[%d] reg_zone:[%d] pilot_pn:[%d]",
 				resp_get_serving_network->cdma.carrier,
 				resp_get_serving_network->cdma.sid,
@@ -1515,7 +1464,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_SET_DEFAULT_DATA_SUBSCRIPTION: {
 		const struct tresp_network_set_default_data_subscription *resp_set_default_data_subs = data;
 
-		dbg("TRESP_NETWORK_SET_DEFAULT_DATA_SUBSCRIPTION - Result: [%s]",
+		info("SET_DEFAULT_DATA_SUBSCRIPTION - [%s]",
 			(resp_set_default_data_subs->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_network_complete_set_default_data_subscription(dbus_info->interface_object, dbus_info->invocation,
@@ -1526,7 +1475,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_GET_DEFAULT_DATA_SUBSCRIPTION: {
 		const struct tresp_network_get_default_data_subs *resp_get_default_data_subs = data;
 
-		dbg("TRESP_NETWORK_GET_DEFAULT_DATA_SUBSCRIPTION - Result: [%s] 'default' Data subscription: [%s]",
+		dbg("GET_DEFAULT_DATA_SUBSCRIPTION - [%s] 'default' Data subscription: [%s]",
 			(resp_get_default_data_subs->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
 			(resp_get_default_data_subs->default_subs == NETWORK_DEFAULT_DATA_SUBS_SIM1 ? "SIM1" :
 			(resp_get_default_data_subs->default_subs == NETWORK_DEFAULT_DATA_SUBS_SIM2 ? "SIM2" :
@@ -1540,31 +1489,31 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_SET_DEFAULT_SUBSCRIPTION: {
 		const struct tresp_network_set_default_subs *resp_set_default_subs = data;
 
-		dbg("TRESP_NETWORK_SET_DEFAULT_SUBSCRIPTION - Result: [%s]",
+		info("SET_DEFAULT_SUBSCRIPTION - [%s]",
 			(resp_set_default_subs->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_network_complete_set_default_subscription(dbus_info->interface_object, dbus_info->invocation,
-			resp_set_default_subs->result );
+			resp_set_default_subs->result);
 	}
 	break;
 
 	case TRESP_NETWORK_GET_DEFAULT_SUBSCRIPTION: {
 		const struct tresp_network_get_default_subs *resp_get_default_subs = data;
 
-		dbg("TRESP_NETWORK_GET_DEFAULT_SUBSCRIPTION - Result: [%s] 'default' subscription: [%s]",
+		dbg("GET_DEFAULT_SUBSCRIPTION - [%s] 'default' subscription: [%s]",
 			(resp_get_default_subs->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
 			(resp_get_default_subs->default_subs == NETWORK_DEFAULT_SUBS_SIM1 ? "SIM1" :
 			(resp_get_default_subs->default_subs == NETWORK_DEFAULT_SUBS_SIM2 ? "SIM2" :
 			"Unknown")));
 
 		telephony_network_complete_get_default_subscription(dbus_info->interface_object, dbus_info->invocation,
-			resp_get_default_subs->default_subs, resp_get_default_subs->result );
+			resp_get_default_subs->default_subs, resp_get_default_subs->result);
 	}
 	break;
 
 	case TRESP_NETWORK_SET_EMERGENCY_CALLBACK_MODE: {
 		const struct tresp_network_set_emergency_callback_mode *resp_set_emergency_callback_mode = data;
-		dbg("TRESP_NETWORK_SET_EMERGENCY_CALLBACK_MODE (result:[%d])", resp_set_emergency_callback_mode->result);
+		info("SET_EMERGENCY_CALLBACK_MODE (result:[%d])", resp_set_emergency_callback_mode->result);
 		telephony_network_complete_set_emergency_callback_mode(dbus_info->interface_object, dbus_info->invocation,
 				resp_set_emergency_callback_mode->result);
 	}
@@ -1573,7 +1522,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_SET_ROAMING_PREFERENCE: {
 		const struct tresp_network_set_roaming_preference *resp_set_roam_pref = data;
 
-		dbg("TRESP_NETWORK_SET_ROAMING_PREFERENCE (result:[%d])", resp_set_roam_pref->result);
+		info("SET_ROAMING_PREFERENCE (result:[%d])", resp_set_roam_pref->result);
 
 		telephony_network_complete_set_roaming_preference(dbus_info->interface_object, dbus_info->invocation, resp_set_roam_pref->result);
 	}
@@ -1582,7 +1531,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_NETWORK_GET_ROAMING_PREFERENCE: {
 		const struct tresp_network_get_roaming_preference *resp_get_roam_pref = data;
 
-		dbg("TRESP_NETWORK_GET_ROAMING_PREFERENCE (roam_pref:[%d])", resp_get_roam_pref->roam_pref);
+		dbg("GET_ROAMING_PREFERENCE (roam_pref:[%d])", resp_get_roam_pref->roam_pref);
 
 		telephony_network_complete_get_roaming_preference(dbus_info->interface_object, dbus_info->invocation,
 			resp_get_roam_pref->roam_pref, resp_get_roam_pref->result);
@@ -1615,17 +1564,17 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx, CoreObject *s
 	}
 
 	cp_name = tcore_server_get_cp_name_by_plugin(tcore_object_ref_plugin(source));
-
-	dbg("Notification!!! Command: [0x%x] CP Name: [%s]",
-		command, cp_name);
-
 	network = telephony_object_peek_network(TELEPHONY_OBJECT(object));
+	if (network == NULL) {
+		err("Network object is NULL!!!");
+		return FALSE;
+	}
 
 	switch (command) {
 	case TNOTI_NETWORK_REGISTRATION_STATUS: {
 		const struct tnoti_network_registration_status *reg = data;
 
-		info("[DBUSINFO][%s] NET_REGI_STATUS. (cs:[%d] ps:[%d] svc:[%d] roam:[%d])",
+		info("[%s] NET_REGI_STATUS (cs:[%d] ps:[%d] svc:[%d] roam:[%d])",
 			cp_name, reg->cs_domain_status, reg->ps_domain_status, reg->service_type, reg->roaming_status);
 
 #ifdef ENABLE_KPI_LOGS
@@ -1653,7 +1602,7 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx, CoreObject *s
 	case TNOTI_NETWORK_CHANGE: {
 		const struct tnoti_network_change *change = data;
 
-		info("[DBUSINFO][%s] NET_CHANGE. (plmn:[%s] lac:[%d])",
+		info("[%s] NET_CHANGE. (plmn:[%s] lac:[%d])",
 			cp_name, change->plmn, change->gsm.lac);
 
 		__check_network_properties(network, source, cp_name, NET_PROP_PLMN);
@@ -1668,7 +1617,7 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx, CoreObject *s
 	case TNOTI_NETWORK_TIMEINFO: {
 		const struct tnoti_network_timeinfo *time_info = data;
 
-		info("[DBUSINFO][%s] NET_TIMEINFO", cp_name);
+		info("[%s] NET_TIMEINFO", cp_name);
 
 		/* Emit signal */
 		telephony_network_emit_time_info(network,
@@ -1691,8 +1640,8 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx, CoreObject *s
 
 		/* Update property */
 		if (icon_info->type & NETWORK_ICON_INFO_RSSI) {
-			info("[DBUSINFO][%s] NET_ICON_INFO (Ant:[%d])", cp_name, icon_info->rssi);
-			telephony_network_set_sig_level (network, icon_info->rssi);
+			info("[%s] NET_ICON_INFO (Ant:[%d])", cp_name, icon_info->rssi);
+			telephony_network_set_sig_level(network, icon_info->rssi);
 		}
 	}
 	break;
@@ -1700,7 +1649,7 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx, CoreObject *s
 	case TNOTI_NETWORK_IDENTITY: {
 		const struct tnoti_network_identity *identity = data;
 
-		info("[DBUSINFO][%s] NET_IDENTITY (long:[%s] short:[%s] plmn:[%s])",
+		info("[%s] NET_IDENTITY (long:[%s] short:[%s] plmn:[%s])",
 			cp_name, identity->full_name, identity->short_name, identity->plmn);
 
 		__check_network_properties(network, source, cp_name,
@@ -1717,12 +1666,12 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx, CoreObject *s
 	case TNOTI_NETWORK_LOCATION_CELLINFO: {
 		const struct tnoti_network_location_cellinfo *location = data;
 
-		info("[DBUSINFO][%s] NET_LOCATION_CELLINFO (lac:[%d] cell_id:[%d])",
+		info("[%s] NET_LOCATION_CELLINFO (lac:[0x%x] cell_id:[0x%x])",
 			cp_name, location->lac, location->cell_id);
 
 		/* Update properties */
-		telephony_network_set_lac (network, location->lac);
-		telephony_network_set_cell_id (network, location->cell_id);
+		telephony_network_set_lac(network, location->lac);
+		telephony_network_set_cell_id(network, location->cell_id);
 
 		/* Emit signal */
 		telephony_network_emit_cell_info(network,
@@ -1734,10 +1683,10 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx, CoreObject *s
 	case TNOTI_NETWORK_SIGNAL_STRENGTH: {
 		const struct tnoti_network_signal_strength *signal_strength = data;
 
-		info("[DBUSINFO][%s] NET_SIGNAL_STRENGTH (dbm:[%d])", cp_name, signal_strength->dbm);
+		info("[%s] NET_SIGNAL_STRENGTH (dbm:[%d])", cp_name, signal_strength->dbm);
 
 		/* Update properties */
-		telephony_network_set_sig_dbm (network, signal_strength->dbm);
+		telephony_network_set_sig_dbm(network, signal_strength->dbm);
 
 		/* Emit signal */
 		telephony_network_emit_signal_strength(network,
@@ -1748,7 +1697,7 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx, CoreObject *s
 	case TNOTI_NETWORK_DEFAULT_DATA_SUBSCRIPTION: {
 		const struct tnoti_network_default_data_subs *default_data_subs_info = data;
 
-		info("[DBUSINFO][%s] NET_DEFAULT_DATA_SUBSCRIPTION (default:[%d])", cp_name, default_data_subs_info->default_subs);
+		info("[%s] NET_DEFAULT_DATA_SUBSCRIPTION (default:[%d])", cp_name, default_data_subs_info->default_subs);
 
 		/* Emit signal */
 		telephony_network_emit_default_data_subscription(network,
@@ -1759,7 +1708,7 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx, CoreObject *s
 	case TNOTI_NETWORK_DEFAULT_SUBSCRIPTION: {
 		const struct tnoti_network_default_subs *default_subs_info = data;
 
-		info("[DBUSINFO][%s] NET_DEFAULT_SUBSCRIPTION (default:[%d])", cp_name, default_subs_info->default_subs);
+		info("[%s] NET_DEFAULT_SUBSCRIPTION (default:[%d])", cp_name, default_subs_info->default_subs);
 
 		/* Emit signal */
 		telephony_network_emit_default_subscription(network,

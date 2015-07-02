@@ -1,11 +1,11 @@
 %define major 0
 %define minor 3
-%define patchlevel 51
+%define patchlevel 63
 
 Name:           tel-plugin-dbus_tapi
 Version:        %{major}.%{minor}.%{patchlevel}
 Release:        2
-License:        Apache
+License:        Apache-2.0
 Summary:        dbus-tapi plugin for telephony
 Group:          System/Libraries
 Source0:        tel-plugin-dbus_tapi-%{version}.tar.gz
@@ -13,12 +13,12 @@ BuildRequires:  cmake
 BuildRequires:  python-xml
 BuildRequires:  python
 BuildRequires:  pkgconfig(appsvc)
+BuildRequires:  pkgconfig(capi-appfw-app-manager)
 BuildRequires:  pkgconfig(aul)
 BuildRequires:  pkgconfig(gio-2.0)
 BuildRequires:  pkgconfig(gio-unix-2.0)
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(libxml-2.0)
-BuildRequires:  pkgconfig(pkgmgr)
 BuildRequires:  pkgconfig(tcore)
 BuildRequires:  pkgconfig(cynara-client)
 BuildRequires:  pkgconfig(cynara-creds-gdbus)
@@ -54,7 +54,7 @@ mkdir -p %{buildroot}%{_datadir}/license
 
 %files
 %manifest tel-plugin-dbus_tapi.manifest
-%defattr(-,root,root,-)
+%defattr(644,system,system,-)
 #%doc COPYING
 %{_libdir}/telephony/plugins/*
 %{_datadir}/license/tel-plugin-dbus_tapi

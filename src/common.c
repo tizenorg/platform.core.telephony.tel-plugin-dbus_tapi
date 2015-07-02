@@ -22,7 +22,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <glib.h>
-#include <dbus/dbus.h>
 
 #include <tcore.h>
 #include <plugin.h>
@@ -59,9 +58,8 @@ char *dbus_plugin_get_cp_name_by_object_path(const char *object_path)
 	if (!object_path)
 		return NULL;
 
-	if (!g_str_has_prefix(object_path, MY_DBUS_PATH)) {
+	if (!g_str_has_prefix(object_path, MY_DBUS_PATH))
 		return NULL;
-	}
 
 	return (char *)object_path + strlen(MY_DBUS_PATH) + 1;
 }
@@ -73,11 +71,13 @@ UserRequest *dbus_plugin_macro_user_request_new(struct custom_data *ctx, void *o
 	struct dbus_request_info *dbus_info;
 
 	cp_name = GET_CP_NAME(invocation);
-	dbg("cp_name = [%s]", cp_name);
 
 	ur = tcore_user_request_new(ctx->comm, cp_name);
 
 	dbus_info = calloc(1, sizeof(struct dbus_request_info));
+	if (!dbus_info)
+		return NULL;
+
 	dbus_info->interface_object = object;
 	dbus_info->invocation = invocation;
 
@@ -87,7 +87,7 @@ UserRequest *dbus_plugin_macro_user_request_new(struct custom_data *ctx, void *o
 	return ur;
 }
 
-gboolean check_access_control (cynara *p_cynara, GDBusMethodInvocation *invoc, const char *label, const char *perm)
+gboolean check_access_control(cynara *p_cynara, GDBusMethodInvocation *invoc, const char *label, const char *perm)
 {
 	GDBusConnection *conn;
 	const char *sender_unique_name;
@@ -101,62 +101,60 @@ gboolean check_access_control (cynara *p_cynara, GDBusMethodInvocation *invoc, c
 	const char *privilege = NULL;
 
 	if (!p_cynara) {
-		warn ("access control denied (fail to get cynara handle)");
+		warn("access control denied (fail to get cynara handle)");
 		goto OUT;
 	}
 
-	conn = g_dbus_method_invocation_get_connection (invoc);
+	conn = g_dbus_method_invocation_get_connection(invoc);
 	if (!conn) {
-		warn ("access control denied (no connection info)");
+		warn("access control denied (no connection info)");
 		goto OUT;
 	}
 
-	sender_unique_name = g_dbus_method_invocation_get_sender (invoc);
+	sender_unique_name = g_dbus_method_invocation_get_sender(invoc);
 
 	/* Get PID */
 	ret = cynara_creds_gdbus_get_pid(conn, sender_unique_name, &pid);
 	if (ret != CYNARA_API_SUCCESS) {
-		warn ("access control denied (fail to get pid). ret = %d", ret);
+		warn("access control denied (fail to get pid). ret = %d", ret);
 		goto OUT;
 	}
 
 	/* Get UID */
 	ret = cynara_creds_gdbus_get_user(conn, sender_unique_name, USER_METHOD_DEFAULT, &uid_string);
 	if (ret != CYNARA_API_SUCCESS) {
-		warn ("access control denied (fail to get uid for cynara). ret = %d", ret);
+		warn("access control denied (fail to get uid for cynara). ret = %d", ret);
 		goto OUT;
 	}
 
 	/* Get Smack label */
 	ret = cynara_creds_gdbus_get_client(conn, sender_unique_name, CLIENT_METHOD_DEFAULT, &client_smack);
 	if (ret != CYNARA_API_SUCCESS) {
-		warn ("access control denied (fail to get smack for cynara). ret = %d", ret);
+		warn("access control denied (fail to get smack for cynara). ret = %d", ret);
 		goto OUT;
 	}
 
-	dbg ("sender: %s pid = %u uid = %s smack = %s", sender_unique_name, pid, uid_string, client_smack);
+	dbg("sender: %s pid = %u uid = %s smack = %s", sender_unique_name, pid, uid_string, client_smack);
 
 	client_session = cynara_session_from_pid(pid);
 	if (!client_session) {
-		warn ("access control denied (fail to get cynara client session)");
+		warn("access control denied (fail to get cynara client session)");
 		goto OUT;
 	}
 
-	if (g_strrstr(perm, PERM_WRITE) == NULL && g_strrstr(perm, PERM_EXECUTE) == NULL) {
+	if (g_strrstr(perm, PERM_WRITE) == NULL && g_strrstr(perm, PERM_EXECUTE) == NULL)
 		privilege = TELEPHONY_PRIVILEGE;
-	} else {
+	else
 		privilege = TELEPHONY_ADMIN_PRIVILEGE;
-	}
 
 	ret = cynara_check(p_cynara, client_smack, client_session, uid_string, privilege);
-	if (ret != CYNARA_API_ACCESS_ALLOWED) {
-		warn ("pid(%u) access (%s - %s) denied(%d)", pid, label, perm, ret);
-	}
+	if (ret != CYNARA_API_ACCESS_ALLOWED)
+		warn("pid(%u) access (%s - %s) denied(%d)", pid, label, perm, ret);
 	else
 		result = TRUE;
 OUT:
 	if (result == FALSE) {
-		g_dbus_method_invocation_return_error (invoc,
+		g_dbus_method_invocation_return_error(invoc,
 				G_DBUS_ERROR,
 				G_DBUS_ERROR_ACCESS_DENIED,
 				"No access rights");
@@ -170,13 +168,12 @@ OUT:
 
 enum dbus_tapi_sim_slot_id get_sim_slot_id_by_cp_name(char *cp_name)
 {
-	if(g_str_has_suffix(cp_name , "0")){
+	if (g_str_has_suffix(cp_name , "0"))
 		return SIM_SLOT_PRIMARY;
-	} else if (g_str_has_suffix(cp_name , "1")){
+	else if (g_str_has_suffix(cp_name , "1"))
 		return SIM_SLOT_SECONDARY;
-	} else if(g_str_has_suffix(cp_name , "2")){
+	else if (g_str_has_suffix(cp_name , "2"))
 		return SIM_SLOT_TERTIARY;
-	}
 	return SIM_SLOT_PRIMARY;
 }
 
@@ -195,7 +192,7 @@ gboolean dbus_plugin_util_load_xml(char *docname, char *groupname, void **i_doc,
 			if (0 == xmlStrcmp((*root_node)->name, (const xmlChar *) groupname)) {
 				*root_node = (*root_node)->xmlChildrenNode;
 				return TRUE;
-			} 
+			}
 			*root_node = NULL;
 		}
 	}

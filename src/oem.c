@@ -31,11 +31,10 @@ static void _emit_oem_response(struct dbus_request_info *dbus_info, int oem_id, 
 
 	if (dbus_info->interface_object) {
 		gchar *encoded_data = g_base64_encode((const guchar*)data, data_len);
-		if (dbus_info->invocation) {
+		if (dbus_info->invocation)
 			telephony_oem_complete_send_oem_data_with_response(dbus_info->interface_object, dbus_info->invocation, oem_id, encoded_data);
-		} else {
+		else
 			telephony_oem_emit_oem_data(dbus_info->interface_object, oem_id, encoded_data);
-		}
 		g_free(encoded_data);
 	}
 }
@@ -45,7 +44,7 @@ static void _emit_oem_notification(TelephonyOEM *oem, int oem_id, const void *da
 	gchar *encoded_data = NULL;
 
 	if (!oem || !oem_id || !data || !data_len) {
-		dbg("Invalid Data! oem=%p, oem_id=0x%x, data=%p, data_len=%d", oem, oem_id, data, data_len);
+		dbg("Invalid Data! oem_id=0x%x, data=%p, data_len=%d", oem_id, data, data_len);
 		return ;
 	}
 
@@ -70,7 +69,7 @@ send_oem_data(TelephonyOEM *oem,
 	gsize length;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_MODEM, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_MODEM, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, oem, invocation);
@@ -83,7 +82,7 @@ send_oem_data(TelephonyOEM *oem,
 
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 		return TRUE;
 	}
@@ -99,7 +98,7 @@ send_oem_data(TelephonyOEM *oem,
 }
 
 static gboolean
-on_send_oem_data (TelephonyOEM *oem,
+on_send_oem_data(TelephonyOEM *oem,
 	GDBusMethodInvocation *invocation,
 	gint arg_oem_id,
 	const gchar *arg_data,
@@ -109,7 +108,7 @@ on_send_oem_data (TelephonyOEM *oem,
 }
 
 static gboolean
-on_send_oem_data_with_response (TelephonyOEM *oem,
+on_send_oem_data_with_response(TelephonyOEM *oem,
 	GDBusMethodInvocation *invocation,
 	gint arg_oem_id,
 	const gchar *arg_data,
@@ -129,15 +128,13 @@ gboolean dbus_plugin_setup_oem_interface(TelephonyObjectSkeleton *object, struct
 
 	dbg("oem = %p", oem);
 
-	g_signal_connect (oem,
-			"handle-send-oem-data",
-			G_CALLBACK (on_send_oem_data),
-			ctx);
+	g_signal_connect(oem,
+		"handle-send-oem-data",
+		G_CALLBACK(on_send_oem_data), ctx);
 
-	g_signal_connect (oem,
-			"handle-send-oem-data-with-response",
-			G_CALLBACK (on_send_oem_data_with_response),
-			ctx);
+	g_signal_connect(oem,
+		"handle-send-oem-data-with-response",
+		G_CALLBACK(on_send_oem_data_with_response), ctx);
 
 	return TRUE;
 }
@@ -145,7 +142,7 @@ gboolean dbus_plugin_setup_oem_interface(TelephonyObjectSkeleton *object, struct
 gboolean dbus_plugin_oem_response(struct custom_data *ctx, UserRequest *ur, struct dbus_request_info *dbus_info, enum tcore_response_command command, unsigned int data_len, const void *data)
 {
 	_emit_oem_response(dbus_info, GET_OEM_ID(command), data, data_len);
- 	return TRUE;
+	return TRUE;
 }
 
 gboolean dbus_plugin_oem_notification(struct custom_data *ctx, CoreObject *source, TelephonyObjectSkeleton *object, enum tcore_notification_command command, unsigned int data_len, const void *data)

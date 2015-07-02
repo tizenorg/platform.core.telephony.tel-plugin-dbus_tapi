@@ -23,7 +23,7 @@
 #include "common.h"
 
 static gboolean
-on_gps_set_frequency_aiding (TelephonyGps *gps,
+on_gps_set_frequency_aiding(TelephonyGps *gps,
 		GDBusMethodInvocation *invocation,
 		guchar data,
 		gpointer user_data)
@@ -33,17 +33,17 @@ on_gps_set_frequency_aiding (TelephonyGps *gps,
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
-	dbg("data=%d",data);
+	dbg("data=%d", data);
 
 	tcore_user_request_set_data(ur, sizeof(data), (const char*)&data);
 	tcore_user_request_set_command(ur, TREQ_GPS_SET_FREQUENCY_AIDING);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -51,7 +51,7 @@ on_gps_set_frequency_aiding (TelephonyGps *gps,
 }
 
 static gboolean
-on_gps_confirm_measure_pos (TelephonyGps *gps,
+on_gps_confirm_measure_pos(TelephonyGps *gps,
 		GDBusMethodInvocation *invocation,
 		const gchar *data,
 		gpointer user_data)
@@ -64,7 +64,7 @@ on_gps_confirm_measure_pos (TelephonyGps *gps,
 	gsize length;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
@@ -75,7 +75,7 @@ on_gps_confirm_measure_pos (TelephonyGps *gps,
 	tcore_user_request_set_command(ur, TREQ_GPS_CONFIRM_MEASURE_POS);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 		g_free(decoded_data);
 		return TRUE;
@@ -97,7 +97,7 @@ on_enable_smart_assistant(TelephonyGps *gps,
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
@@ -105,7 +105,7 @@ on_enable_smart_assistant(TelephonyGps *gps,
 	tcore_user_request_set_command(ur, TREQ_ENABLE_SMART_ASSISTANT);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -122,7 +122,7 @@ on_disable_smart_assistant(TelephonyGps *gps,
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
@@ -130,7 +130,7 @@ on_disable_smart_assistant(TelephonyGps *gps,
 	tcore_user_request_set_command(ur, TREQ_DISABLE_SMART_ASSISTANT);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -156,11 +156,11 @@ on_sync_smart_assistant_area_list(TelephonyGps *gps,
 	gint item1, item2;
 	dbg("enter count=%d", count);
 
-	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
-	memset(&req,0,sizeof(struct tel_smart_assistant_area_list));
+	memset(&req, 0, sizeof(struct tel_smart_assistant_area_list));
 
 	dbg("count=%d", count);
 	if (count > SMART_ASSISTANT_AREA_LIST_MAX)
@@ -168,11 +168,11 @@ on_sync_smart_assistant_area_list(TelephonyGps *gps,
 
 	req.count = count;
 
-	g_variant_get (gv, "v", &b);
-	g_variant_unref (gv);
+	g_variant_get(gv, "v", &b);
+	g_variant_unref(gv);
 
-	g_variant_get (b, "a(ii)", &iter);
-	while(g_variant_iter_loop(iter,"(ii)",&item1, &item2)){
+	g_variant_get(b, "a(ii)", &iter);
+	while (g_variant_iter_loop(iter, "(ii)", &item1, &item2)) {
 		req.area[i].index = item1;
 		req.area[i].mode_state = item2;
 		i++;
@@ -185,7 +185,7 @@ on_sync_smart_assistant_area_list(TelephonyGps *gps,
 	tcore_user_request_set_command(ur, TREQ_SYNC_SMART_ASSISTANT_AREA_LIST);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -210,11 +210,11 @@ on_del_smart_assistant_area_list(TelephonyGps *gps,
 	int i = 0;
 	gint item1, item2;
 
-	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
-	memset(&req,0,sizeof(struct tel_smart_assistant_area_list));
+	memset(&req, 0, sizeof(struct tel_smart_assistant_area_list));
 
 	dbg("count=%d", count);
 	if (count > SMART_ASSISTANT_AREA_LIST_MAX)
@@ -222,11 +222,11 @@ on_del_smart_assistant_area_list(TelephonyGps *gps,
 
 	req.count = count;
 
-	g_variant_get (gv, "v", &b);
-	g_variant_unref (gv);
+	g_variant_get(gv, "v", &b);
+	g_variant_unref(gv);
 
-	g_variant_get (b, "a(ii)", &iter);
-	while(g_variant_iter_loop(iter,"(ii)",&item1, &item2)){
+	g_variant_get(b, "a(ii)", &iter);
+	while (g_variant_iter_loop(iter, "(ii)", &item1, &item2)) {
 		req.area[i].index = item1;
 		req.area[i].mode_state = item2;
 		i++;
@@ -239,7 +239,7 @@ on_del_smart_assistant_area_list(TelephonyGps *gps,
 	tcore_user_request_set_command(ur, TREQ_DEL_SMART_ASSISTANT_AREA_LIST);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -259,19 +259,19 @@ on_add_smart_assistant_area(TelephonyGps *gps,
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
 	req.index = fn_index;
 	req.mode_state = mode_state;
-	dbg("index=%d, mode_state=%d",req.index, req.mode_state);
+	dbg("index=%d, mode_state=%d", req.index, req.mode_state);
 
 	tcore_user_request_set_data(ur, sizeof(struct tel_smart_assistant_area), &req);
 	tcore_user_request_set_command(ur, TREQ_ADD_SMART_ASSISTANT_AREA);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -290,19 +290,19 @@ on_modify_smart_assistant_area(TelephonyGps *gps,
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
 	req.index = fn_index;
 	req.mode_state = mode_state;
-	dbg("index=%d, mode_state=%d",req.index, req.mode_state);
+	dbg("index=%d, mode_state=%d", req.index, req.mode_state);
 
 	tcore_user_request_set_data(ur, sizeof(struct tel_smart_assistant_area), &req);
 	tcore_user_request_set_command(ur, TREQ_MODIFY_SMART_ASSISTANT_AREA);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -322,19 +322,19 @@ on_set_smart_assistant_info(TelephonyGps *gps,
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_GPS, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_GPS, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, gps, invocation);
 	req.index = fn_index;
 	req.lpp_state = lpp_state;
-	dbg("index=%d, lpp_state=%d",req.index, req.lpp_state);
+	dbg("index=%d, lpp_state=%d", req.index, req.lpp_state);
 
 	tcore_user_request_set_data(ur, sizeof(struct treq_set_smart_assistant_info), &req);
 	tcore_user_request_set_command(ur, TREQ_SET_SMART_ASSISTANT_INFO);
 	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS) {
-		FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		tcore_user_request_unref(ur);
 	}
 
@@ -352,50 +352,41 @@ gboolean dbus_plugin_setup_gps_interface(TelephonyObjectSkeleton *object, struct
 
 	dbg("gps = %p", gps);
 
-	g_signal_connect (gps,
-			"handle-set-frequency-aiding",
-			G_CALLBACK (on_gps_set_frequency_aiding),
-			ctx);
+	g_signal_connect(gps,
+		"handle-set-frequency-aiding",
+		G_CALLBACK(on_gps_set_frequency_aiding), ctx);
 
-	g_signal_connect (gps,
-			"handle-confirm-measure-pos",
-			G_CALLBACK (on_gps_confirm_measure_pos),
-			ctx);
+	g_signal_connect(gps,
+		"handle-confirm-measure-pos",
+		G_CALLBACK(on_gps_confirm_measure_pos), ctx);
 
-	g_signal_connect (gps,
-			"handle-enable-smart-assistant",
-			G_CALLBACK (on_enable_smart_assistant),
-			ctx);
+	g_signal_connect(gps,
+		"handle-enable-smart-assistant",
+		G_CALLBACK(on_enable_smart_assistant), ctx);
 
-	g_signal_connect (gps,
-			"handle-disable-smart-assistant",
-			G_CALLBACK (on_disable_smart_assistant),
-			ctx);
+	g_signal_connect(gps,
+		"handle-disable-smart-assistant",
+		G_CALLBACK(on_disable_smart_assistant), ctx);
 
-	g_signal_connect (gps,
-			"handle-sync-smart-assistant-area-list",
-			G_CALLBACK (on_sync_smart_assistant_area_list),
-			ctx);
+	g_signal_connect(gps,
+		"handle-sync-smart-assistant-area-list",
+		G_CALLBACK(on_sync_smart_assistant_area_list), ctx);
 
-	g_signal_connect (gps,
-			"handle-del-smart-assistant-area-list",
-			G_CALLBACK (on_del_smart_assistant_area_list),
-			ctx);
+	g_signal_connect(gps,
+		"handle-del-smart-assistant-area-list",
+		G_CALLBACK(on_del_smart_assistant_area_list), ctx);
 
-	g_signal_connect (gps,
-			"handle-add-smart-assistant-area",
-			G_CALLBACK (on_add_smart_assistant_area),
-			ctx);
+	g_signal_connect(gps,
+		"handle-add-smart-assistant-area",
+		G_CALLBACK(on_add_smart_assistant_area), ctx);
 
-	g_signal_connect (gps,
-			"handle-modify-smart-assistant-area",
-			G_CALLBACK (on_modify_smart_assistant_area),
-			ctx);
+	g_signal_connect(gps,
+		"handle-modify-smart-assistant-area",
+		G_CALLBACK(on_modify_smart_assistant_area), ctx);
 
-	g_signal_connect (gps,
-			"handle-set-smart-assistant-info",
-			G_CALLBACK (on_set_smart_assistant_info),
-			ctx);
+	g_signal_connect(gps,
+		"handle-set-smart-assistant-info",
+		G_CALLBACK(on_set_smart_assistant_info), ctx);
 
 	return TRUE;
 }
@@ -420,61 +411,59 @@ gboolean dbus_plugin_gps_response(struct custom_data *ctx, UserRequest *ur, stru
 		return FALSE;
 
 	co_list = tcore_plugin_get_core_objects_bytype(p, CORE_OBJECT_TYPE_GPS);
-	if (!co_list) {
+	if (!co_list)
 		return FALSE;
-	}
 
 	co_gps = (CoreObject *)co_list->data;
 	g_slist_free(co_list);
 
-	if (!co_gps) {
+	if (!co_gps)
 		return FALSE;
-	}
 
 	switch (command) {
-		case TRESP_GPS_SET_FREQUENCY_AIDING:
-			dbg("TRESP_GPS_SET_FREQUENCY_AIDING result=%d", resp_gps_frequency_aiding->result);
-			telephony_gps_complete_set_frequency_aiding(dbus_info->interface_object, dbus_info->invocation, resp_gps_frequency_aiding->result);
-			break;
+	case TRESP_GPS_SET_FREQUENCY_AIDING:
+		dbg("TRESP_GPS_SET_FREQUENCY_AIDING result=%d", resp_gps_frequency_aiding->result);
+		telephony_gps_complete_set_frequency_aiding(dbus_info->interface_object, dbus_info->invocation, resp_gps_frequency_aiding->result);
+		break;
 
-		case TRESP_ENABLE_SMART_ASSISTANT:
-			dbg("TRESP_ENABLE_SMART_ASSISTANT result=%d", resp_smart_assistant_result->result);
-			telephony_gps_complete_enable_smart_assistant(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
-			break;
+	case TRESP_ENABLE_SMART_ASSISTANT:
+		dbg("TRESP_ENABLE_SMART_ASSISTANT result=%d", resp_smart_assistant_result->result);
+		telephony_gps_complete_enable_smart_assistant(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
+		break;
 
-		case TRESP_DISABLE_SMART_ASSISTANT:
-			dbg("TRESP_ENABLE_SMART_ASSISTANT result=%d", resp_smart_assistant_result->result);
-			telephony_gps_complete_disable_smart_assistant(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
-			break;
+	case TRESP_DISABLE_SMART_ASSISTANT:
+		dbg("TRESP_ENABLE_SMART_ASSISTANT result=%d", resp_smart_assistant_result->result);
+		telephony_gps_complete_disable_smart_assistant(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
+		break;
 
-		case TRESP_SYNC_SMART_ASSISTANT_AREA_LIST:
-			dbg("TRESP_SYNC_SMART_ASSISTANT_AREA_LIST result=%d", resp_smart_assistant_result->result);
-			telephony_gps_complete_sync_smart_assistant_area_list(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
-			break;
+	case TRESP_SYNC_SMART_ASSISTANT_AREA_LIST:
+		dbg("TRESP_SYNC_SMART_ASSISTANT_AREA_LIST result=%d", resp_smart_assistant_result->result);
+		telephony_gps_complete_sync_smart_assistant_area_list(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
+		break;
 
-		case TRESP_DEL_SMART_ASSISTANT_AREA_LIST:
-			dbg("TRESP_DEL_SMART_ASSISTANT_AREA_LIST result=%d", resp_smart_assistant_result->result);
-			telephony_gps_complete_del_smart_assistant_area_list(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
-			break;
+	case TRESP_DEL_SMART_ASSISTANT_AREA_LIST:
+		dbg("TRESP_DEL_SMART_ASSISTANT_AREA_LIST result=%d", resp_smart_assistant_result->result);
+		telephony_gps_complete_del_smart_assistant_area_list(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
+		break;
 
-		case TRESP_ADD_SMART_ASSISTANT_AREA:
-			dbg("TRESP_ADD_SMART_ASSISTANT_AREA result=%d", resp_smart_assistant_result->result);
-			telephony_gps_complete_add_smart_assistant_area(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
-			break;
+	case TRESP_ADD_SMART_ASSISTANT_AREA:
+		dbg("TRESP_ADD_SMART_ASSISTANT_AREA result=%d", resp_smart_assistant_result->result);
+		telephony_gps_complete_add_smart_assistant_area(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
+		break;
 
-		case TRESP_MODIFY_SMART_ASSISTANT_AREA:
-			dbg("TRESP_MODIFY_SMART_ASSISTANT_AREA result=%d", resp_smart_assistant_result->result);
-			telephony_gps_complete_modify_smart_assistant_area(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
-			break;
+	case TRESP_MODIFY_SMART_ASSISTANT_AREA:
+		dbg("TRESP_MODIFY_SMART_ASSISTANT_AREA result=%d", resp_smart_assistant_result->result);
+		telephony_gps_complete_modify_smart_assistant_area(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
+		break;
 
-		case TRESP_SET_SMART_ASSISTANT_INFO:
-			dbg("TRESP_SET_SMART_ASSISTANT_INFO result=%d", resp_smart_assistant_result->result);
-			telephony_gps_complete_set_smart_assistant_info(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
-			break;
+	case TRESP_SET_SMART_ASSISTANT_INFO:
+		dbg("TRESP_SET_SMART_ASSISTANT_INFO result=%d", resp_smart_assistant_result->result);
+		telephony_gps_complete_set_smart_assistant_info(dbus_info->interface_object, dbus_info->invocation, resp_smart_assistant_result->result);
+		break;
 
-		default:
-			dbg("not handled cmd[0x%x]", command);
-			break;
+	default:
+		dbg("not handled cmd[0x%x]", command);
+		break;
 	}
 
 	return TRUE;
@@ -488,67 +477,69 @@ gboolean dbus_plugin_gps_notification(struct custom_data *ctx, CoreObject *sourc
 		dbg("object is NULL");
 		return FALSE;
 	}
-	dbg("Notification!!! Command: [0x%x] CP Name: [%s]",
-				command, tcore_server_get_cp_name_by_plugin(tcore_object_ref_plugin(source)));
 
 	gps = telephony_object_peek_gps(TELEPHONY_OBJECT(object));
+	if (gps == NULL) {
+		err("gps object is NULL!!!");
+		return FALSE;
+	}
+
 	switch (command) {
-		case TNOTI_GPS_ASSIST_DATA:
-		{
-			gchar *encoded_data = NULL;
-			dbg("gps(%p) TNOTI_GPS_ASSIST_DATA. data=%p, data_len=%d", gps, data, data_len);
-			encoded_data = g_base64_encode((const guchar*)data, data_len);
-			telephony_gps_emit_assist_data(gps, encoded_data);
-			g_free(encoded_data);
-		}
-			break;
+	case TNOTI_GPS_ASSIST_DATA:
+	{
+		gchar *encoded_data = NULL;
+		dbg("gps(%p) TNOTI_GPS_ASSIST_DATA. data=%p, data_len=%d", gps, data, data_len);
+		encoded_data = g_base64_encode((const guchar*)data, data_len);
+		telephony_gps_emit_assist_data(gps, encoded_data);
+		g_free(encoded_data);
+	}
+		break;
 
-		case TNOTI_GPS_MEASURE_POSITION:
-		{
-			gchar *encoded_data = NULL;
-			dbg("gps(%p) TNOTI_GPS_MEASURE_POSITION. data=%p, data_len=%d", gps, data, data_len);
-			encoded_data = g_base64_encode((const guchar*)data, data_len);
-			telephony_gps_emit_measure_position(gps, encoded_data);
-			g_free(encoded_data);
-		}
-			break;
+	case TNOTI_GPS_MEASURE_POSITION:
+	{
+		gchar *encoded_data = NULL;
+		dbg("gps(%p) TNOTI_GPS_MEASURE_POSITION. data=%p, data_len=%d", gps, data, data_len);
+		encoded_data = g_base64_encode((const guchar*)data, data_len);
+		telephony_gps_emit_measure_position(gps, encoded_data);
+		g_free(encoded_data);
+	}
+		break;
 
-		case TNOTI_GPS_RESET_ASSIST_DATA:
-			dbg("gps(%p) TNOTI_GPS_RESET_ASSIST_DATA", gps);
-			telephony_gps_emit_reset_assist_data(gps);
-			break;
+	case TNOTI_GPS_RESET_ASSIST_DATA:
+		dbg("gps(%p) TNOTI_GPS_RESET_ASSIST_DATA", gps);
+		telephony_gps_emit_reset_assist_data(gps);
+		break;
 
-		case TNOTI_GPS_FREQUENCY_AIDING_DATA:
-		{
-			gchar *encoded_data = NULL;
-			dbg("gps(%p) TNOTI_GPS_FREQUENCY_AIDING_DATA. data=%p, data_len=%d", gps, data, data_len);
-			encoded_data = g_base64_encode((const guchar*)data, data_len);
-			telephony_gps_emit_frequency_aiding(gps, encoded_data);
-			g_free(encoded_data);
-		}
-			break;
+	case TNOTI_GPS_FREQUENCY_AIDING_DATA:
+	{
+		gchar *encoded_data = NULL;
+		dbg("gps(%p) TNOTI_GPS_FREQUENCY_AIDING_DATA. data=%p, data_len=%d", gps, data, data_len);
+		encoded_data = g_base64_encode((const guchar*)data, data_len);
+		telephony_gps_emit_frequency_aiding(gps, encoded_data);
+		g_free(encoded_data);
+	}
+		break;
 
-		case TNOTI_SMART_ASSISTANT_AREA_STATUS:
-		{
-			const struct tnoti_smart_assistant_area_status *noti = data;
-			dbg("gps(%p) TNOTI_SMART_ASSISTANT_AREA_STATUS", gps);
-			telephony_gps_emit_area_status(gps, noti->area_status, noti->index);
-		}
-			break;
+	case TNOTI_SMART_ASSISTANT_AREA_STATUS:
+	{
+		const struct tnoti_smart_assistant_area_status *noti = data;
+		dbg("gps(%p) TNOTI_SMART_ASSISTANT_AREA_STATUS", gps);
+		telephony_gps_emit_area_status(gps, noti->area_status, noti->index);
+	}
+		break;
 
-		case TNOTI_SMART_ASSISTANT_SYNC_STATUS:
-		{
-			const struct tnoti_smart_assistant_sync_status *noti = data;
-			dbg("gps(%p) TNOTI_SMART_ASSISTANT_SYNC_STATUS", gps);
-			telephony_gps_emit_sync_status(gps, noti->init_status, noti->init_fail_cause);
-		}
-			break;
+	case TNOTI_SMART_ASSISTANT_SYNC_STATUS:
+	{
+		const struct tnoti_smart_assistant_sync_status *noti = data;
+		dbg("gps(%p) TNOTI_SMART_ASSISTANT_SYNC_STATUS", gps);
+		telephony_gps_emit_sync_status(gps, noti->init_status, noti->init_fail_cause);
+	}
+		break;
 
-		default:
-			dbg("not handled cmd[0x%x]", command);
-			break;
+	default:
+		dbg("not handled cmd[0x%x]", command);
+		break;
 	}
 
 	return TRUE;
 }
-

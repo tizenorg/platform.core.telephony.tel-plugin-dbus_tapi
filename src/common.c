@@ -22,7 +22,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <glib.h>
-#include <dbus/dbus.h>
 
 #include <tcore.h>
 #include <plugin.h>
@@ -59,9 +58,8 @@ char *dbus_plugin_get_cp_name_by_object_path(const char *object_path)
 	if (!object_path)
 		return NULL;
 
-	if (!g_str_has_prefix(object_path, MY_DBUS_PATH)) {
+	if (!g_str_has_prefix(object_path, MY_DBUS_PATH))
 		return NULL;
-	}
 
 	return (char *)object_path + strlen(MY_DBUS_PATH) + 1;
 }
@@ -73,11 +71,13 @@ UserRequest *dbus_plugin_macro_user_request_new(struct custom_data *ctx, void *o
 	struct dbus_request_info *dbus_info;
 
 	cp_name = GET_CP_NAME(invocation);
-	dbg("cp_name = [%s]", cp_name);
 
 	ur = tcore_user_request_new(ctx->comm, cp_name);
 
 	dbus_info = calloc(1, sizeof(struct dbus_request_info));
+	if (!dbus_info)
+		return NULL;
+
 	dbus_info->interface_object = object;
 	dbus_info->invocation = invocation;
 
@@ -170,13 +170,12 @@ OUT:
 
 enum dbus_tapi_sim_slot_id get_sim_slot_id_by_cp_name(char *cp_name)
 {
-	if(g_str_has_suffix(cp_name , "0")){
+	if (g_str_has_suffix(cp_name , "0"))
 		return SIM_SLOT_PRIMARY;
-	} else if (g_str_has_suffix(cp_name , "1")){
+	else if (g_str_has_suffix(cp_name , "1"))
 		return SIM_SLOT_SECONDARY;
-	} else if(g_str_has_suffix(cp_name , "2")){
+	else if (g_str_has_suffix(cp_name , "2"))
 		return SIM_SLOT_TERTIARY;
-	}
 	return SIM_SLOT_PRIMARY;
 }
 
@@ -195,7 +194,7 @@ gboolean dbus_plugin_util_load_xml(char *docname, char *groupname, void **i_doc,
 			if (0 == xmlStrcmp((*root_node)->name, (const xmlChar *) groupname)) {
 				*root_node = (*root_node)->xmlChildrenNode;
 				return TRUE;
-			} 
+			}
 			*root_node = NULL;
 		}
 	}

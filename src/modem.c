@@ -42,7 +42,7 @@
 
 
 static gboolean
-on_modem_set_power (TelephonyModem *modem, GDBusMethodInvocation *invocation,
+on_modem_set_power(TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	gint mode, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
@@ -51,7 +51,7 @@ on_modem_set_power (TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	TReturn ret = TCORE_RETURN_SUCCESS;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_MODEM, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_MODEM, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, modem, invocation);
@@ -84,14 +84,14 @@ on_modem_set_power (TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	return TRUE;
 
 ERR:
-	FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+	FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 	tcore_user_request_unref(ur);
 
 	return TRUE;
 }
 
 static gboolean
-on_modem_set_flight_mode (TelephonyModem *modem, GDBusMethodInvocation *invocation,
+on_modem_set_flight_mode(TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	gboolean enable, gpointer user_data)
 {
 	struct treq_modem_set_flightmode data;
@@ -100,7 +100,7 @@ on_modem_set_flight_mode (TelephonyModem *modem, GDBusMethodInvocation *invocati
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_MODEM, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_MODEM, "w"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, modem, invocation);
@@ -108,25 +108,25 @@ on_modem_set_flight_mode (TelephonyModem *modem, GDBusMethodInvocation *invocati
 		goto ERR;
 
 	data.enable = enable;
-	if (TCORE_RETURN_SUCCESS != tcore_user_request_set_data (ur, sizeof(data), &data))
+	if (TCORE_RETURN_SUCCESS != tcore_user_request_set_data(ur, sizeof(data), &data))
 		goto ERR;
-	tcore_user_request_set_command (ur, TREQ_MODEM_SET_FLIGHTMODE);
+	tcore_user_request_set_command(ur, TREQ_MODEM_SET_FLIGHTMODE);
 
-	ret = tcore_communicator_dispatch_request (ctx->comm, ur);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
 	if (ret != TCORE_RETURN_SUCCESS)
 		goto ERR;
 
 	return TRUE;
 
 ERR:
-	FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+	FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 	tcore_user_request_unref(ur);
 
 	return TRUE;
 }
 
 static gboolean
-on_modem_get_flight_mode (TelephonyModem *modem, GDBusMethodInvocation *invocation,
+on_modem_get_flight_mode(TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
@@ -134,7 +134,7 @@ on_modem_get_flight_mode (TelephonyModem *modem, GDBusMethodInvocation *invocati
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_MODEM, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, modem, invocation);
@@ -150,14 +150,14 @@ on_modem_get_flight_mode (TelephonyModem *modem, GDBusMethodInvocation *invocati
 	return TRUE;
 
 ERR:
-	FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+	FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 	tcore_user_request_unref(ur);
 
 	return TRUE;
 }
 
 static gboolean
-on_modem_get_version (TelephonyModem *modem, GDBusMethodInvocation *invocation,
+on_modem_get_version(TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
@@ -165,7 +165,7 @@ on_modem_get_version (TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_MODEM, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, modem, invocation);
@@ -180,14 +180,14 @@ on_modem_get_version (TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	return TRUE;
 
 ERR:
-	FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+	FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 	tcore_user_request_unref(ur);
 
 	return TRUE;
 }
 
 static gboolean
-on_modem_get_serial_number (TelephonyModem *modem, GDBusMethodInvocation *invocation,
+on_modem_get_serial_number(TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
@@ -195,7 +195,7 @@ on_modem_get_serial_number (TelephonyModem *modem, GDBusMethodInvocation *invoca
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_MODEM, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, modem, invocation);
@@ -210,14 +210,14 @@ on_modem_get_serial_number (TelephonyModem *modem, GDBusMethodInvocation *invoca
 	return TRUE;
 
 ERR:
-	FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+	FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 	tcore_user_request_unref(ur);
 
 	return TRUE;
 }
 
 static gboolean
-on_modem_get_imei (TelephonyModem *modem, GDBusMethodInvocation *invocation,
+on_modem_get_imei(TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
@@ -225,7 +225,7 @@ on_modem_get_imei (TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_MODEM, "r"))
+	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, modem, invocation);
@@ -240,13 +240,13 @@ on_modem_get_imei (TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	return TRUE;
 
 ERR:
-	FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+	FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 	tcore_user_request_unref(ur);
 
 	return TRUE;
 }
 
-static gboolean on_modem_set_dun_pin_ctrl (TelephonyModem *modem, GDBusMethodInvocation *invocation,
+static gboolean on_modem_set_dun_pin_ctrl(TelephonyModem *modem, GDBusMethodInvocation *invocation,
 	gint arg_signal, gboolean arg_status, gpointer user_data)
 {
 	struct treq_modem_set_dun_pin_control data;
@@ -255,7 +255,7 @@ static gboolean on_modem_set_dun_pin_ctrl (TelephonyModem *modem, GDBusMethodInv
 	TReturn ret;
 	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
 
-	if (!check_access_control (p_cynara, invocation, AC_MODEM, "w"))
+	if (!check_access_control(p_cynara, invocation, AC_MODEM, "x"))
 		return TRUE;
 
 	ur = MAKE_UR(ctx, modem, invocation);
@@ -275,7 +275,37 @@ static gboolean on_modem_set_dun_pin_ctrl (TelephonyModem *modem, GDBusMethodInv
 	return TRUE;
 
 ERR:
-	FAIL_RESPONSE (invocation, DEFAULT_MSG_REQ_FAILED);
+	FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
+	tcore_user_request_unref(ur);
+
+	return TRUE;
+}
+
+static gboolean on_modem_get_device_info(TelephonyModem *modem,
+	GDBusMethodInvocation *invocation,
+	gpointer user_data)
+{
+	struct custom_data *ctx = user_data;
+	UserRequest *ur = NULL;
+	TReturn ret;
+	cynara *p_cynara = (ctx)?ctx->p_cynara:NULL;
+
+	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
+		return TRUE;
+
+	ur = MAKE_UR(ctx, modem, invocation);
+	if (ur == NULL)
+		goto ERR;
+
+	tcore_user_request_set_command(ur, TREQ_MODEM_GET_DEVICE_INFO);
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS)
+		goto ERR;
+
+	return TRUE;
+
+ERR:
+	FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 	tcore_user_request_unref(ur);
 
 	return TRUE;
@@ -291,40 +321,37 @@ gboolean dbus_plugin_setup_modem_interface(TelephonyObjectSkeleton *object, stru
 
 	dbg("modem: [%p]", modem);
 
-	g_signal_connect (modem,
-			"handle-set-power",
-			G_CALLBACK (on_modem_set_power),
-			ctx);
+	g_signal_connect(modem,
+		"handle-set-power",
+		G_CALLBACK(on_modem_set_power), ctx);
 
-	g_signal_connect (modem,
-			"handle-set-flight-mode",
-			G_CALLBACK (on_modem_set_flight_mode),
-			ctx);
+	g_signal_connect(modem,
+		"handle-set-flight-mode",
+		G_CALLBACK(on_modem_set_flight_mode), ctx);
 
-	g_signal_connect (modem,
-			"handle-get-flight-mode",
-			G_CALLBACK (on_modem_get_flight_mode),
-			ctx);
+	g_signal_connect(modem,
+		"handle-get-flight-mode",
+		G_CALLBACK(on_modem_get_flight_mode), ctx);
 
-	g_signal_connect (modem,
-			"handle-get-version",
-			G_CALLBACK (on_modem_get_version),
-			ctx);
+	g_signal_connect(modem,
+		"handle-get-version",
+		G_CALLBACK(on_modem_get_version), ctx);
 
-	g_signal_connect (modem,
-			"handle-get-serial-number",
-			G_CALLBACK (on_modem_get_serial_number),
-			ctx);
+	g_signal_connect(modem,
+		"handle-get-serial-number",
+		G_CALLBACK(on_modem_get_serial_number), ctx);
 
-	g_signal_connect (modem,
-			"handle-get-imei",
-			G_CALLBACK (on_modem_get_imei),
-			ctx);
+	g_signal_connect(modem,
+		"handle-get-imei",
+		G_CALLBACK(on_modem_get_imei), ctx);
 
-	g_signal_connect (modem,
-			"handle-set-dun-pin-ctrl",
-			G_CALLBACK (on_modem_set_dun_pin_ctrl),
-			ctx);
+	g_signal_connect(modem,
+		"handle-set-dun-pin-ctrl",
+		G_CALLBACK(on_modem_set_dun_pin_ctrl), ctx);
+
+	g_signal_connect(modem,
+		"handle-get-device-info",
+		G_CALLBACK(on_modem_get_device_info), ctx);
 
 	telephony_modem_set_power(modem, MODEM_STATE_UNKNOWN);
 
@@ -335,16 +362,12 @@ gboolean dbus_plugin_modem_response(struct custom_data *ctx, UserRequest *ur,
 	struct dbus_request_info *dbus_info, enum tcore_response_command command,
 	unsigned int data_len, const void *data)
 {
-	dbg("Response!!! Command: [0x%x] CP Name: [%s]",
-		command, GET_CP_NAME(dbus_info->invocation));
+	char *cpname = dbus_info ? GET_CP_NAME(dbus_info->invocation) : "";
 
 	switch (command) {
 	case TRESP_MODEM_SET_FLIGHTMODE: {
 		const struct tresp_modem_set_flightmode *resp_set_flight_mode = data;
 		int info_set_flight_mode = 3;	/* TAPI_POWER_FLIGHT_MODE_RESP_FAIL */
-
-		dbg("TRESP_MODEM_SET_FLIGHTMODE - Result: [%s]",
-			(resp_set_flight_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		if (resp_set_flight_mode->result == TCORE_RETURN_SUCCESS) {
 			const struct treq_modem_set_flightmode *treq_data;
@@ -352,15 +375,16 @@ gboolean dbus_plugin_modem_response(struct custom_data *ctx, UserRequest *ur,
 			if (treq_data == NULL) {
 				warn("No Request data!!!");
 				info_set_flight_mode = 3;	/* TAPI_POWER_FLIGHT_MODE_RESP_FAIL */
-			}
-			else if (treq_data->enable == TRUE) {
+			} else if (treq_data->enable == TRUE) {
 				info_set_flight_mode = 1;	/* TAPI_POWER_FLIGHT_MODE_RESP_ON */
 			} else {
 				info_set_flight_mode = 2;	/* TAPI_POWER_FLIGHT_MODE_RESP_OFF */
 			}
 		}
-		dbg("Set Flight mode: [%s]", (info_set_flight_mode == 1 ? "ON"
-			: (info_set_flight_mode == 2 ? "OFF" : "Request FAIL")));
+
+		dbg("[%s] SET_FLIGHTMODE - [%s] [%s]",
+			cpname, (resp_set_flight_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"),
+			(info_set_flight_mode == 1 ? "ON" : (info_set_flight_mode == 2 ? "OFF" : "Request FAIL")));
 
 		telephony_modem_complete_set_flight_mode(dbus_info->interface_object, dbus_info->invocation,
 			info_set_flight_mode);
@@ -370,8 +394,7 @@ gboolean dbus_plugin_modem_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_MODEM_GET_FLIGHTMODE: {
 		const struct tresp_modem_get_flightmode *resp_get_flight_mode = data;
 
-		dbg("TRESP_MODEM_GET_FLIGHTMODE - Result: [%s]",
-			(resp_get_flight_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		dbg("[%s] GET_FLIGHTMODE - [%s]", cpname, (resp_get_flight_mode->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_modem_complete_get_flight_mode(dbus_info->interface_object, dbus_info->invocation,
 			resp_get_flight_mode->enable, resp_get_flight_mode->result);
@@ -382,13 +405,12 @@ gboolean dbus_plugin_modem_response(struct custom_data *ctx, UserRequest *ur,
 		const struct tresp_modem_power_on *resp_modem_power_on = data;
 		int result = 0;
 
-		dbg("TRESP_MODEM_POWER_ON - Result: [%s]",
-			(resp_modem_power_on->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		dbg("[%s] POWER_ON - [%s]", cpname, (resp_modem_power_on->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		/*TBD: value should be defined in TAPI*/
-		if(resp_modem_power_on->result == TCORE_RETURN_EALREADY)
+		if (resp_modem_power_on->result == TCORE_RETURN_EALREADY)
 			result = 1;
-		else if(resp_modem_power_on->result == TCORE_RETURN_OPERATION_ABORTED)
+		else if (resp_modem_power_on->result == TCORE_RETURN_OPERATION_ABORTED)
 			result = 2;
 
 		telephony_modem_complete_set_power(dbus_info->interface_object, dbus_info->invocation, result);
@@ -396,21 +418,21 @@ gboolean dbus_plugin_modem_response(struct custom_data *ctx, UserRequest *ur,
 	break;
 
 	case TRESP_MODEM_POWER_OFF: {
-		dbg("TRESP_MODEM_POWER_OFF");
+		dbg("[%s] POWER_OFF", cpname);
 
 		telephony_modem_complete_set_power(dbus_info->interface_object, dbus_info->invocation, 0);
 	}
 	break;
 
 	case TRESP_MODEM_POWER_RESET: {
-		dbg("TRESP_MODEM_POWER_RESET");
+		dbg("[%s] POWER_RESET", cpname);
 
 		telephony_modem_complete_set_power(dbus_info->interface_object, dbus_info->invocation, 0);
 	}
 	break;
 
 	case TRESP_MODEM_POWER_LOW: {
-		dbg("TRESP_MODEM_POWER_LOW");
+		dbg("[%s] POWER_LOW", cpname);
 
 		telephony_modem_complete_set_power(dbus_info->interface_object, dbus_info->invocation, 0);
 	}
@@ -419,8 +441,7 @@ gboolean dbus_plugin_modem_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_MODEM_GET_IMEI: {
 		const struct tresp_modem_get_imei *resp_get_imei = data;
 
-		dbg("TRESP_MODEM_GET_IMEI - Result: [%s]",
-			(resp_get_imei->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		dbg("[%s] GET_IMEI - [%s]", cpname, (resp_get_imei->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_modem_complete_get_imei(dbus_info->interface_object, dbus_info->invocation,
 			resp_get_imei->result, resp_get_imei->imei);
@@ -430,8 +451,7 @@ gboolean dbus_plugin_modem_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_MODEM_GET_SN: {
 		const struct tresp_modem_get_sn *resp_get_sn = data;
 
-		dbg("TRESP_MODEM_GET_SN - Result: [%s]",
-			(resp_get_sn->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		dbg("[%s] GET_SN - [%s]", cpname, (resp_get_sn->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_modem_complete_get_serial_number(dbus_info->interface_object, dbus_info->invocation,
 			resp_get_sn->result, resp_get_sn->sn, resp_get_sn->meid, resp_get_sn->imei, resp_get_sn->imeisv);
@@ -441,8 +461,7 @@ gboolean dbus_plugin_modem_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_MODEM_GET_VERSION: {
 		const struct tresp_modem_get_version *resp_get_version = data;
 
-		dbg("TRESP_MODEM_GET_VERSION - Result: [%s]",
-			(resp_get_version->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		dbg("[%s] GET_VERSION - [%s]", cpname, (resp_get_version->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_modem_complete_get_version(dbus_info->interface_object, dbus_info->invocation,
 				resp_get_version->result,
@@ -458,11 +477,22 @@ gboolean dbus_plugin_modem_response(struct custom_data *ctx, UserRequest *ur,
 	case TRESP_MODEM_SET_DUN_PIN_CONTROL: {
 		const struct tresp_modem_set_dun_pin_control *resp_dun_pin_ctrl = data;
 
-		dbg("TRESP_MODEM_SET_DUN_PIN_CONTROL - Result: [%s]",
-			(resp_dun_pin_ctrl->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
+		dbg("[%s] SET_DUN_PIN_CONTROL - [%s]", cpname, (resp_dun_pin_ctrl->result == TCORE_RETURN_SUCCESS ? "Success" : "Fail"));
 
 		telephony_modem_complete_set_dun_pin_ctrl(dbus_info->interface_object, dbus_info->invocation,
 			resp_dun_pin_ctrl->result);
+	}
+	break;
+
+	case TRESP_MODEM_GET_DEVICE_INFO: {
+		const struct tresp_modem_get_device_info *resp_get_device_info = data;
+
+		dbg("[%s] TGET_DEVICE_INFO - Vendor[%s] Device[%s]", cpname, resp_get_device_info->vendor_name, resp_get_device_info->device_name);
+
+		telephony_modem_complete_get_device_info(dbus_info->interface_object, dbus_info->invocation,
+				resp_get_device_info->result,
+				resp_get_device_info->vendor_name,
+				resp_get_device_info->device_name);
 	}
 	break;
 
@@ -479,22 +509,24 @@ gboolean dbus_plugin_modem_notification(struct custom_data *ctx, CoreObject *sou
 	unsigned int data_len, const void *data)
 {
 	TelephonyModem *modem;
+	const char *cp_name;
+	cp_name = tcore_server_get_cp_name_by_plugin(tcore_object_ref_plugin(source));
 
 	if (!object) {
 		dbg("object is NULL");
 		return FALSE;
 	}
-	dbg("Notification!!! Command: [0x%x] CP Name: [%s]",
-		command, tcore_server_get_cp_name_by_plugin(tcore_object_ref_plugin(source)));
-
 	modem = telephony_object_peek_modem(TELEPHONY_OBJECT(object));
-	dbg("modem: [%p]", modem);
+	if (modem == NULL) {
+		err("modem object is NULL!!!");
+		return FALSE;
+	}
 
 	switch (command) {
 	case TNOTI_MODEM_POWER: {
 		const struct tnoti_modem_power *info = data;
 
-		dbg("TNOTI_MODEM_POWER - Modem state: [%d]", info->state);
+		dbg("[%s] MODEM_POWER:[%d]", cp_name, info->state);
 
 		if (info->state > MODEM_STATE_MAX)
 			break;
@@ -507,17 +539,27 @@ gboolean dbus_plugin_modem_notification(struct custom_data *ctx, CoreObject *sou
 	case TNOTI_MODEM_DUN_PIN_CONTROL: {
 		const struct tnoti_modem_dun_pin_control *pin = data;
 
-		dbg("TNOTI_MODEM_DUN_PIN_CONTROL - Signal: [0x%2x] Status: [0x%2x]", pin->signal, pin->status);
+		dbg("[%s] MODEM_DUN_PIN_CONTROL (Signal: [0x%2x] Status: [0x%2x])", cp_name, pin->signal, pin->status);
 
 		telephony_modem_emit_dun_pin_ctrl(modem, pin->signal, pin->status);
 	}
 	break;
 
 	case TNOTI_MODEM_DUN_EXTERNAL_CALL: {
-		dbg("TNOTI_MODEM_DUN_EXTERNAL_CALL");
+		dbg("[%s] MODEM_DUN_EXTERNAL_CALL", cp_name);
 
 		telephony_modem_emit_dun_external_call(modem, TRUE);
 	}
+	break;
+
+	case TNOTI_MODEM_DONGLE_STATUS:
+		dbg("[%s] MODEM_DONGLE_STATUS (state:[%d])", cp_name, *(int *)data);
+		telephony_modem_set_dongle_status(modem,  *(int *)data);
+	break;
+
+	case TNOTI_MODEM_DONGLE_LOGIN:
+		dbg("[%s] MODEM_DONGLE_LOGIN (login state:[%d])", cp_name, *(int *)data);
+		telephony_modem_set_dongle_login(modem,  *(int *)data);
 	break;
 
 	default:

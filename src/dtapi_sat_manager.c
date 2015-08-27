@@ -44,8 +44,8 @@
 #include <libxml/tree.h>
 
 #include "generated-code.h"
-#include "common.h"
-#include "sat_manager.h"
+#include "dtapi_common.h"
+#include "dtapi_sat_manager.h"
 #include "sat_ui_support/sat_ui_support.h"
 
 #define SAT_DEF_CMD_Q_MAX 10
@@ -411,9 +411,11 @@ static gboolean sat_manager_queue_peek_data_by_id(struct custom_data *ctx, struc
 static gboolean sat_manager_check_availiable_event_list(struct tel_sat_setup_event_list_tlv *event_list_tlv)
 {
 	gboolean rv = TRUE;
-	int local_index = 0;
+	int local_index = 0, count = event_list_tlv->event_list.event_list_cnt;
+	if(count <= 0)
+		return FALSE;
 
-	for (local_index = 0; local_index < event_list_tlv->event_list.event_list_cnt; local_index++) {
+	for (local_index = 0; local_index < count; local_index++) {
 		if (event_list_tlv->event_list.evt_list[local_index] == EVENT_USER_ACTIVITY) {
 			dbg("do user activity");
 		} else if (event_list_tlv->event_list.evt_list[local_index] == EVENT_IDLE_SCREEN_AVAILABLE) {
@@ -1553,20 +1555,12 @@ GVariant* sat_manager_setup_call_noti(struct custom_data *ctx, const char *cp_na
 		return NULL;
 	}
 
-	if (setup_call_tlv->command_detail.cmd_qualifier.setup_call.setup_call == SETUP_CALL_IF_ANOTHER_CALL_NOT_BUSY || setup_call_tlv->command_detail.cmd_qualifier.setup_call.setup_call == SETUP_CALL_IF_ANOTHER_CALL_NOT_BUSY_WITH_REDIAL) {
-		GSList *co_list = NULL;
+	if (setup_call_tlv->command_detail.cmd_qualifier.setup_call.setup_call == SETUP_CALL_IF_ANOTHER_CALL_NOT_BUSY ||
+	   setup_call_tlv->command_detail.cmd_qualifier.setup_call.setup_call == SETUP_CALL_IF_ANOTHER_CALL_NOT_BUSY_WITH_REDIAL) {
 		CoreObject *co_call = NULL;
 		int total_call_cnt = 0;
 
-		co_list = tcore_plugin_get_core_objects_bytype(plg, CORE_OBJECT_TYPE_CALL);
-		if (!co_list) {
-			dbg("[ error ] co_list : 0");
-			tr.terminal_rsp_data.setup_call.result_type = RESULT_ME_UNABLE_TO_PROCESS_COMMAND;
-			goto SEND_TR;
-		}
-
-		co_call = (CoreObject *)co_list->data;
-		g_slist_free(co_list);
+		co_call = tcore_plugin_ref_core_object(plg, CORE_OBJECT_TYPE_CALL);
 		total_call_cnt = tcore_call_object_total_length(co_call);
 		if (total_call_cnt) {
 			dbg("[SAT] Another call in progress hence rejecting. total_call_cnt: %d", total_call_cnt);
@@ -1646,12 +1640,8 @@ GVariant* sat_manager_setup_event_list_noti(struct custom_data *ctx, const char 
 {
 	TcorePlugin *plg = NULL;
 	GVariant *event_list = NULL;
-
-	int local_index = 0;
 	gboolean rv = FALSE;
 	gint event_cnt = 0;
-	GVariantBuilder builder;
-	GVariant *evt_list = NULL;
 	struct treq_sat_terminal_rsp_data *tr = NULL;
 
 	dbg("interpreting event list notification");
@@ -1668,18 +1658,25 @@ GVariant* sat_manager_setup_event_list_noti(struct custom_data *ctx, const char 
 	/* reset evnet list */
 	memset(g_evt_list, 0, SAT_EVENT_DOWNLOAD_MAX);
 
+	rv = sat_manager_check_availiable_event_list(event_list_tlv);
+	dbg("rv of sat_manager_check_availiable_event_list()=[%d]", rv);
 	/* get event */
-	g_variant_builder_init(&builder, G_VARIANT_TYPE("ai"));
-	for (local_index = 0; local_index < event_cnt; local_index++) {
-		g_variant_builder_add(&builder, "i", event_list_tlv->event_list.evt_list[local_index]);
-		if (event_list_tlv->event_list.evt_list[local_index] >= SAT_EVENT_DOWNLOAD_MAX)
-			continue;
-		g_evt_list[event_list_tlv->event_list.evt_list[local_index]] = TRUE;
+	if (rv == TRUE)	{
+		int local_index = 0;
+		GVariantBuilder builder;
+		GVariant *evt_list = NULL;
+		/* get event */
+		g_variant_builder_init(&builder, G_VARIANT_TYPE("ai"));
+		for (local_index = 0; local_index < event_cnt; local_index++) {
+			g_variant_builder_add(&builder, "i", event_list_tlv->event_list.evt_list[local_index]);
+			if (event_list_tlv->event_list.evt_list[local_index] >= SAT_EVENT_DOWNLOAD_MAX)
+				continue;
+			g_evt_list[event_list_tlv->event_list.evt_list[local_index]] = TRUE;
+		}
+		evt_list = g_variant_builder_end(&builder);
+
+		event_list = g_variant_new("(iv)", event_cnt, evt_list);
 	}
-	evt_list = g_variant_builder_end(&builder);
-
-	event_list = g_variant_new("(iv)", event_cnt, evt_list);
-
 	/* send TR - does not need from application's response */
 	tr = (struct treq_sat_terminal_rsp_data *)calloc(1, sizeof(struct treq_sat_terminal_rsp_data));
 	if (!tr)
@@ -1690,11 +1687,11 @@ GVariant* sat_manager_setup_event_list_noti(struct custom_data *ctx, const char 
 	memcpy((void*)&tr->terminal_rsp_data.setup_event_list.command_detail, &event_list_tlv->command_detail, sizeof(struct tel_sat_cmd_detail_info));
 	tr->terminal_rsp_data.setup_event_list.device_id.src = event_list_tlv->device_id.dest;
 	tr->terminal_rsp_data.setup_event_list.device_id.dest = event_list_tlv->device_id.src;
-	tr->terminal_rsp_data.setup_event_list.result_type = RESULT_SUCCESS;
-	tr->terminal_rsp_data.setup_event_list.me_problem_type = ME_PROBLEM_NO_SPECIFIC_CAUSE;
-
-	rv = sat_manager_check_availiable_event_list(event_list_tlv);
-	dbg("rv of sat_manager_check_availiable_event_list()=[%d]", rv);
+	
+	if (rv == TRUE)		
+		tr->terminal_rsp_data.setup_event_list.result_type = RESULT_SUCCESS;
+	else
+		tr->terminal_rsp_data.setup_event_list.result_type = RESULT_BEYOND_ME_CAPABILITIES;
 
 	sat_manager_send_terminal_response(ctx->comm, plg, tr);
 	g_free(tr);
@@ -3354,7 +3351,7 @@ static gboolean _sat_manager_handle_send_ss_result(struct custom_data *ctx, Tcor
 			g_variant_iter_free(iter);
 			g_variant_unref(intermediate);
 
-			tr->terminal_rsp_data.send_ss.text.string_length = local_index;
+			tr->terminal_rsp_data.send_ss.text.string_length = local_index / 2;
 			tmp = _convert_hex_string_to_bytes(tr->terminal_rsp_data.send_ss.text.string);
 			memset(tr->terminal_rsp_data.send_ss.text.string, 0x00,
 				sizeof(tr->terminal_rsp_data.send_ss.text.string));
@@ -5043,8 +5040,6 @@ static gboolean _sat_manager_handle_setup_call_confirm(struct custom_data *ctx, 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
 		GVariant *icon_id;
 #endif
-		enum dbus_tapi_sim_slot_id slot_id;
-		gboolean call_app_rv;
 
 		cp_name = tcore_server_get_cp_name_by_plugin(plg);
 		if (cp_name == NULL) {
@@ -5090,13 +5085,10 @@ static gboolean _sat_manager_handle_setup_call_confirm(struct custom_data *ctx, 
 		g_free(text);
 		g_free(call_number);
 
-		slot_id = get_sim_slot_id_by_cp_name((char *)tcore_server_get_cp_name_by_plugin(plg));
-		dbg("slot_id: [%d]", slot_id);
-
-		call_app_rv = sat_ui_support_launch_call_application(q_data.cmd_data.setup_call.command_detail.cmd_type, setup_call, slot_id);
 		free(tr);
 
-		return call_app_rv;
+		dbg("user confirmation %d", USER_CONFIRM_YES);
+		return TRUE;
 	}
 
 	case USER_CONFIRM_NO_OR_CANCEL: {
@@ -5119,6 +5111,7 @@ static gboolean _sat_manager_handle_setup_call_confirm(struct custom_data *ctx, 
 		dbg("fail to send terminal response");
 		result = FALSE;
 	}
+
 Exit:
 	free(tr);
 	return result;
@@ -5265,7 +5258,7 @@ static gboolean _sat_manager_handle_launch_browser_confirm(struct custom_data *c
 			g_free(text);
 			g_free(gateway_proxy);
 
-			slot_id = get_sim_slot_id_by_cp_name((char*)tcore_server_get_cp_name_by_plugin(plg));
+			slot_id = get_sim_slot_id_by_cp_name(tcore_server_get_cp_name_by_plugin(plg));
 			dbg("slot_id: [%d]", slot_id);
 
 			sat_ui_support_launch_browser_application(q_data.cmd_data.launch_browser.command_detail.cmd_type, launch_browser, slot_id);
@@ -5828,7 +5821,7 @@ static gboolean _sat_manager_handle_send_ss_ui_display_status(struct custom_data
 	g_free(text);
 	g_free(ss_string);
 
-	slot_id = get_sim_slot_id_by_cp_name((char *)tcore_server_get_cp_name_by_plugin(plg));
+	slot_id = get_sim_slot_id_by_cp_name(tcore_server_get_cp_name_by_plugin(plg));
 	dbg("slot_id: [%d]", slot_id);
 	sat_ui_support_launch_ciss_application(SAT_PROATV_CMD_SEND_SS, send_ss, slot_id);
 
@@ -5908,7 +5901,7 @@ static gboolean _sat_manager_handle_send_ussd_ui_display_status(struct custom_da
 	g_free(text);
 	g_free(ussd_string);
 
-	slot_id = get_sim_slot_id_by_cp_name((char *)tcore_server_get_cp_name_by_plugin(plg));
+	slot_id = get_sim_slot_id_by_cp_name(tcore_server_get_cp_name_by_plugin(plg));
 	dbg("slot_id: [%d]", slot_id);
 	sat_ui_support_launch_ciss_application(SAT_PROATV_CMD_SEND_USSD, send_ussd, slot_id);
 

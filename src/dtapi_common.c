@@ -37,7 +37,7 @@
 #include <cynara-session.h>
 
 #include "generated-code.h"
-#include "common.h"
+#include "dtapi_common.h"
 
 #define PERM_WRITE	"w"
 #define PERM_EXECUTE	"x"
@@ -64,7 +64,8 @@ char *dbus_plugin_get_cp_name_by_object_path(const char *object_path)
 	return (char *)object_path + strlen(MY_DBUS_PATH) + 1;
 }
 
-UserRequest *dbus_plugin_macro_user_request_new(struct custom_data *ctx, void *object, GDBusMethodInvocation *invocation)
+UserRequest *dbus_plugin_macro_user_request_new(struct custom_data *ctx,
+	void *object, GDBusMethodInvocation *invocation)
 {
 	UserRequest *ur = NULL;
 	char *cp_name;
@@ -72,11 +73,11 @@ UserRequest *dbus_plugin_macro_user_request_new(struct custom_data *ctx, void *o
 
 	cp_name = GET_CP_NAME(invocation);
 
-	ur = tcore_user_request_new(ctx->comm, cp_name);
-
 	dbus_info = calloc(1, sizeof(struct dbus_request_info));
 	if (!dbus_info)
 		return NULL;
+
+	ur = tcore_user_request_new(ctx->comm, cp_name);
 
 	dbus_info->interface_object = object;
 	dbus_info->invocation = invocation;
@@ -166,7 +167,7 @@ OUT:
 	return result;
 }
 
-enum dbus_tapi_sim_slot_id get_sim_slot_id_by_cp_name(char *cp_name)
+enum dbus_tapi_sim_slot_id get_sim_slot_id_by_cp_name(const char *cp_name)
 {
 	if (g_str_has_suffix(cp_name , "0"))
 		return SIM_SLOT_PRIMARY;
@@ -213,5 +214,45 @@ void dbus_plugin_util_unload_xml(void **i_doc, void **i_root_node)
 		*doc = NULL;
 		if (root_node)
 			*root_node = NULL;
+	}
+}
+
+TReturn dtapi_dispatch_request_ex(struct custom_data *ctx,
+	void *object, GDBusMethodInvocation *invocation,
+	enum tcore_request_command req_command,
+	void *req_data, unsigned int req_data_len)
+{
+	UserRequest *ur;
+	TReturn ret;
+
+	ur = MAKE_UR(ctx, object, invocation);
+
+	if (req_data_len)
+		tcore_user_request_set_data(ur, req_data_len, req_data);
+	tcore_user_request_set_command(ur, req_command);
+
+	ret = tcore_communicator_dispatch_request(ctx->comm, ur);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		err("tcore_communicator_dispatch_request() : (0x%x)", ret);
+
+		tcore_user_request_unref(ur);
+	}
+
+	return ret;
+}
+
+void dtapi_dispatch_request(struct custom_data *ctx,
+	void *object, GDBusMethodInvocation *invocation,
+	enum tcore_request_command req_command,
+	void *req_data, unsigned int req_data_len)
+{
+	TReturn ret;
+
+	ret = dtapi_dispatch_request_ex(ctx, object, invocation,
+		req_command, req_data, req_data_len);
+	if (ret != TCORE_RETURN_SUCCESS) {
+		err("dtapi_dispatch_request_ex() : (0x%x)", ret);
+
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 	}
 }

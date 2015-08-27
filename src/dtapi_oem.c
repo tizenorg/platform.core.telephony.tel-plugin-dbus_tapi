@@ -1,51 +1,74 @@
+/*
+ * tel-plugin-dbus-tapi
+ *
+ * Copyright (c) 2012 Samsung Electronics Co., Ltd. All rights reserved.
+ *
+ * Contact: Ja-young Gu <jygu@samsung.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include <stdio.h>
-#include <string.h>
-#include <pthread.h>
-#include <unistd.h>
 #include <stdlib.h>
-#include <time.h>
+
 #include <glib.h>
-#include <gio/gio.h>
 
 #include <tcore.h>
-#include <server.h>
-#include <plugin.h>
-#include <hal.h>
 #include <communicator.h>
-#include <queue.h>
 #include <user_request.h>
 
 #include "generated-code.h"
-#include "common.h"
+#include "dtapi_common.h"
 
-#define TYPE_FACTORY		0x00020000
-#define MAKE_REQ_CMD(id)	(TREQ_CUSTOM|TYPE_FACTORY|id)
-#define GET_OEM_ID(cmd)	(cmd&0x0000FFFF)
+#define TYPE_FACTORY		(0x00020000)
+#define MAKE_REQ_CMD(id)	(TREQ_CUSTOM | TYPE_FACTORY | id)
+#define GET_OEM_ID(cmd)	(cmd & 0x0000FFFF)
 
-static void _emit_oem_response(struct dbus_request_info *dbus_info, int oem_id, const void *data, unsigned int data_len)
+static void _emit_oem_response(struct dbus_request_info *dbus_info,
+	int oem_id, const void *data, unsigned int data_len)
 {
 	if (!dbus_info || !oem_id || !data || !data_len) {
-		dbg("Invalid Data! dbus_info=%p, oem_id=0x%x, data=%p, data_len=%d", dbus_info, oem_id, data, data_len);
-		return ;
+		dbg("Invalid Data! dbus_info=%p, oem_id=0x%x, data=%p, data_len=%d",
+			dbus_info, oem_id, data, data_len);
+		return;
 	}
 
 	if (dbus_info->interface_object) {
 		gchar *encoded_data = g_base64_encode((const guchar*)data, data_len);
+
+		/*
+		 * Send Response if invocation is non-null,
+		 * else Send Notification.
+		 */
 		if (dbus_info->invocation)
-			telephony_oem_complete_send_oem_data_with_response(dbus_info->interface_object, dbus_info->invocation, oem_id, encoded_data);
+			telephony_oem_complete_send_oem_data_with_response(dbus_info->interface_object,
+				dbus_info->invocation, oem_id, encoded_data);
 		else
 			telephony_oem_emit_oem_data(dbus_info->interface_object, oem_id, encoded_data);
+
 		g_free(encoded_data);
 	}
 }
 
-static void _emit_oem_notification(TelephonyOEM *oem, int oem_id, const void *data, unsigned int data_len)
+static void _emit_oem_notification(TelephonyOEM *oem,
+	int oem_id, const void *data, unsigned int data_len)
 {
 	gchar *encoded_data = NULL;
 
 	if (!oem || !oem_id || !data || !data_len) {
-		dbg("Invalid Data! oem_id=0x%x, data=%p, data_len=%d", oem_id, data, data_len);
-		return ;
+		dbg("Invalid Data! oem_id=0x%x, data=%p, data_len=%d",
+			oem_id, data, data_len);
+		return;
 	}
 
 	encoded_data = g_base64_encode((const guchar*)data, data_len);
@@ -53,8 +76,7 @@ static void _emit_oem_notification(TelephonyOEM *oem, int oem_id, const void *da
 	g_free(encoded_data);
 }
 
-static gboolean
-send_oem_data(TelephonyOEM *oem,
+static gboolean send_oem_data(TelephonyOEM *oem,
 	GDBusMethodInvocation *invocation,
 	gint arg_oem_id,
 	const gchar *arg_data,
@@ -73,8 +95,8 @@ send_oem_data(TelephonyOEM *oem,
 		return TRUE;
 
 	ur = MAKE_UR(ctx, oem, invocation);
-	decoded_data = g_base64_decode(arg_data, &length);
 
+	decoded_data = g_base64_decode(arg_data, &length);
 	tcore_user_request_set_data(ur, length, decoded_data);
 	g_free(decoded_data);
 
@@ -94,11 +116,11 @@ send_oem_data(TelephonyOEM *oem,
 
 		telephony_oem_complete_send_oem_data(oem, invocation, result);
 	}
+
 	return TRUE;
 }
 
-static gboolean
-on_send_oem_data(TelephonyOEM *oem,
+static gboolean on_send_oem_data(TelephonyOEM *oem,
 	GDBusMethodInvocation *invocation,
 	gint arg_oem_id,
 	const gchar *arg_data,
@@ -107,8 +129,7 @@ on_send_oem_data(TelephonyOEM *oem,
 	return send_oem_data(oem, invocation, arg_oem_id, arg_data, user_data, TRUE);
 }
 
-static gboolean
-on_send_oem_data_with_response(TelephonyOEM *oem,
+static gboolean on_send_oem_data_with_response(TelephonyOEM *oem,
 	GDBusMethodInvocation *invocation,
 	gint arg_oem_id,
 	const gchar *arg_data,
@@ -117,7 +138,8 @@ on_send_oem_data_with_response(TelephonyOEM *oem,
 	return send_oem_data(oem, invocation, arg_oem_id, arg_data, user_data, FALSE);
 }
 
-gboolean dbus_plugin_setup_oem_interface(TelephonyObjectSkeleton *object, struct custom_data *ctx)
+gboolean dbus_plugin_setup_oem_interface(TelephonyObjectSkeleton *object,
+	struct custom_data *ctx)
 {
 	TelephonyOEM *oem;
 
@@ -128,6 +150,9 @@ gboolean dbus_plugin_setup_oem_interface(TelephonyObjectSkeleton *object, struct
 
 	dbg("oem = %p", oem);
 
+	/*
+	 * Register signal handlers for OEM interface
+	 */
 	g_signal_connect(oem,
 		"handle-send-oem-data",
 		G_CALLBACK(on_send_oem_data), ctx);
@@ -139,15 +164,22 @@ gboolean dbus_plugin_setup_oem_interface(TelephonyObjectSkeleton *object, struct
 	return TRUE;
 }
 
-gboolean dbus_plugin_oem_response(struct custom_data *ctx, UserRequest *ur, struct dbus_request_info *dbus_info, enum tcore_response_command command, unsigned int data_len, const void *data)
+gboolean dbus_plugin_oem_response(struct custom_data *ctx,
+	UserRequest *ur, struct dbus_request_info *dbus_info,
+	enum tcore_response_command command, unsigned int data_len, const void *data)
 {
 	_emit_oem_response(dbus_info, GET_OEM_ID(command), data, data_len);
+
 	return TRUE;
 }
 
-gboolean dbus_plugin_oem_notification(struct custom_data *ctx, CoreObject *source, TelephonyObjectSkeleton *object, enum tcore_notification_command command, unsigned int data_len, const void *data)
+gboolean dbus_plugin_oem_notification(struct custom_data *ctx,
+	CoreObject *source, TelephonyObjectSkeleton *object,
+	enum tcore_notification_command command, unsigned int data_len, const void *data)
 {
-	_emit_oem_notification(telephony_object_peek_oem(TELEPHONY_OBJECT(object)), GET_OEM_ID(command), data, data_len);
+	_emit_oem_notification(telephony_object_peek_oem(TELEPHONY_OBJECT(object)),
+		GET_OEM_ID(command), data, data_len);
+
 	return TRUE;
 }
 

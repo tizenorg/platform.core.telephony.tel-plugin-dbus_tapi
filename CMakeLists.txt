@@ -57,21 +57,21 @@ MESSAGE(${CMAKE_C_FLAGS})
 MESSAGE(${pkgs_LDFLAGS})
 
 SET(SRCS
-		src/desc-dbus.c
-		src/common.c
-		src/network.c
-		src/phonebook.c
-		src/sim.c
-		src/sap.c
-		src/sms.c
-		src/sat.c
-		src/sat_manager.c
-		src/sat_ui_support/sat_ui_support.c
-		src/ss.c
-		src/call.c
-		src/modem.c
-		src/gps.c
-		src/oem.c
+	src/desc-dtapi.c
+	src/dtapi_main.c
+	src/dtapi_common.c
+	src/dtapi_network.c
+	src/dtapi_phonebook.c
+	src/dtapi_sim.c
+	src/dtapi_sap.c
+	src/dtapi_sms.c
+	src/dtapi_sat.c
+	src/dtapi_sat_manager.c
+	src/sat_ui_support/sat_ui_support.c
+	src/dtapi_ss.c
+	src/dtapi_call.c
+	src/dtapi_modem.c
+	src/dtapi_oem.c
 )
 
 ADD_CUSTOM_COMMAND(
@@ -88,7 +88,6 @@ ADD_CUSTOM_COMMAND(
 	${INTROSPECTION}/call.xml
 	${INTROSPECTION}/ss.xml
 	${INTROSPECTION}/modem.xml
-	${INTROSPECTION}/gps.xml
 	${INTROSPECTION}/oem.xml
 	COMMENT "Generating GDBus .c/.h")
 

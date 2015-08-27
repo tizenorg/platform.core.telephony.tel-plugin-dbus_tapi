@@ -1,3 +1,23 @@
+/*
+ * tel-plugin-dbus-tapi
+ *
+ * Copyright (c) 2012 Samsung Electronics Co., Ltd. All rights reserved.
+ *
+ * Contact: Ja-young Gu <jygu@samsung.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -9,8 +29,9 @@
 #include <appsvc.h>
 #include <bundle_internal.h>
 
-#include "TelSat.h"
 #include "sat_ui_support.h"
+
+#define CISS_APP "org.tizen.ciss"
 
 struct sat_ui_app_launch_data {
 	bundle *bundle_data; /**<bundle data*/
@@ -112,7 +133,7 @@ static gboolean _sat_ui_support_processing_setup_menu_ind(GVariant *data, char *
 	gboolean rv = FALSE;
 	bundle *bundle_data = 0;
 	gchar *encoded_data = NULL, *cmd_type = NULL;
-	TelSatSetupMenuInfo_t setup_menu;
+	struct tel_sat_setup_menu_info setup_menu;
 
 	gchar *title = NULL;
 	gint command_id, item_cnt;
@@ -143,7 +164,7 @@ static gboolean _sat_ui_support_processing_setup_menu_ind(GVariant *data, char *
 	gchar *item_str;
 	gint item_id;
 #endif
-	memset(&setup_menu, 0, sizeof(TelSatSetupMenuInfo_t));
+	memset(&setup_menu, 0, sizeof(struct tel_sat_setup_menu_info));
 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
 	g_variant_get(data, "(ibs@vibb@v@v)", &command_id, &b_present, &title, &items, &item_cnt,
@@ -154,7 +175,7 @@ static gboolean _sat_ui_support_processing_setup_menu_ind(GVariant *data, char *
 #endif
 	setup_menu.commandId = command_id;
 	setup_menu.bIsMainMenuPresent = (b_present ? 1 : 0);
-	memcpy(setup_menu.satMainTitle, title, TAPI_SAT_DEF_TITLE_LEN_MAX+1);
+	memcpy(setup_menu.satMainTitle, title, SAT_ALPHA_ID_LEN_MAX+1);
 	g_free(title);
 
 	setup_menu.satMainMenuNum = item_cnt;
@@ -165,7 +186,7 @@ static gboolean _sat_ui_support_processing_setup_menu_ind(GVariant *data, char *
 		g_variant_get(unbox, "a(si)", &iter);
 		while (g_variant_iter_loop(iter, "(si)", &item_str, &item_id)) {
 			setup_menu.satMainMenuItem[local_index].itemId = item_id;
-			memcpy(setup_menu.satMainMenuItem[local_index].itemString, item_str, TAPI_SAT_DEF_ITEM_STR_LEN_MAX + 6);
+			memcpy(setup_menu.satMainMenuItem[local_index].itemString, item_str, SAT_DEF_ITEM_STR_LEN_MAX + 6);
 			local_index++;
 		}
 		g_variant_iter_free(iter);
@@ -228,7 +249,7 @@ static gboolean _sat_ui_support_processing_setup_menu_ind(GVariant *data, char *
 	}
 #endif
 	cmd_type = g_strdup_printf("%d", SAT_PROATV_CMD_SETUP_MENU);
-	encoded_data = g_base64_encode((const guchar*)&setup_menu, sizeof(TelSatSetupMenuInfo_t));
+	encoded_data = g_base64_encode((const guchar*)&setup_menu, sizeof(struct tel_sat_setup_menu_info));
 
 	bundle_data = bundle_create();
 	bundle_add(bundle_data, "KEY_EXEC_TYPE", "1");
@@ -249,7 +270,7 @@ static gboolean _sat_ui_support_processing_display_text_ind(GVariant *data, char
 	gboolean rv = FALSE;
 	bundle *bundle_data = 0;
 	gchar *encoded_data = NULL, *cmd_type = NULL;
-	TelSatDisplayTextInd_t display_text;
+	struct tel_sat_display_text_ind display_text;
 
 	gchar* text = NULL;
 	gint command_id, text_len, duration;
@@ -262,7 +283,7 @@ static gboolean _sat_ui_support_processing_display_text_ind(GVariant *data, char
 	gchar *icon_data = NULL;
 	GVariantIter *iter;
 #endif
-	memset(&display_text, 0, sizeof(TelSatDisplayTextInd_t));
+	memset(&display_text, 0, sizeof(struct tel_sat_display_text_ind));
 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
 	g_variant_get(data, "(isiibbb@v)", &command_id, &text, &text_len, &duration,
@@ -272,7 +293,7 @@ static gboolean _sat_ui_support_processing_display_text_ind(GVariant *data, char
 		&high_priority, &user_rsp_required, &immediately_rsp);
 #endif
 	display_text.commandId = command_id;
-	memcpy(display_text.text.string, text, TAPI_SAT_DEF_TEXT_STRING_LEN_MAX+1);
+	memcpy(display_text.text.string, text, SAT_TEXT_STRING_LEN_MAX+1);
 	g_free(text);
 
 	display_text.text.stringLen = text_len;
@@ -308,7 +329,7 @@ static gboolean _sat_ui_support_processing_display_text_ind(GVariant *data, char
 	dbg("duration(%d) user_rsp(%d) immediately_rsp(%d)", duration, user_rsp_required, immediately_rsp);
 
 	cmd_type = g_strdup_printf("%d", SAT_PROATV_CMD_DISPLAY_TEXT);
-	encoded_data = g_base64_encode((const guchar*)&display_text, sizeof(TelSatDisplayTextInd_t));
+	encoded_data = g_base64_encode((const guchar*)&display_text, sizeof(struct tel_sat_display_text_ind));
 
 	bundle_data = bundle_create();
 	bundle_add(bundle_data, "KEY_EXEC_TYPE", "1");
@@ -329,7 +350,7 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 	gboolean rv = FALSE;
 	bundle *bundle_data = 0;
 	gchar *encoded_data = NULL, *cmd_type = NULL;
-	TelSatSelectItemInd_t select_item;
+	struct tel_sat_select_item_ind select_item;
 
 	gboolean help_info ;
 	gchar *selected_text = NULL;
@@ -360,7 +381,7 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 	gchar *item_str;
 	gint item_id, item_len;
 #endif
-	memset(&select_item, 0, sizeof(TelSatSelectItemInd_t));
+	memset(&select_item, 0, sizeof(struct tel_sat_select_item_ind));
 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
 	g_variant_get(data, "(ibsiii@v@v@v)", &command_id, &help_info, &selected_text,
@@ -371,7 +392,7 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 #endif
 	select_item.commandId = command_id;
 	select_item.bIsHelpInfoAvailable = (help_info ? 1 : 0);
-	memcpy(select_item.text.string, selected_text, TAPI_SAT_DEF_TEXT_STRING_LEN_MAX+1);
+	memcpy(select_item.text.string, selected_text, SAT_TEXT_STRING_LEN_MAX+1);
 	g_free(selected_text);
 
 	select_item.text.stringLen = text_len;
@@ -385,7 +406,7 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 		while (g_variant_iter_loop(iter, "(iis)", &item_id, &item_len, &item_str)) {
 			select_item.menuItem[local_index].itemId = item_id;
 			select_item.menuItem[local_index].textLen = item_len;
-			memcpy(select_item.menuItem[local_index].text, item_str, TAPI_SAT_ITEM_TEXT_LEN_MAX + 1);
+			memcpy(select_item.menuItem[local_index].text, item_str, SAT_ITEM_TEXT_LEN_MAX + 1);
 			local_index++;
 		}
 		g_variant_iter_free(iter);
@@ -446,7 +467,7 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 	}
 #endif
 	cmd_type = g_strdup_printf("%d", SAT_PROATV_CMD_SELECT_ITEM);
-	encoded_data = g_base64_encode((const guchar*)&select_item, sizeof(TelSatSelectItemInd_t));
+	encoded_data = g_base64_encode((const guchar*)&select_item, sizeof(struct tel_sat_select_item_ind));
 
 	bundle_data = bundle_create();
 	bundle_add(bundle_data, "KEY_EXEC_TYPE", "1");
@@ -467,7 +488,7 @@ static gboolean _sat_ui_support_processing_get_inkey_ind(GVariant *data, char *s
 	gboolean rv = FALSE;
 	bundle *bundle_data = 0;
 	gchar *encoded_data = NULL, *cmd_type = NULL;
-	TelSatGetInkeyInd_t get_inkey;
+	struct tel_sat_get_inkey_ind get_inkey;
 
 	gint command_id, key_type, input_character_mode;
 	gint text_len, duration;
@@ -481,7 +502,7 @@ static gboolean _sat_ui_support_processing_get_inkey_ind(GVariant *data, char *s
 	gchar *icon_data = NULL;
 	GVariantIter *iter;
 #endif
-	memset(&get_inkey, 0, sizeof(TelSatGetInkeyInd_t));
+	memset(&get_inkey, 0, sizeof(struct tel_sat_get_inkey_ind));
 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
 	g_variant_get(data, "(iiibbsii@v)", &command_id, &key_type, &input_character_mode,
@@ -495,7 +516,7 @@ static gboolean _sat_ui_support_processing_get_inkey_ind(GVariant *data, char *s
 	get_inkey.inputCharMode = input_character_mode;
 	get_inkey.bIsNumeric = (b_numeric ? 1 : 0);
 	get_inkey.bIsHelpInfoAvailable = (b_help_info ? 1 : 0);
-	memcpy(get_inkey.text.string, text, TAPI_SAT_DEF_TEXT_STRING_LEN_MAX+1);
+	memcpy(get_inkey.text.string, text, SAT_TEXT_STRING_LEN_MAX+1);
 	g_free(text);
 
 	get_inkey.text.stringLen = text_len;
@@ -526,7 +547,7 @@ static gboolean _sat_ui_support_processing_get_inkey_ind(GVariant *data, char *s
 	}
 #endif
 	cmd_type = g_strdup_printf("%d", SAT_PROATV_CMD_GET_INKEY);
-	encoded_data = g_base64_encode((const guchar*)&get_inkey, sizeof(TelSatGetInkeyInd_t));
+	encoded_data = g_base64_encode((const guchar*)&get_inkey, sizeof(struct tel_sat_get_inkey_ind));
 
 	bundle_data = bundle_create();
 	bundle_add(bundle_data, "KEY_EXEC_TYPE", "1");
@@ -547,7 +568,7 @@ static gboolean _sat_ui_support_processing_get_input_ind(GVariant *data, char *s
 	gboolean rv = FALSE;
 	bundle *bundle_data = 0;
 	gchar *encoded_data = NULL, *cmd_type = NULL;
-	TelSatGetInputInd_t get_input;
+	struct tel_sat_get_input_ind get_input;
 
 	gint command_id, input_character_mode;
 	gint text_len, def_text_len, rsp_len_min, rsp_len_max;
@@ -561,7 +582,7 @@ static gboolean _sat_ui_support_processing_get_input_ind(GVariant *data, char *s
 	gchar *icon_data = NULL;
 	GVariantIter *iter;
 #endif
-	memset(&get_input, 0, sizeof(TelSatGetInputInd_t));
+	memset(&get_input, 0, sizeof(struct tel_sat_get_input_ind));
 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
 	g_variant_get(data, "(iibbbsiiisi@v)", &command_id, &input_character_mode, &b_numeric, &b_help_info, &b_echo_input,
@@ -575,11 +596,11 @@ static gboolean _sat_ui_support_processing_get_input_ind(GVariant *data, char *s
 	get_input.bIsNumeric = (b_numeric ? 1 : 0);
 	get_input.bIsHelpInfoAvailable = (b_help_info ? 1 : 0);
 	get_input.bIsEchoInput = (b_echo_input ? 1 : 0);
-	memcpy(get_input.text.string, text, TAPI_SAT_DEF_TEXT_STRING_LEN_MAX+1);
+	memcpy(get_input.text.string, text, SAT_TEXT_STRING_LEN_MAX+1);
 	get_input.text.stringLen = text_len;
 	get_input.respLen.max = rsp_len_max;
 	get_input.respLen.min = rsp_len_min;
-	memcpy(get_input.defaultText.string, def_text, TAPI_SAT_DEF_TEXT_STRING_LEN_MAX+1);
+	memcpy(get_input.defaultText.string, def_text, SAT_TEXT_STRING_LEN_MAX+1);
 	get_input.defaultText.stringLen = def_text_len;
 	g_free(text);
 	g_free(def_text);
@@ -609,7 +630,7 @@ static gboolean _sat_ui_support_processing_get_input_ind(GVariant *data, char *s
 	}
 #endif
 	cmd_type = g_strdup_printf("%d", SAT_PROATV_CMD_GET_INPUT);
-	encoded_data = g_base64_encode((const guchar*)&get_input, sizeof(TelSatGetInputInd_t));
+	encoded_data = g_base64_encode((const guchar*)&get_input, sizeof(struct tel_sat_get_input_ind));
 
 	bundle_data = bundle_create();
 	bundle_add(bundle_data, "KEY_EXEC_TYPE", "1");
@@ -630,13 +651,13 @@ static gboolean _sat_ui_support_processing_refresh_ind(GVariant *data, char *slo
 	gboolean rv = FALSE;
 	bundle *bundle_data = 0;
 	gchar *encoded_data = NULL, *cmd_type = NULL;
-	TelSatRefreshIndUiInfo_t refresh_info;
+	struct tel_sat_refresh_ind_ui_info refresh_info;
 
 	gint command_id = 0;
 	gint refresh_type = 0;
 	GVariant *file_list = NULL;
 
-	memset(&refresh_info, 0, sizeof(TelSatRefreshIndUiInfo_t));
+	memset(&refresh_info, 0, sizeof(struct tel_sat_refresh_ind_ui_info));
 
 	dbg("refresh type_format(%s)", g_variant_get_type_string(data));
 	g_variant_get(data, "(ii@v)", &command_id, &refresh_type, &file_list);
@@ -652,7 +673,7 @@ static gboolean _sat_ui_support_processing_refresh_ind(GVariant *data, char *slo
 	refresh_info.refreshType = refresh_type;
 
 	cmd_type = g_strdup_printf("%d", SAT_PROATV_CMD_REFRESH);
-	encoded_data = g_base64_encode((const guchar*)&refresh_info, sizeof(TelSatRefreshIndUiInfo_t));
+	encoded_data = g_base64_encode((const guchar*)&refresh_info, sizeof(struct tel_sat_refresh_ind_ui_info));
 
 	bundle_data = bundle_create();
 	bundle_add(bundle_data, "KEY_EXEC_TYPE", "1");
@@ -673,7 +694,7 @@ static gboolean _sat_ui_support_processing_play_tone_ind(GVariant *data, char *s
 	gboolean rv = FALSE;
 	bundle *bundle_data = 0;
 	gchar *encoded_data = NULL, *cmd_type = NULL;
-	TelSatPlayToneInd_t play_tone_info;
+	struct tel_sat_play_tone_ind play_tone_info;
 
 	gint command_id, tone_type, duration;
 	gint text_len;
@@ -686,7 +707,7 @@ static gboolean _sat_ui_support_processing_play_tone_ind(GVariant *data, char *s
 	gchar *icon_data = NULL;
 	GVariantIter *iter;
 #endif
-	memset(&play_tone_info, 0, sizeof(TelSatPlayToneInd_t));
+	memset(&play_tone_info, 0, sizeof(struct tel_sat_play_tone_ind));
 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
 	g_variant_get(data, "(isi@vii)", &command_id, &text, &text_len, &icon_id, &tone_type, &duration);
@@ -696,10 +717,10 @@ static gboolean _sat_ui_support_processing_play_tone_ind(GVariant *data, char *s
 	play_tone_info.commandId = command_id;
 	play_tone_info.duration = duration;
 	play_tone_info.text.stringLen = text_len;
-	memcpy(play_tone_info.text.string, text, TAPI_SAT_DEF_TEXT_STRING_LEN_MAX+1);
+	memcpy(play_tone_info.text.string, text, SAT_TEXT_STRING_LEN_MAX+1);
 	g_free(text);
 
-	play_tone_info.tone.type = tone_type;
+	play_tone_info.tone.tone_type = tone_type;
 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
 	if (icon_id) {
@@ -726,7 +747,7 @@ static gboolean _sat_ui_support_processing_play_tone_ind(GVariant *data, char *s
 	}
 #endif
 	cmd_type = g_strdup_printf("%d", SAT_PROATV_CMD_PLAY_TONE);
-	encoded_data = g_base64_encode((const guchar*)&play_tone_info, sizeof(TelSatPlayToneInd_t));
+	encoded_data = g_base64_encode((const guchar*)&play_tone_info, sizeof(struct tel_sat_play_tone_ind));
 
 	bundle_data = bundle_create();
 	bundle_add(bundle_data, "KEY_EXEC_TYPE", "1");
@@ -747,7 +768,7 @@ static gboolean _sat_ui_support_processing_idle_mode_text_ind(GVariant *data, ch
 	gboolean rv = FALSE;
 	bundle *bundle_data = 0;
 	gchar *encoded_data = NULL, *cmd_type = NULL;
-	TelSatSetupIdleModeTextInd_t idle_mode_text_info;
+	struct tel_sat_setup_idle_mode_text_ind idle_mode_text_info;
 
 	gint command_id, text_len;
 	gchar* text = NULL;
@@ -759,7 +780,7 @@ static gboolean _sat_ui_support_processing_idle_mode_text_ind(GVariant *data, ch
 	gchar *icon_data = NULL;
 	GVariantIter *iter;
 #endif
-	memset(&idle_mode_text_info, 0, sizeof(TelSatSetupIdleModeTextInd_t));
+	memset(&idle_mode_text_info, 0, sizeof(struct tel_sat_setup_idle_mode_text_ind));
 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
 	g_variant_get(data, "(isi@v)", &command_id, &text, &text_len, &icon_id);
@@ -768,7 +789,7 @@ static gboolean _sat_ui_support_processing_idle_mode_text_ind(GVariant *data, ch
 #endif
 	idle_mode_text_info.commandId = command_id;
 	idle_mode_text_info.text.stringLen = text_len;
-	memcpy(idle_mode_text_info.text.string, text, TAPI_SAT_DEF_TEXT_STRING_LEN_MAX+1);
+	memcpy(idle_mode_text_info.text.string, text, SAT_TEXT_STRING_LEN_MAX+1);
 	g_free(text);
 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
@@ -796,7 +817,7 @@ static gboolean _sat_ui_support_processing_idle_mode_text_ind(GVariant *data, ch
 	}
 #endif
 	cmd_type = g_strdup_printf("%d", SAT_PROATV_CMD_SETUP_IDLE_MODE_TEXT);
-	encoded_data = g_base64_encode((const guchar*)&idle_mode_text_info, sizeof(TelSatSetupIdleModeTextInd_t));
+	encoded_data = g_base64_encode((const guchar*)&idle_mode_text_info, sizeof(struct tel_sat_setup_idle_mode_text_ind));
 
 	bundle_data = bundle_create();
 	bundle_add(bundle_data, "KEY_EXEC_TYPE", "1");
@@ -823,7 +844,7 @@ static gboolean _sat_ui_support_processing_ui_info_ind(enum tel_sat_proactive_cm
 	gboolean rv = FALSE;
 	bundle *bundle_data = 0;
 	gchar *encoded_data = NULL, *cmd_type = NULL;
-	TelSatSendUiInfo_t ui_info;
+	struct tel_sat_send_ui_info ui_info;
 
 	gint command_id, text_len;
 	gboolean user_confirm;
@@ -836,7 +857,7 @@ static gboolean _sat_ui_support_processing_ui_info_ind(enum tel_sat_proactive_cm
 	GVariant *icon_id = NULL;
 	GVariantIter *iter;
 #endif
-	memset(&ui_info, 0, sizeof(TelSatSendUiInfo_t));
+	memset(&ui_info, 0, sizeof(struct tel_sat_send_ui_info));
 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
 	g_variant_get(data, "(isib@v)", &command_id, &text, &text_len, &user_confirm, &icon_id);
@@ -846,7 +867,7 @@ static gboolean _sat_ui_support_processing_ui_info_ind(enum tel_sat_proactive_cm
 	dbg("command_id(%d) data(%s) len(%d) user_confirm(%d)", command_id, text, text_len, user_confirm);
 
 	ui_info.commandId = command_id;
-	memcpy(ui_info.text.string, text, TAPI_SAT_DEF_TEXT_STRING_LEN_MAX+1);
+	memcpy(ui_info.text.string, text, SAT_TEXT_STRING_LEN_MAX+1);
 	g_free(text);
 
 	ui_info.text.stringLen = text_len;
@@ -877,7 +898,7 @@ static gboolean _sat_ui_support_processing_ui_info_ind(enum tel_sat_proactive_cm
 	}
 #endif
 	cmd_type = g_strdup_printf("%d", cmd);
-	encoded_data = g_base64_encode((const guchar*)&ui_info, sizeof(TelSatSendUiInfo_t));
+	encoded_data = g_base64_encode((const guchar*)&ui_info, sizeof(struct tel_sat_send_ui_info));
 
 	bundle_data = bundle_create();
 	bundle_add(bundle_data, "KEY_EXEC_TYPE", "1");
@@ -971,75 +992,6 @@ gboolean sat_ui_support_launch_sat_ui(enum tel_sat_proactive_cmd_type cmd_type, 
 	return result;
 }
 
-gboolean sat_ui_support_launch_call_application(enum tel_sat_proactive_cmd_type cmd_type, GVariant *data, enum dbus_tapi_sim_slot_id slot_id)
-{
-	char buffer[300];
-	char slot_info[2] = {0,};
-	bundle *bundle_data = 0;
-
-	dbg("launch call application by aul");
-	bundle_data = bundle_create();
-
-	appsvc_set_operation(bundle_data, APPSVC_OPERATION_CALL);
-	appsvc_set_uri(bundle_data, "tel:MT");
-
-	switch (cmd_type) {
-	case SAT_PROATV_CMD_SETUP_CALL: {
-		gint command_id, call_type, confirm_text_len, text_len, duration;
-		gchar *confirm_text = NULL, *text = NULL, *call_number = NULL;
-#if defined(TIZEN_SUPPORT_SAT_ICON)
-		GVariant *icon_id;
-#endif
-		dbg("setup call type_format(%s)", g_variant_get_type_string(data));
-#if defined(TIZEN_SUPPORT_SAT_ICON)
-		g_variant_get(data, "(isisi@visi)", &command_id, &confirm_text, &confirm_text_len, &text, &text_len, &icon_id, &call_type, &call_number, &duration);
-#else
-		g_variant_get(data, "(isisiisi)", &command_id, &confirm_text, &confirm_text_len, &text, &text_len, &call_type, &call_number, &duration);
-#endif
-		appsvc_add_data(bundle_data, "launch-type", "SATSETUPCALL");
-
-		snprintf(buffer, 300, "%d", command_id);
-		appsvc_add_data(bundle_data, "cmd_id", buffer);
-		dbg("cmd_id(%s)", buffer);
-
-		snprintf(buffer, 300, "%d", call_type);
-		appsvc_add_data(bundle_data, "cmd_qual", buffer);
-		dbg("cmd_qual(%s)", buffer);
-
-		snprintf(buffer, 300, "%s", text);
-		appsvc_add_data(bundle_data, "disp_text", buffer);
-		dbg("disp_text(%s)", buffer);
-
-		snprintf(buffer, 300, "%s", call_number);
-		appsvc_add_data(bundle_data, "call_num", buffer);
-		dbg("call_num(%s)", buffer);
-
-		snprintf(buffer, 300, "%d", duration);
-		appsvc_add_data(bundle_data, "dur", buffer);
-		dbg("dur(%s)", buffer);
-
-		g_free(confirm_text);
-		g_free(text);
-		g_free(call_number);
-	} break;
-
-	default:
-		bundle_free(bundle_data);
-		return FALSE;
-	break;
-	}
-
-	snprintf(slot_info, 2, "%d", slot_id);
-	appsvc_add_data(bundle_data, "slot_id", slot_info);
-	dbg("slot_id : [%s]", slot_info);
-
-	appsvc_run_service(bundle_data, 0, NULL, NULL);
-	dbg("call app is called");
-	bundle_free(bundle_data);
-
-	return TRUE;
-}
-
 gboolean sat_ui_support_launch_browser_application(enum tel_sat_proactive_cmd_type cmd_type, GVariant *data, enum dbus_tapi_sim_slot_id slot_id)
 {
 	char buffer[300];
@@ -1117,11 +1069,11 @@ gboolean sat_ui_support_launch_ciss_application(enum tel_sat_proactive_cmd_type 
 
 	dbg("launch ciss application by aul");
 	bundle_data = bundle_create();
-	appsvc_set_pkgname(bundle_data, "org.tizen.ciss");
+	appsvc_set_pkgname(bundle_data, CISS_APP);
 
 	switch (cmd_type) {
 	case SAT_PROATV_CMD_SEND_SS: {
-		TelSatSendSsIndSsData_t ss_info;
+		struct tel_sat_send_ss_ind_ss_data ss_info;
 		gint command_id, ton, npi;
 		gint text_len, ss_str_len;
 		gchar* text = NULL, *ss_string = NULL;
@@ -1130,7 +1082,7 @@ gboolean sat_ui_support_launch_ciss_application(enum tel_sat_proactive_cmd_type 
 #endif
 		dbg("launch ciss ui for send ss proactive cmd");
 
-		memset(&ss_info, 0, sizeof(TelSatSendSsIndSsData_t));
+		memset(&ss_info, 0, sizeof(struct tel_sat_send_ss_ind_ss_data));
 
 		dbg("send ss type_format(%s)", g_variant_get_type_string(data));
 #if defined(TIZEN_SUPPORT_SAT_ICON)
@@ -1141,17 +1093,17 @@ gboolean sat_ui_support_launch_ciss_application(enum tel_sat_proactive_cmd_type 
 		ss_info.commandId = command_id;
 		ss_info.ton = ton;
 		ss_info.npi = npi;
-		memcpy(ss_info.ssString, ss_string, TAPI_SAT_DEF_SS_LEN_MAX+1);
+		memcpy(ss_info.ssString, ss_string, SAT_SS_STRING_LEN_MAX+1);
 		ss_info.ssStringLen = ss_str_len;
 		g_free(text);
 		g_free(ss_string);
 
 		cmd = g_strdup_printf("%d", cmd_type);
-		encoded_data = g_base64_encode((const guchar*)&ss_info, sizeof(TelSatSendSsIndSsData_t));
+		encoded_data = g_base64_encode((const guchar*)&ss_info, sizeof(struct tel_sat_send_ss_ind_ss_data));
 	} break;
 
 	case SAT_PROATV_CMD_SEND_USSD:{
-		TelSatSendUssdIndUssdData_t ussd_info;
+		struct tel_sat_send_ussd_ind_ussd_data ussd_info;
 		gint command_id;
 		gint text_len, ussd_str_len;
 		guchar dcs;
@@ -1161,7 +1113,7 @@ gboolean sat_ui_support_launch_ciss_application(enum tel_sat_proactive_cmd_type 
 #endif
 		dbg("launch ciss ui for send ussd proactive cmd");
 
-		memset(&ussd_info, 0, sizeof(TelSatSendUssdIndUssdData_t));
+		memset(&ussd_info, 0, sizeof(struct tel_sat_send_ussd_ind_ussd_data));
 
 		dbg("send ussd type_format(%s)", g_variant_get_type_string(data));
 #if defined(TIZEN_SUPPORT_SAT_ICON)
@@ -1171,13 +1123,13 @@ gboolean sat_ui_support_launch_ciss_application(enum tel_sat_proactive_cmd_type 
 #endif
 		ussd_info.commandId = command_id;
 		ussd_info.rawDcs = dcs;
-		memcpy(ussd_info.ussdString, ussd_string, TAPI_SAT_DEF_USSD_LEN_MAX+1);
+		memcpy(ussd_info.ussdString, ussd_string, SAT_USSD_STRING_LEN_MAX+1);
 		ussd_info.ussdStringLen = ussd_str_len;
 		g_free(text);
 		g_free(ussd_string);
 
 		cmd = g_strdup_printf("%d", cmd_type);
-		encoded_data = g_base64_encode((const guchar*)&ussd_info, sizeof(TelSatSendUssdIndUssdData_t));
+		encoded_data = g_base64_encode((const guchar*)&ussd_info, sizeof(struct tel_sat_send_ussd_ind_ussd_data));
 	} break;
 
 	default:

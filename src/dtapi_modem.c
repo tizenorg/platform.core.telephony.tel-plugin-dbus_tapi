@@ -36,7 +36,7 @@ static gboolean on_modem_set_power(TelephonyModem *modem,
 {
 	struct custom_data *ctx = user_data;
 	enum tcore_request_command command;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_MODEM, "x"))
 		return TRUE;
@@ -76,7 +76,7 @@ static gboolean on_modem_set_flight_mode(TelephonyModem *modem,
 {
 	struct treq_modem_set_flightmode req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_MODEM, "w"))
 		return TRUE;
@@ -95,7 +95,7 @@ static gboolean on_modem_get_flight_mode(TelephonyModem *modem,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
 		return TRUE;
@@ -112,7 +112,7 @@ static gboolean on_modem_get_version(TelephonyModem *modem,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
 		return TRUE;
@@ -129,7 +129,7 @@ static gboolean on_modem_get_serial_number(TelephonyModem *modem,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
 		return TRUE;
@@ -146,7 +146,7 @@ static gboolean on_modem_get_imei(TelephonyModem *modem,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
 		return TRUE;
@@ -165,7 +165,7 @@ static gboolean on_modem_set_dun_pin_ctrl(TelephonyModem *modem,
 {
 	struct treq_modem_set_dun_pin_control req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_MODEM, "x"))
 		return TRUE;
@@ -185,7 +185,7 @@ static gboolean on_modem_get_device_info(TelephonyModem *modem,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
 		return TRUE;
@@ -256,7 +256,7 @@ gboolean dbus_plugin_modem_response(struct custom_data *ctx,
 	UserRequest *ur, struct dbus_request_info *dbus_info,
 	enum tcore_response_command command, unsigned int data_len, const void *data)
 {
-	char *cpname = dbus_info ? GET_CP_NAME(dbus_info->invocation) : "";
+	char *cpname = GET_CP_NAME(dbus_info->invocation);
 
 	switch (command) {
 	case TRESP_MODEM_SET_FLIGHTMODE: {

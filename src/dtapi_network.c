@@ -462,7 +462,7 @@ static gboolean on_network_search(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "x"))
 		return TRUE;
@@ -479,7 +479,7 @@ static gboolean on_network_search_cancel(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "x"))
 		return TRUE;
@@ -496,7 +496,7 @@ static gboolean on_network_get_selection_mode(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
@@ -515,7 +515,7 @@ static gboolean on_network_set_selection_mode(TelephonyNetwork *network,
 {
 	struct treq_network_set_plmn_selection_mode req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
@@ -548,7 +548,7 @@ static gboolean on_network_set_service_domain(TelephonyNetwork *network,
 {
 	struct treq_network_set_service_domain req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
@@ -567,7 +567,7 @@ static gboolean on_network_get_service_domain(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
@@ -586,7 +586,7 @@ static gboolean on_network_set_band(TelephonyNetwork *network,
 {
 	struct treq_network_set_band req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
@@ -606,7 +606,7 @@ static gboolean on_network_get_band(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
@@ -624,7 +624,7 @@ static gboolean on_network_set_mode(TelephonyNetwork *network,
 {
 	struct treq_network_set_mode req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
@@ -643,7 +643,7 @@ static gboolean on_network_get_mode(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
@@ -662,7 +662,7 @@ static gboolean on_network_set_preferred_plmn(TelephonyNetwork *network,
 {
 	struct treq_network_set_preferred_plmn req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
@@ -688,7 +688,7 @@ static gboolean on_network_get_preferred_plmn(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
@@ -705,7 +705,7 @@ static gboolean on_network_get_serving_network(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
@@ -722,7 +722,7 @@ static gboolean on_network_get_neighboring_cell_info(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
@@ -739,7 +739,7 @@ static gboolean on_network_set_default_data_subscription(TelephonyNetwork *netwo
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
@@ -756,7 +756,7 @@ static gboolean on_network_get_default_data_subscription(TelephonyNetwork *netwo
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
@@ -773,7 +773,7 @@ static gboolean on_network_set_default_subs(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
@@ -790,7 +790,7 @@ static gboolean on_network_get_default_subs(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
@@ -808,7 +808,7 @@ static gboolean on_network_set_emergency_callback_mode(TelephonyNetwork *network
 {
 	struct treq_network_set_emergency_callback_mode req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
@@ -828,7 +828,7 @@ static gboolean on_network_set_roaming_preference(TelephonyNetwork *network,
 {
 	struct treq_network_set_roaming_preference req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "w"))
 		return TRUE;
@@ -847,7 +847,7 @@ static gboolean on_network_get_roaming_preference(TelephonyNetwork *network,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_NETWORK, "r"))
 		return TRUE;
@@ -988,7 +988,7 @@ gboolean dbus_plugin_network_response(struct custom_data *ctx,
 	UserRequest *ur, struct dbus_request_info *dbus_info,
 	enum tcore_response_command command, unsigned int data_len, const void *data)
 {
-	char *cpname = dbus_info ? GET_CP_NAME(dbus_info->invocation) : "";
+	char *cpname = GET_CP_NAME(dbus_info->invocation);
 
 	switch (command) {
 	case TRESP_NETWORK_SEARCH: {

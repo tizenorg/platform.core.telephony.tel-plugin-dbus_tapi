@@ -89,7 +89,7 @@ static gboolean send_oem_data(TelephonyOEM *oem,
 	gint result = 1;
 	guchar *decoded_data = NULL;
 	gsize length;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_MODEM, "w"))
 		return TRUE;

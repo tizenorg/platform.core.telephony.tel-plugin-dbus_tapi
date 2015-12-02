@@ -33,7 +33,7 @@ static gboolean on_sap_connect(TelephonySap *sap,
 {
 	struct custom_data *ctx = user_data;
 	struct treq_sap_req_connect req;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_SAP, "x"))
 		return TRUE;
@@ -54,7 +54,7 @@ static gboolean on_sap_disconnect(TelephonySap *sap,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_SAP, "x"))
 		return TRUE;
@@ -71,7 +71,7 @@ static gboolean on_sap_get_status(TelephonySap *sap,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_SAP, "r"))
 		return TRUE;
@@ -88,7 +88,7 @@ static gboolean on_sap_get_atr(TelephonySap *sap,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_SAP, "r"))
 		return TRUE;
@@ -110,7 +110,7 @@ static gboolean on_sap_transfer_apdu(TelephonySap *sap,
 	GVariant *inner_gv = NULL;
 	guchar rt_i;
 	int i = 0;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	dbg("Func Entrance");
 
@@ -148,7 +148,7 @@ static gboolean on_sap_set_protocol(TelephonySap *sap,
 {
 	struct custom_data *ctx = user_data;
 	struct treq_sap_set_protocol req;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_SAP, "w"))
 		return TRUE;
@@ -170,7 +170,7 @@ static gboolean on_sap_set_power(TelephonySap *sap,
 {
 	struct custom_data *ctx = user_data;
 	struct treq_sap_set_power req;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_SAP, "w"))
 		return TRUE;
@@ -191,7 +191,7 @@ static gboolean on_sap_get_card_reader_status(TelephonySap *sap,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = (ctx) ? ctx->p_cynara : NULL;
+	cynara *p_cynara = ctx->p_cynara;
 
 	if (!check_access_control(p_cynara, invocation, AC_SAP, "r"))
 		return TRUE;

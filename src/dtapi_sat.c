@@ -114,6 +114,7 @@ static gboolean on_sat_get_main_menu_info(TelephonySAT *sat,
 	main_menu = __sat_get_main_menu(ctx, GET_CP_NAME(invocation));
 	if (!main_menu) {
 		err("NO Main Menu");
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		return TRUE;
 	}
 
@@ -372,13 +373,14 @@ gboolean dbus_plugin_sat_response(struct custom_data *ctx,
 	enum tcore_response_command command, unsigned int data_len, const void *data)
 {
 	const struct tresp_sat_envelop_data *envelop_rsp = NULL;
+	char *cpname = GET_CP_NAME(dbus_info->invocation);
 
 	switch (command) {
 	case TRESP_SAT_REQ_ENVELOPE: {
 		envelop_rsp = (struct tresp_sat_envelop_data *)data;
 
-		dbg("SAT_REQ_ENVELOPE - Result: [%d] Envelop sub-cmd: [%d] Envelop response: [%d]",
-			envelop_rsp->result,
+		dbg("[%s] SAT_REQ_ENVELOPE - Result: [%d] Envelop sub-cmd: [%s] Envelop response: [%s]",
+			cpname, envelop_rsp->result,
 			(envelop_rsp->sub_cmd == ENVELOP_MENU_SELECTION ? "MENU SELECTION" :
 			(envelop_rsp->sub_cmd == ENVELOP_EVENT_DOWNLOAD ? "EVENT DOWNLOAD" :
 			"UNKNOWN")),
@@ -398,11 +400,12 @@ gboolean dbus_plugin_sat_response(struct custom_data *ctx,
 	break;
 
 	case TRESP_SAT_REQ_TERMINALRESPONSE:
-		dbg("SAT_REQ_TERMINALRESPONSE");
+		dbg("[%s] SAT_REQ_TERMINALRESPONSE", cpname);
 	break;
 
 	default:
-		err("Unhandled/Unknown Response: [0x%x]", command);
+		err("[%s] Unhandled/Unknown Response: [0x%x]",
+			cpname, command);
 	break;
 	}
 

@@ -1550,7 +1550,7 @@ gboolean dbus_plugin_call_notification(struct custom_data *ctx,
 	case TNOTI_CALL_INFO_BARRED_OUTGOING: {
 		int *id = (int *)data;
 
-		dbg("[%s] CALL_INFO_BARRED_INCOMING: Call handle: [%d]",
+		dbg("[%s] CALL_INFO_BARRED_OUTGOING: Call handle: [%d]",
 			cp_name, (gint)*id);
 
 		telephony_call_emit_barred_outgoing(call, (gint)*id);

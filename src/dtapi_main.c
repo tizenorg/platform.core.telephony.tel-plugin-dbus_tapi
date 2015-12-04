@@ -677,8 +677,10 @@ gboolean dtapi_init(TcorePlugin *p)
 	}
 
 	data = calloc(1, sizeof(struct custom_data));
-	if (!data)
+	if (!data) {
+		cynara_finish(p_cynara);
 		return FALSE;
+	}
 
 	data->p_cynara = p_cynara;
 	data->plugin = p;

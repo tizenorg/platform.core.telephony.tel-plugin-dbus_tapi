@@ -662,6 +662,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	GVariantBuilder b;
 	int i = 0;
 
+	char *cpname = GET_CP_NAME(dbus_info->invocation);
+
 	if (!data) {
 		err("response data : 0");
 		return FALSE;
@@ -671,7 +673,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_BARRING_ACTIVATE: {
 		const struct tresp_ss_barring *resp = data;
 
-		dbg("receive TRESP_SS_BARRING_ACTIVATE (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_BARRING_ACTIVATE (err[%d])",
+			cpname, resp->err);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 		for (i = 0; i < resp->record_num; i++) {
@@ -694,7 +697,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_BARRING_DEACTIVATE: {
 		const struct tresp_ss_barring *resp = data;
 
-		dbg("receive TRESP_SS_BARRING_DEACTIVATE (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_BARRING_DEACTIVATE (err[%d])",
+			cpname, resp->err);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 		for (i = 0; i < resp->record_num; i++) {
@@ -717,7 +721,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_BARRING_CHANGE_PASSWORD: {
 		const struct tresp_ss_general *resp = data;
 
-		dbg("receive TRESP_SS_BARRING_CHANGE_PASSWORD (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_BARRING_CHANGE_PASSWORD (err[%d])",
+			cpname, resp->err);
 
 		telephony_ss_complete_change_barring_password(dbus_info->interface_object,
 			dbus_info->invocation, resp->err);
@@ -727,7 +732,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_BARRING_GET_STATUS: {
 		const struct tresp_ss_barring *resp = data;
 
-		dbg("receive TRESP_SS_BARRING_GET_STATUS (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_BARRING_GET_STATUS (err[%d])",
+			cpname, resp->err);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 		for (i = 0; i < resp->record_num; i++) {
@@ -750,7 +756,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_FORWARDING_ACTIVATE: {
 		const struct tresp_ss_forwarding *resp = data;
 
-		dbg("receive TRESP_SS_FORWARDING_ACTIVATE (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_FORWARDING_ACTIVATE (err[%d])",
+			cpname, resp->err);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 		for (i = 0; i < resp->record_num; i++) {
@@ -783,7 +790,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_FORWARDING_DEACTIVATE: {
 		const struct tresp_ss_forwarding *resp = data;
 
-		dbg("receive TRESP_SS_FORWARDING_DEACTIVATE (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_FORWARDING_DEACTIVATE (err[%d])",
+			cpname, resp->err);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 		for (i = 0; i < resp->record_num; i++) {
@@ -816,7 +824,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_FORWARDING_REGISTER: {
 		const struct tresp_ss_forwarding *resp = data;
 
-		dbg("receive TRESP_SS_FORWARDING_REGISTER (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_FORWARDING_REGISTER (err[%d])",
+			cpname, resp->err);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 		for (i = 0; i < resp->record_num; i++) {
@@ -849,7 +858,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_FORWARDING_DEREGISTER: {
 		const struct tresp_ss_forwarding *resp = data;
 
-		dbg("receive TRESP_SS_FORWARDING_DEREGISTER (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_FORWARDING_DEREGISTER (err[%d])",
+			cpname, resp->err);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 		for (i = 0; i < resp->record_num; i++) {
@@ -882,7 +892,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_FORWARDING_GET_STATUS: {
 		const struct tresp_ss_forwarding *resp = data;
 
-		dbg("receive TRESP_SS_FORWARDING_GET_STATUS (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_FORWARDING_GET_STATUS (err[%d])",
+			cpname, resp->err);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 		for (i = 0; i < resp->record_num; i++) {
@@ -915,7 +926,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_WAITING_ACTIVATE: {
 		const struct tresp_ss_waiting *resp = data;
 
-		dbg("receive TRESP_SS_WAITING_ACTIVATE (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_WAITING_ACTIVATE (err[%d])",
+			cpname, resp->err);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 		for (i = 0; i < resp->record_num; i++) {
@@ -936,7 +948,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_WAITING_DEACTIVATE: {
 		const struct tresp_ss_waiting *resp = data;
 
-		dbg("receive TRESP_SS_WAITING_DEACTIVATE (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_WAITING_DEACTIVATE (err[%d])",
+			cpname, resp->err);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 		for (i = 0; i < resp->record_num; i++) {
@@ -957,7 +970,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_WAITING_GET_STATUS: {
 		const struct tresp_ss_waiting *resp = data;
 
-		dbg("receive TRESP_SS_WAITING_GET_STATUS (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_WAITING_GET_STATUS (err[%d])",
+			cpname, resp->err);
 
 		g_variant_builder_init(&b, G_VARIANT_TYPE("aa{sv}"));
 		for (i = 0; i < resp->record_num; i++) {
@@ -978,7 +992,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_CLI_SET_STATUS: {
 		const struct tresp_ss_set_cli *resp = data;
 
-		dbg("receive TRESP_SS_CLI_SET_STATUS (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_CLI_SET_STATUS (err[%d])",
+			cpname, resp->err);
 
 		telephony_ss_complete_set_clistatus(dbus_info->interface_object,
 			dbus_info->invocation, resp->err);
@@ -988,7 +1003,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_CLI_GET_STATUS: {
 		const struct tresp_ss_cli *resp = data;
 
-		dbg("receive TRESP_SS_CLI_GET_STATUS (err[%d])", resp->err);
+		dbg("[%s] TRESP_SS_CLI_GET_STATUS (err[%d])",
+			cpname, resp->err);
 
 		telephony_ss_complete_get_clistatus(dbus_info->interface_object,
 			dbus_info->invocation, resp->err, resp->type, resp->status);
@@ -998,9 +1014,10 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	case TRESP_SS_SEND_USSD: {
 		const struct tresp_ss_ussd *resp = data;
 
-		dbg("receive TRESP_SS_SEND_USSD (err[%d])", resp->err);
-		dbg("USSD - type: [0x%x] status: [0x%x] dcs: [0x%x] len: [%d] string: [%s])",
-			resp->type, resp->status, resp->dcs, resp->len, resp->str);
+		dbg("[%s] TRESP_SS_SEND_USSD (err[%d])",
+			cpname, resp->err);
+		dbg("[%s] USSD - type: [0x%x] status: [0x%x] dcs: [0x%x] len: [%d] string: [%s])",
+			cpname, resp->type, resp->status, resp->dcs, resp->len, resp->str);
 
 		telephony_ss_complete_send_ussd(dbus_info->interface_object,
 			dbus_info->invocation, resp->err,
@@ -1010,7 +1027,8 @@ gboolean dbus_plugin_ss_response(struct custom_data *ctx,
 	break;
 
 	default:
-		err("Unhandled/Unknown Response: [0x%x]", command);
+		err("[%s] Unhandled/Unknown Response: [0x%x]",
+			cpname, command);
 	break;
 	}
 
@@ -1032,7 +1050,7 @@ gboolean dbus_plugin_ss_notification(struct custom_data *ctx,
 		return FALSE;
 	}
 
-	if (!data && command != TNOTI_SS_RELEASE_COMPLETE) {
+	if (!data) {
 		err("data is NULL");
 		return FALSE;
 	}

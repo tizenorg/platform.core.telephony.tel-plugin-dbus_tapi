@@ -97,10 +97,12 @@ static gboolean __dispatch_on_new_thread(gchar *name, GThreadFunc thread_cb, gpo
 		return FALSE;
 	}
 	thread = g_thread_new(name, thread_cb, thread_data);
-	if (thread == NULL)
+	if (thread == NULL) {
 		return FALSE;
-	else
+	} else {
 		dbg("Thread %p is created for %s", thread, name);
+		g_thread_unref(thread);
+	}
 
 	return TRUE;
 }
@@ -350,7 +352,7 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 	gboolean rv = FALSE;
 	bundle *bundle_data = 0;
 	gchar *encoded_data = NULL, *cmd_type = NULL;
-	struct tel_sat_select_item_ind *select_item = NULL;
+	struct tel_sat_select_item_ind select_item;
 
 	gboolean help_info ;
 	gchar *selected_text = NULL;
@@ -381,12 +383,7 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 	gchar *item_str;
 	gint item_id, item_len;
 #endif
-
-	select_item = g_try_new0(struct tel_sat_select_item_ind, 1);
-	if (select_item == NULL) {
-		err("Failed to allocate memory");
-		return FALSE;
-	}
+	memset(&select_item, 0, sizeof(struct tel_sat_select_item_ind));
 
 #if defined(TIZEN_SUPPORT_SAT_ICON)
 	g_variant_get(data, "(ibsiii@v@v@v)", &command_id, &help_info, &selected_text,
@@ -395,23 +392,23 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 	g_variant_get(data, "(ibsiii@v)", &command_id, &help_info, &selected_text,
 		&text_len, &default_item_id, &menu_cnt, &menu_items);
 #endif
-	select_item->commandId = command_id;
-	select_item->bIsHelpInfoAvailable = (help_info ? 1 : 0);
-	memcpy(select_item->text.string, selected_text, SAT_TEXT_STRING_LEN_MAX+1);
+	select_item.commandId = command_id;
+	select_item.bIsHelpInfoAvailable = (help_info ? 1 : 0);
+	memcpy(select_item.text.string, selected_text, SAT_TEXT_STRING_LEN_MAX+1);
 	g_free(selected_text);
 
-	select_item->text.stringLen = text_len;
-	select_item->defaultItemIndex = default_item_id;
-	select_item->menuItemCount = menu_cnt;
+	select_item.text.stringLen = text_len;
+	select_item.defaultItemIndex = default_item_id;
+	select_item.menuItemCount = menu_cnt;
 	if (menu_items && menu_cnt > 0) {
 		unbox = g_variant_get_variant(menu_items);
 		dbg("items(%p) items type_format(%s)", menu_items, g_variant_get_type_string(unbox));
 
 		g_variant_get(unbox, "a(iis)", &iter);
 		while (g_variant_iter_loop(iter, "(iis)", &item_id, &item_len, &item_str)) {
-			select_item->menuItem[local_index].itemId = item_id;
-			select_item->menuItem[local_index].textLen = item_len;
-			memcpy(select_item->menuItem[local_index].text, item_str, SAT_ITEM_TEXT_LEN_MAX + 1);
+			select_item.menuItem[local_index].itemId = item_id;
+			select_item.menuItem[local_index].textLen = item_len;
+			memcpy(select_item.menuItem[local_index].text, item_str, SAT_ITEM_TEXT_LEN_MAX + 1);
 			local_index++;
 		}
 		g_variant_iter_free(iter);
@@ -425,19 +422,18 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 		while (g_variant_iter_loop(iter, "(biiiiiis)", &is_exist, &icon_quali, &icon_identifier, &width, &height, &ics, &icon_data_len, &icon_data)) {
 			if (!is_exist)
 				break;
-			select_item->iconId.bIsPresent = is_exist;
-			select_item->iconId.iconQualifier = icon_quali;
-			select_item->iconId.iconIdentifier = icon_identifier;
-			select_item->iconId.iconInfo.width = width;
-			select_item->iconId.iconInfo.height = height;
-			select_item->iconId.iconInfo.ics = ics;
+			select_item.iconId.bIsPresent = is_exist;
+			select_item.iconId.iconQualifier = icon_quali;
+			select_item.iconId.iconIdentifier = icon_identifier;
+			select_item.iconId.iconInfo.width = width;
+			select_item.iconId.iconInfo.height = height;
+			select_item.iconId.iconInfo.ics = ics;
 			if (icon_data_len > 0) {
-				select_item->iconId.iconInfo.iconDataLen = icon_data_len;
-				memcpy(select_item->iconId.iconInfo.iconFile, icon_data, icon_data_len);
+				select_item.iconId.iconInfo.iconDataLen = icon_data_len;
+				memcpy(select_item.iconId.iconInfo.iconFile, icon_data, icon_data_len);
 			}
-			dbg("icon exist(%d), icon_quali: (%d), icon_id: (%d), width: (%d), height: (%d), ics: (%d), icon_data_len: (%d)",
-					select_item->iconId.bIsPresent, select_item->iconId.iconQualifier, select_item->iconId.iconIdentifier, select_item->iconId.iconInfo.width,
-					select_item->iconId.iconInfo.height, select_item->iconId.iconInfo.ics, select_item->iconId.iconInfo.iconDataLen);
+			dbg("icon exist(%d), icon_quali: (%d), icon_id: (%d), width: (%d), height: (%d), ics: (%d), icon_data_len: (%d)", select_item.iconId.bIsPresent, select_item.iconId.iconQualifier, select_item.iconId.iconIdentifier, select_item.iconId.iconInfo.width,
+					select_item.iconId.iconInfo.height, select_item.iconId.iconInfo.ics, select_item.iconId.iconInfo.iconDataLen);
 		}
 		g_variant_iter_free(iter);
 	}
@@ -449,21 +445,21 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 		while (g_variant_iter_loop(iter, "(biiv)", &is_list_exist, &icon_list_quali, &list_cnt, &icon_list_info)) {
 			if (!is_list_exist)
 				break;
-			select_item->iconIdList.bIsPresent = is_list_exist;
-			select_item->iconIdList.iconListQualifier = icon_list_quali;
-			select_item->iconIdList.iconCount = list_cnt;
+			select_item.iconIdList.bIsPresent = is_list_exist;
+			select_item.iconIdList.iconListQualifier = icon_list_quali;
+			select_item.iconIdList.iconCount = list_cnt;
 
 			unbox_list_info = g_variant_get_variant(icon_list_info);
 			g_variant_get(unbox_list_info, "a(iiiiis)", &iter2);
 
 			while (g_variant_iter_loop(iter2, "(iiiiis)", &icon_list_identifier, &list_width, &list_height, &list_ics, &icon_list_data_len, &icon_list_data)) {
-				select_item->iconIdList.iconIdentifierList[icon_index] = icon_identifier;
-				select_item->iconIdList.iconInfo[icon_index].width = list_width;
-				select_item->iconIdList.iconInfo[icon_index].height = list_height;
-				select_item->iconIdList.iconInfo[icon_index].ics = list_ics;
+				select_item.iconIdList.iconIdentifierList[icon_index] = icon_identifier;
+				select_item.iconIdList.iconInfo[icon_index].width = list_width;
+				select_item.iconIdList.iconInfo[icon_index].height = list_height;
+				select_item.iconIdList.iconInfo[icon_index].ics = list_ics;
 				if (icon_list_data_len > 0) {
-					select_item->iconIdList.iconInfo[icon_index].iconDataLen = icon_list_data_len;
-					memcpy(select_item->iconIdList.iconInfo[icon_index].iconFile, icon_list_data, icon_list_data_len);
+					select_item.iconIdList.iconInfo[icon_index].iconDataLen = icon_list_data_len;
+					memcpy(select_item.iconIdList.iconInfo[icon_index].iconFile, icon_list_data, icon_list_data_len);
 				}
 				icon_index++;
 			}
@@ -473,7 +469,7 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 	}
 #endif
 	cmd_type = g_strdup_printf("%d", SAT_PROATV_CMD_SELECT_ITEM);
-	encoded_data = g_base64_encode((const guchar*)select_item, sizeof(struct tel_sat_select_item_ind));
+	encoded_data = g_base64_encode((const guchar*)&select_item, sizeof(struct tel_sat_select_item_ind));
 
 	bundle_data = bundle_create();
 	bundle_add(bundle_data, "KEY_EXEC_TYPE", "1");
@@ -485,7 +481,6 @@ static gboolean _sat_ui_support_processing_select_item_ind(GVariant *data, char 
 
 	g_free(encoded_data);
 	g_free(cmd_type);
-	g_free(select_item);
 
 	return rv;
 }

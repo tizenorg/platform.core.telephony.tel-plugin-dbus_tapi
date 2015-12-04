@@ -64,8 +64,6 @@ static gboolean _sat_manager_handle_open_channel_confirm(struct custom_data *ctx
 
 static struct sat_manager_queue_data *sat_queue[SAT_DEF_CMD_Q_MAX] = {NULL, };
 gboolean g_evt_list[SAT_EVENT_DOWNLOAD_MAX] = {0};
-/* Allocate large size structure on non-stack area (data area) */
-static struct sat_manager_queue_data q_data = {0};
 
 static unsigned char _convert_decimal_to_bcd(int dec)
 {
@@ -413,27 +411,38 @@ static gboolean sat_manager_queue_peek_data_by_id(struct custom_data *ctx, struc
 
 static gboolean sat_manager_check_availiable_event_list(struct tel_sat_setup_event_list_tlv *event_list_tlv)
 {
-	gboolean rv = TRUE;
-	int local_index = 0, count = event_list_tlv->event_list.event_list_cnt;
+	gboolean rv = FALSE;
+	int local_index = 0;
+	unsigned char count = event_list_tlv->event_list.event_list_cnt;
 	if(count <= 0)
-		return FALSE;
+		return rv;
 
+	/*
+	 * event_list will be determined at libtcore (co_sat) according to
+	 * capabilities of AP and CP.
+	 */
 	for (local_index = 0; local_index < count; local_index++) {
 		if (event_list_tlv->event_list.evt_list[local_index] == EVENT_USER_ACTIVITY) {
 			dbg("do user activity");
+			rv = TRUE;
 		} else if (event_list_tlv->event_list.evt_list[local_index] == EVENT_IDLE_SCREEN_AVAILABLE) {
 			dbg("do idle screen");
+			rv = TRUE;
 		} else if (event_list_tlv->event_list.evt_list[local_index] == EVENT_LANGUAGE_SELECTION) {
 			dbg("do language selection");
+			rv = TRUE;
 		} else if (event_list_tlv->event_list.evt_list[local_index] == EVENT_BROWSER_TERMINATION) {
 			dbg("do browser termination");
+			rv = TRUE;
 		} else if (event_list_tlv->event_list.evt_list[local_index] == EVENT_DATA_AVAILABLE) {
 			dbg("do data available (bip)");
+			rv = TRUE;
 		} else if (event_list_tlv->event_list.evt_list[local_index] == EVENT_CHANNEL_STATUS) {
 			dbg("do channel status (bip)");
+			rv = TRUE;
 		} else {
-			dbg("unmanaged event (%d)", event_list_tlv->event_list.evt_list[local_index]);
-			rv = FALSE;
+			dbg("unmanaged event by AP (%d)", event_list_tlv->event_list.evt_list[local_index]);
+			rv = TRUE;
 		}
 	}
 
@@ -510,6 +519,7 @@ GVariant* sat_manager_caching_setup_menu_info(struct custom_data *ctx, const cha
 {
 	TcorePlugin *plg = NULL;
 	GVariant *setup_menu_info = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gushort title_len = 0;
 	gint command_id = 0, menu_cnt = 0;
@@ -682,6 +692,7 @@ GVariant* sat_manager_display_text_noti(struct custom_data *ctx, const char *cp_
 {
 	TcorePlugin *plg = NULL;
 	GVariant *display_text = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gushort text_len = 0;
 	gint command_id = 0, duration = 0, tmp_duration = 0;
@@ -804,6 +815,7 @@ GVariant* sat_manager_select_item_noti(struct custom_data *ctx, const char *cp_n
 {
 	TcorePlugin *plg = NULL;
 	GVariant *select_item = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gushort text_len = 0;
 	gint command_id = 0, default_item_id = 0, menu_cnt = 0;
@@ -939,6 +951,7 @@ GVariant* sat_manager_get_inkey_noti(struct custom_data *ctx, const char *cp_nam
 {
 	TcorePlugin *plg = NULL;
 	GVariant *get_inkey = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0, key_type = 0, input_character_mode = 0;
 	gushort text_len = 0;
@@ -1042,6 +1055,7 @@ GVariant* sat_manager_get_input_noti(struct custom_data *ctx, const char *cp_nam
 {
 	TcorePlugin *plg = NULL;
 	GVariant *get_input = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0, input_character_mode = 0;
 	gushort text_len = 0, def_text_len = 0;
@@ -1169,6 +1183,7 @@ GVariant* sat_manager_play_tone_noti(struct custom_data *ctx, const char *cp_nam
 {
 	TcorePlugin *plg = NULL;
 	GVariant *play_tone = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0, tone_type = 0, duration = 0, tmp_duration = 0;
 	gushort text_len = 0;
@@ -1233,6 +1248,7 @@ GVariant* sat_manager_send_sms_noti(struct custom_data *ctx, const char *cp_name
 {
 	TcorePlugin *plg = NULL;
 	GVariant *send_sms = NULL;
+	struct sat_manager_queue_data q_data;
 
 	int local_index = 0;
 	gint command_id = 0, ton = 0, npi = 0, tpdu_type = 0;
@@ -1315,6 +1331,7 @@ GVariant* sat_manager_send_ss_noti(struct custom_data *ctx, const char *cp_name,
 {
 	TcorePlugin *plg = NULL;
 	GVariant *send_ss = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0, ton = 0, npi = 0;
 	gushort text_len = 0;
@@ -1413,6 +1430,7 @@ GVariant* sat_manager_send_ussd_noti(struct custom_data *ctx, const char *cp_nam
 {
 	TcorePlugin *plg = NULL;
 	GVariant *send_ussd = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0;
 	guchar dcs = 0;
@@ -1513,6 +1531,7 @@ GVariant* sat_manager_setup_call_noti(struct custom_data *ctx, const char *cp_na
 {
 	TcorePlugin *plg = NULL;
 	GVariant *setup_call = NULL;
+	struct sat_manager_queue_data q_data;
 	struct treq_sat_terminal_rsp_data tr;
 
 	gushort text_len = 0, confirm_text_len = 0;
@@ -1680,8 +1699,8 @@ GVariant* sat_manager_setup_event_list_noti(struct custom_data *ctx, const char 
 	memcpy((void*)&tr->terminal_rsp_data.setup_event_list.command_detail, &event_list_tlv->command_detail, sizeof(struct tel_sat_cmd_detail_info));
 	tr->terminal_rsp_data.setup_event_list.device_id.src = event_list_tlv->device_id.dest;
 	tr->terminal_rsp_data.setup_event_list.device_id.dest = event_list_tlv->device_id.src;
-	
-	if (rv == TRUE)		
+
+	if (rv == TRUE)
 		tr->terminal_rsp_data.setup_event_list.result_type = RESULT_SUCCESS;
 	else
 		tr->terminal_rsp_data.setup_event_list.result_type = RESULT_BEYOND_ME_CAPABILITIES;
@@ -1696,6 +1715,7 @@ GVariant* sat_manager_setup_idle_mode_text_noti(struct custom_data *ctx, const c
 {
 	TcorePlugin *plg = NULL;
 	GVariant *idle_mode = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0;
 	gushort text_len = 0;
@@ -1777,6 +1797,7 @@ GVariant* sat_manager_open_channel_noti(struct custom_data *ctx, const char *cp_
 	enum telephony_network_access_technology result = 0;
 
 	GVariant *open_channel = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0, bearer_type = 0, protocol_type = 0, dest_addr_type = 0;
 	gboolean immediate_link = FALSE, auto_reconnection = FALSE, bg_mode = FALSE;
@@ -2080,6 +2101,7 @@ GVariant* sat_manager_close_channel_noti(struct custom_data *ctx, const char *cp
 {
 	TcorePlugin *plg = NULL;
 	GVariant *close_channel = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0, channel_id = 0;
 	gushort text_len = 0;
@@ -2137,6 +2159,7 @@ GVariant* sat_manager_receive_data_noti(struct custom_data *ctx, const char *cp_
 {
 	TcorePlugin *plg = NULL;
 	GVariant *receive_data = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0, channel_id = 0;
 	gushort text_len = 0;
@@ -2197,6 +2220,7 @@ GVariant* sat_manager_send_data_noti(struct custom_data *ctx, const char *cp_nam
 {
 	TcorePlugin *plg = NULL;
 	GVariant *send_data = NULL;
+	struct sat_manager_queue_data q_data;
 
 	int local_index = 0;
 	gint command_id = 0, channel_id = 0, data_len = 0;
@@ -2270,6 +2294,7 @@ GVariant* sat_manager_get_channel_status_noti(struct custom_data *ctx, const cha
 {
 	TcorePlugin *plg = NULL;
 	GVariant *get_channel_status = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0;
 
@@ -2299,6 +2324,7 @@ GVariant* sat_manager_refresh_noti(struct custom_data *ctx, const char *cp_name,
 {
 	TcorePlugin *plg = NULL;
 	GVariant *refresh = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0;
 	gint refresh_type = 0;
@@ -2381,6 +2407,7 @@ GVariant* sat_manager_send_dtmf_noti(struct custom_data *ctx, const char *cp_nam
 	GSList* call_active_list = NULL;
 
 	GVariant *send_dtmf = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0;
 	gushort text_len = 0;
@@ -2480,6 +2507,7 @@ GVariant* sat_manager_launch_browser_noti(struct custom_data *ctx, const char *c
 {
 	TcorePlugin *plg = NULL;
 	GVariant *launch_browser = NULL;
+	struct sat_manager_queue_data q_data;
 
 #if GCF_SAT_BROWSER_WITH_SINGLE_SESSION
 	gboolean b_app_running = FALSE;
@@ -2755,6 +2783,7 @@ GVariant* sat_manager_language_notification_noti(struct custom_data *ctx, const 
 {
 	TcorePlugin *plg = NULL;
 	GVariant *language_noti = NULL;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id = 0;
 	gint language = 0;
@@ -2927,6 +2956,7 @@ static gboolean _sat_manager_handle_setup_menu_result(struct custom_data *ctx, T
 
 	gint resp;
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -3008,6 +3038,7 @@ static gboolean _sat_manager_handle_display_text_result(struct custom_data *ctx,
 
 	gint resp, me_problem;
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -3083,6 +3114,7 @@ static gboolean _sat_manager_handle_play_tone_result(struct custom_data *ctx, Tc
 
 	gint resp;
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -3162,6 +3194,7 @@ static gboolean _sat_manager_handle_send_sms_result(struct custom_data *ctx, Tco
 
 	gint resp;
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -3270,6 +3303,7 @@ static gboolean _sat_manager_handle_send_ss_result(struct custom_data *ctx, Tcor
 	gint resp, me_problem, ss_cause, call_ctrl_problem, ss_str_len;
 	GVariant *ss_str = NULL;
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 	/* call ctrl action, result data object, text */
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
@@ -3411,6 +3445,7 @@ static gboolean _sat_manager_handle_send_ussd_result(struct custom_data *ctx, Tc
 	gint resp, me_problem, ss_cause, ussd_str_len;
 	GVariant *ussd_str = NULL;
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 	/* call ctrl action, result data object, text, result2, text2 */
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
@@ -3635,6 +3670,7 @@ static gboolean _sat_manager_handle_setup_call_result(struct custom_data *ctx, T
 
 	gint resp, me_problem, cc_problem, call_cause;
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -3735,6 +3771,7 @@ static gboolean _sat_manager_handle_setup_idle_mode_text_result(struct custom_da
 
 	gint resp;
 	struct treq_sat_terminal_rsp_data tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 	memset(&tr, 0, sizeof(struct treq_sat_terminal_rsp_data));
@@ -3796,6 +3833,7 @@ static gboolean sat_manager_handle_open_channel_result(struct custom_data *ctx, 
 	GVariant *desc_tmp, *bearer_desc;
 
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -3932,6 +3970,7 @@ static gboolean sat_manager_handle_close_channel_result(struct custom_data *ctx,
 	gint resp, me_problem, bip_problem;
 
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -4007,6 +4046,7 @@ static gboolean sat_manager_handle_receive_data_result(struct custom_data *ctx, 
 	GVariant *received_data;
 
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -4100,6 +4140,7 @@ static gboolean sat_manager_handle_send_data_result(struct custom_data *ctx, Tco
 	gint data_len;
 
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -4175,6 +4216,7 @@ static gboolean sat_manager_handle_get_channel_status_result(struct custom_data 
 	gint channel_id, channel_status, channel_status_info;
 
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -4251,6 +4293,7 @@ static gboolean sat_manager_handle_send_dtmf_result(struct custom_data *ctx, Tco
 
 	gint resp;
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	tr = (struct treq_sat_terminal_rsp_data *)calloc(1, sizeof(struct treq_sat_terminal_rsp_data));
 	if (!tr)
@@ -4321,6 +4364,7 @@ static gboolean sat_manager_handle_launch_browser_result(struct custom_data *ctx
 
 	gint resp, browser_problem;
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -4476,6 +4520,7 @@ static gboolean _sat_manager_handle_menu_select_confirm(struct custom_data *ctx,
 
 	gint item_id = 0;
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -4576,6 +4621,7 @@ static gboolean _sat_manager_handle_display_text_confirm(struct custom_data *ctx
 	gboolean result = FALSE;
 
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -4652,6 +4698,7 @@ static gboolean _sat_manager_handle_get_inkey_confirm(struct custom_data *ctx, T
 	gint inkey_data_len = 0;
 	gchar inkey_data[SAT_TEXT_STRING_LEN_MAX];
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 	memset(inkey_data, 0, SAT_TEXT_STRING_LEN_MAX);
@@ -4805,6 +4852,7 @@ static gboolean _sat_manager_handle_get_input_confirm(struct custom_data *ctx, T
 	gint input_data_len = 0;
 	gchar input_data[SAT_TEXT_STRING_LEN_MAX];
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 	memset(input_data, 0, SAT_TEXT_STRING_LEN_MAX);
@@ -4944,6 +4992,7 @@ static gboolean _sat_manager_handle_setup_call_confirm(struct custom_data *ctx, 
 	gint input_data_len = 0;
 	gchar input_data[SAT_TEXT_STRING_LEN_MAX];
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 	memset(input_data, 0, SAT_TEXT_STRING_LEN_MAX);
@@ -5084,6 +5133,7 @@ static gboolean _sat_manager_handle_send_dtmf_confirm(struct custom_data *ctx, T
 	gboolean result = FALSE;
 
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -5137,6 +5187,7 @@ static gboolean _sat_manager_handle_launch_browser_confirm(struct custom_data *c
 	gboolean result = FALSE;
 
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -5255,6 +5306,7 @@ static gboolean _sat_manager_handle_open_channel_confirm(struct custom_data *ctx
 	gboolean result = FALSE;
 
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -5381,6 +5433,7 @@ static gboolean _sat_manager_handle_open_channel_confirm(struct custom_data *ctx
 	gboolean result = FALSE;
 
 	struct treq_sat_user_confirmation_data *conf_data;
+	struct sat_manager_queue_data q_data;
 
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
@@ -5424,11 +5477,10 @@ gboolean sat_manager_handle_user_confirm(struct custom_data *ctx, TcorePlugin *p
 {
 	gboolean rv = FALSE;
 	gboolean result = FALSE;
+	struct sat_manager_queue_data q_data;
 
 	gint command_id, command_type, confirm_type;
 	GVariant *additional_data = NULL;
-
-	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
 
 	dbg("user_confirm_data type_format(%s)", g_variant_get_type_string(user_confirm_data));
 	g_variant_get(user_confirm_data, "(iiv)", &command_id, &confirm_type, &additional_data);
@@ -6037,6 +6089,7 @@ static gboolean _sat_manager_handle_open_channel_ui_display_status(struct custom
 gboolean sat_manager_handle_ui_display_status(struct custom_data *ctx, TcorePlugin *plg, gint command_id, gboolean display_status)
 {
 	gboolean result = FALSE;
+	struct sat_manager_queue_data q_data;
 
 	dbg("[SAT] ui display status : command id(%d) display status(%d)", command_id, display_status);
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
@@ -6120,6 +6173,7 @@ static gboolean _sat_manager_handle_open_channel_ui_display_status(struct custom
 gboolean sat_manager_handle_ui_display_status(struct custom_data *ctx, TcorePlugin *plg, gint command_id, gboolean display_status)
 {
 	gboolean result = FALSE;
+	struct sat_manager_queue_data q_data;
 
 	dbg("[SAT] ui display status : command id(%d) display status(%d)", command_id, display_status);
 	memset(&q_data, 0, sizeof(struct sat_manager_queue_data));
@@ -6287,6 +6341,7 @@ gboolean sat_manager_update_language(struct custom_data *ctx, const char *cp_nam
 	gboolean b_specified;
 
 	struct treq_sat_terminal_rsp_data *tr;
+	struct sat_manager_queue_data q_data;
 
 	s = ctx->server;
 	strg = tcore_server_find_storage(s, "vconf");

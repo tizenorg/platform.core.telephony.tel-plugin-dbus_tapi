@@ -1,6 +1,6 @@
 %define major 0
 %define minor 3
-%define patchlevel 65
+%define patchlevel 66
 
 Name:           tel-plugin-dbus_tapi
 Version:        %{major}.%{minor}.%{patchlevel}
@@ -9,6 +9,7 @@ License:        Apache-2.0
 Summary:        dbus-tapi plugin for telephony
 Group:          System/Libraries
 Source0:        tel-plugin-dbus_tapi-%{version}.tar.gz
+Source1:        telephony.conf
 BuildRequires:  cmake
 BuildRequires:  python-xml
 BuildRequires:  python
@@ -51,6 +52,8 @@ make %{?_smp_mflags}
 %install
 %make_install
 mkdir -p %{buildroot}%{_datadir}/license
+mkdir -p %{buildroot}/etc/dbus-1/system.d/
+cp %{SOURCE1} %{buildroot}/etc/dbus-1/system.d/telephony.conf
 
 %files
 %manifest tel-plugin-dbus_tapi.manifest
@@ -58,3 +61,4 @@ mkdir -p %{buildroot}%{_datadir}/license
 #%doc COPYING
 %{_libdir}/telephony/plugins/*
 %{_datadir}/license/tel-plugin-dbus_tapi
+/etc/dbus-1/system.d/telephony.conf

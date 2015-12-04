@@ -114,6 +114,7 @@ static gboolean on_sat_get_main_menu_info(TelephonySAT *sat,
 	main_menu = __sat_get_main_menu(ctx, GET_CP_NAME(invocation));
 	if (!main_menu) {
 		err("NO Main Menu");
+		FAIL_RESPONSE(invocation, DEFAULT_MSG_REQ_FAILED);
 		return TRUE;
 	}
 
@@ -377,7 +378,7 @@ gboolean dbus_plugin_sat_response(struct custom_data *ctx,
 	case TRESP_SAT_REQ_ENVELOPE: {
 		envelop_rsp = (struct tresp_sat_envelop_data *)data;
 
-		dbg("SAT_REQ_ENVELOPE - Result: [%d] Envelop sub-cmd: [%d] Envelop response: [%d]",
+		dbg("SAT_REQ_ENVELOPE - Result: [%d] Envelop sub-cmd: [%s] Envelop response: [%s]",
 			envelop_rsp->result,
 			(envelop_rsp->sub_cmd == ENVELOP_MENU_SELECTION ? "MENU SELECTION" :
 			(envelop_rsp->sub_cmd == ENVELOP_EVENT_DOWNLOAD ? "EVENT DOWNLOAD" :

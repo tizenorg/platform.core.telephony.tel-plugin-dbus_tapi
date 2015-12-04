@@ -2130,7 +2130,7 @@ gboolean dbus_plugin_sim_response(struct custom_data *ctx,
 	UserRequest *ur, struct dbus_request_info *dbus_info,
 	enum tcore_response_command command, unsigned int data_len, const void *data)
 {
-	char *cpname = GET_CP_NAME(dbus_info->invocation);
+	char *cpname = dbus_info ? GET_CP_NAME(dbus_info->invocation) : "";
 
 	switch (command) {
 	case TRESP_SIM_GET_ECC: {

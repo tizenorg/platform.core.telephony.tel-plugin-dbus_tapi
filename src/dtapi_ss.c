@@ -1032,7 +1032,7 @@ gboolean dbus_plugin_ss_notification(struct custom_data *ctx,
 		return FALSE;
 	}
 
-	if (!data && command != TNOTI_SS_RELEASE_COMPLETE) {
+	if (!data) {
 		err("data is NULL");
 		return FALSE;
 	}

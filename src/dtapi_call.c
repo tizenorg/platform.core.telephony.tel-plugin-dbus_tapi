@@ -1056,7 +1056,7 @@ gboolean dbus_plugin_call_response(struct custom_data *ctx,
 	UserRequest *ur, struct dbus_request_info *dbus_info,
 	enum tcore_response_command command, unsigned int data_len, const void *data)
 {
-	char *cpname = GET_CP_NAME(dbus_info->invocation);
+	char *cpname = dbus_info ? GET_CP_NAME(dbus_info->invocation) : "";
 
 	switch (command) {
 	case TRESP_CALL_DIAL: {
@@ -1550,7 +1550,7 @@ gboolean dbus_plugin_call_notification(struct custom_data *ctx,
 	case TNOTI_CALL_INFO_BARRED_OUTGOING: {
 		int *id = (int *)data;
 
-		dbg("[%s] CALL_INFO_BARRED_INCOMING: Call handle: [%d]",
+		dbg("[%s] CALL_INFO_BARRED_OUTGOING: Call handle: [%d]",
 			cp_name, (gint)*id);
 
 		telephony_call_emit_barred_outgoing(call, (gint)*id);

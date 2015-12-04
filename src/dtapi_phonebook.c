@@ -330,9 +330,9 @@ static gboolean on_phonebook_update_record(TelephonyPhonebook *phonebook,
 
 	memset(&req, 0x0, sizeof(struct treq_phonebook_update_record));
 
-	dbg("[%s] pb_type[%d] index[%d] name[%s] number[%s] email[%s]",
+	dbg("[%s] pb_type[%d] index[%d] number[%s] email[%s]",
 		GET_CP_NAME(invocation), type, index,
-		name, number, email1);
+		number, email1);
 
 	req.index = (unsigned short)index;
 	req.phonebook_type = type;
@@ -579,7 +579,8 @@ gboolean dbus_plugin_phonebook_response(struct custom_data *ctx,
 			resp_pbread->index, resp_pbread->next_index);
 
 		if (resp_pbread->name_len > 0) {
-			dbg("name:[%s] len:[%d]", resp_pbread->name, resp_pbread->name_len);
+			tcore_util_hex_dump("contact name", resp_pbread->name_len, resp_pbread->name);
+			dbg("len:[%d]", resp_pbread->name_len);
 			memcpy(dest_pb_name, resp_pbread->name, resp_pbread->name_len);
 		}
 

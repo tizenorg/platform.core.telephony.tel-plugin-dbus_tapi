@@ -257,11 +257,14 @@ gboolean dbus_plugin_sap_response(struct custom_data *ctx,
 	UserRequest *ur, struct dbus_request_info *dbus_info,
 	enum tcore_response_command command, unsigned int data_len, const void *data)
 {
+	char *cpname = GET_CP_NAME(dbus_info->invocation);
+
 	switch (command) {
 	case TRESP_SAP_REQ_CONNECT: {
 		const struct tresp_sap_req_connect *sap_conn = data;
 
-		dbg("dbus comm - TRESP_SAP_REQ_CONNECT");
+		dbg("[%s] TRESP_SAP_REQ_CONNECT (err[%d])",
+			cpname, sap_conn->result);
 
 		telephony_sap_complete_connect(dbus_info->interface_object,
 			dbus_info->invocation, sap_conn->status,
@@ -272,7 +275,8 @@ gboolean dbus_plugin_sap_response(struct custom_data *ctx,
 	case TRESP_SAP_REQ_DISCONNECT: {
 		const struct tresp_sap_req_disconnect *sap_disconn = data;
 
-		dbg("dbus comm - TRESP_SAP_REQ_DISCONNECT");
+		dbg("[%s] TRESP_SAP_REQ_DISCONNECT (err[%d])",
+			cpname, sap_disconn->result);
 
 		telephony_sap_complete_disconnect(dbus_info->interface_object,
 			dbus_info->invocation, sap_disconn->result);
@@ -282,7 +286,8 @@ gboolean dbus_plugin_sap_response(struct custom_data *ctx,
 	case TRESP_SAP_REQ_STATUS: {
 		const struct tresp_sap_req_status *sap_status = data;
 
-		dbg("dbus comm - TRESP_SAP_REQ_STATUS");
+		dbg("[%s] TRESP_SAP_REQ_STATUS (err[%d])",
+			cpname, sap_status->result);
 
 		telephony_sap_complete_get_status(dbus_info->interface_object,
 			dbus_info->invocation, sap_status->status);
@@ -296,7 +301,8 @@ gboolean dbus_plugin_sap_response(struct custom_data *ctx,
 		GVariant *inner_gv = NULL;
 		int i = 0;
 
-		dbg("dbus comm - TRESP_SAP_REQ_ATR");
+		dbg("[%s] TRESP_SAP_REQ_ATR (err[%d])",
+			cpname, sap_atr->result);
 
 		g_variant_builder_init(&builder, G_VARIANT_TYPE("ay"));
 		for (i = 0; i < (int)sap_atr->atr_length; i++) {
@@ -319,7 +325,8 @@ gboolean dbus_plugin_sap_response(struct custom_data *ctx,
 		GVariant *inner_gv = NULL;
 		int i = 0;
 
-		dbg("dbus comm - TRESP_SAP_TRANSFER_APDU");
+		dbg("[%s] TRESP_SAP_TRANSFER_APDU (err[%d])",
+			cpname, sap_apdu->result);
 
 		g_variant_builder_init(&builder, G_VARIANT_TYPE("ay"));
 		for (i = 0; i < (int)sap_apdu->resp_apdu_length; i++) {
@@ -338,7 +345,8 @@ gboolean dbus_plugin_sap_response(struct custom_data *ctx,
 	case TRESP_SAP_SET_PROTOCOL: {
 		const struct tresp_sap_set_protocol *sap_protocol = data;
 
-		dbg("dbus comm - TRESP_SAP_SET_PROTOCOL");
+		dbg("[%s] TRESP_SAP_SET_PROTOCOL (err[%d])",
+			cpname, sap_protocol->result);
 
 		telephony_sap_complete_set_protocol(dbus_info->interface_object,
 			dbus_info->invocation, sap_protocol->result);
@@ -348,7 +356,8 @@ gboolean dbus_plugin_sap_response(struct custom_data *ctx,
 	case TRESP_SAP_SET_POWER: {
 		const struct tresp_sap_set_power *sap_power = data;
 
-		dbg("dbus comm - TRESP_SAP_SET_POWER");
+		dbg("[%s] TRESP_SAP_SET_POWER (err[%d])",
+			cpname, sap_power->result);
 
 		telephony_sap_complete_set_power(dbus_info->interface_object,
 			dbus_info->invocation, sap_power->result);
@@ -358,7 +367,8 @@ gboolean dbus_plugin_sap_response(struct custom_data *ctx,
 	case TRESP_SAP_REQ_CARDREADERSTATUS: {
 		const struct tresp_sap_req_cardreaderstatus *sap_reader = data;
 
-		dbg("dbus comm - TRESP_SAP_REQ_CARDREADERSTATUS");
+		dbg("[%s] TRESP_SAP_REQ_CARDREADERSTATUS (err[%d])",
+			cpname, sap_reader->result);
 
 		telephony_sap_complete_get_card_reader_status(dbus_info->interface_object,
 			dbus_info->invocation, sap_reader->result,
@@ -367,7 +377,8 @@ gboolean dbus_plugin_sap_response(struct custom_data *ctx,
 	break;
 
 	default:
-		err("Unhandled/Unknown Response: [0x%x]", command);
+		err("[%s] Unhandled/Unknown Response: [0x%x]",
+			cpname, command);
 	break;
 	}
 

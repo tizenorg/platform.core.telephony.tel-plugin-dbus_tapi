@@ -413,27 +413,38 @@ static gboolean sat_manager_queue_peek_data_by_id(struct custom_data *ctx, struc
 
 static gboolean sat_manager_check_availiable_event_list(struct tel_sat_setup_event_list_tlv *event_list_tlv)
 {
-	gboolean rv = TRUE;
-	int local_index = 0, count = event_list_tlv->event_list.event_list_cnt;
+	gboolean rv = FALSE;
+	int local_index = 0;
+	unsigned char count = event_list_tlv->event_list.event_list_cnt;
 	if(count <= 0)
-		return FALSE;
+		return rv;
 
+	/*
+	 * event_list will be determined at libtcore (co_sat) according to
+	 * capabilities of AP and CP.
+	 */
 	for (local_index = 0; local_index < count; local_index++) {
 		if (event_list_tlv->event_list.evt_list[local_index] == EVENT_USER_ACTIVITY) {
 			dbg("do user activity");
+			rv = TRUE;
 		} else if (event_list_tlv->event_list.evt_list[local_index] == EVENT_IDLE_SCREEN_AVAILABLE) {
 			dbg("do idle screen");
+			rv = TRUE;
 		} else if (event_list_tlv->event_list.evt_list[local_index] == EVENT_LANGUAGE_SELECTION) {
 			dbg("do language selection");
+			rv = TRUE;
 		} else if (event_list_tlv->event_list.evt_list[local_index] == EVENT_BROWSER_TERMINATION) {
 			dbg("do browser termination");
+			rv = TRUE;
 		} else if (event_list_tlv->event_list.evt_list[local_index] == EVENT_DATA_AVAILABLE) {
 			dbg("do data available (bip)");
+			rv = TRUE;
 		} else if (event_list_tlv->event_list.evt_list[local_index] == EVENT_CHANNEL_STATUS) {
 			dbg("do channel status (bip)");
+			rv = TRUE;
 		} else {
-			dbg("unmanaged event (%d)", event_list_tlv->event_list.evt_list[local_index]);
-			rv = FALSE;
+			dbg("unmanaged event by AP (%d)", event_list_tlv->event_list.evt_list[local_index]);
+			rv = TRUE;
 		}
 	}
 

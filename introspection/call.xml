@@ -98,6 +98,7 @@
 			<arg direction="out" type="b" name="call_direction"/>
 			<arg direction="out" type="i" name="call_state"/>
 			<arg direction="out" type="b" name="call_multiparty_state"/>
+			<arg direction="out" type="b" name="is_volte_call"/>
 		</method>
 
 		<method name="GetStatusAll">

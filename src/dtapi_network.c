@@ -964,6 +964,7 @@ gboolean dbus_plugin_setup_network_interface(TelephonyObjectSkeleton *object,
 	telephony_network_set_access_technology(network, NETWORK_ACT_UNKNOWN);
 	telephony_network_set_cell_id(network, 0);
 	telephony_network_set_ims_voice_status(network, NETWORK_IMS_VOICE_UNKNOWN);
+	telephony_network_set_volte_enable(network, FALSE);
 	telephony_network_set_circuit_status(network, NETWORK_SERVICE_DOMAIN_STATUS_NO);
 	telephony_network_set_lac(network, 0);
 	telephony_network_set_tac(network, 0);
@@ -1658,6 +1659,20 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx,
 		/* Emit signal */
 		telephony_network_emit_emergency_callback_mode(network,
 			emergency_callback_mode->mode);
+	}
+	break;
+
+	case TNOTI_NETWORK_IMS_REGISTRATION_STATUS: {
+		const struct tnoti_network_ims_registration_info *ims_reg_info = data;
+
+		dbg("TNOTI_NETWORK_IMS_REGISTRATION_STATUS");
+
+		if (ims_reg_info->is_registered
+				&& (ims_reg_info->feature_mask & NETWORK_IMS_REG_FEATURE_TYPE_VOLTE)) {
+			telephony_network_set_volte_enable(network, TRUE);
+		} else {
+			telephony_network_set_volte_enable(network, FALSE);
+		}
 	}
 	break;
 

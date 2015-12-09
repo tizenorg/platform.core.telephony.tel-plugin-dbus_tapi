@@ -505,6 +505,12 @@
 		-->
 		<property name="ims_voice_status" type="i" access="read"/>
 
+		<!--
+			volte_enable
+			0=Not available, 1=Available
+		-->
+		<property name="volte_enable" type="i" access="read"/>
+
 	</interface>
 
 </node>

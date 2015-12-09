@@ -422,6 +422,7 @@ static gboolean on_call_get_status(TelephonyCall *call,
 	gboolean call_direction;
 	gint call_status;
 	gboolean call_multiparty_state;
+	gboolean is_volte_call;
 
 	if (!check_access_control(p_cynara, invocation, AC_CALL, "r"))
 		return TRUE;
@@ -451,10 +452,12 @@ static gboolean on_call_get_status(TelephonyCall *call,
 
 	call_status = tcore_call_object_get_status(call_obj);
 	call_multiparty_state = tcore_call_object_get_multiparty_state(call_obj);
+	is_volte_call = tcore_call_object_get_is_volte_call(call_obj);
 
 	telephony_call_complete_get_status(call, invocation,
 		call_handle, call_number, call_type,
-		call_direction, call_status, call_multiparty_state);
+		call_direction, call_status, call_multiparty_state,
+		is_volte_call);
 
 	return TRUE;
 }
@@ -479,6 +482,7 @@ static gboolean on_call_get_status_all(TelephonyCall *call,
 	gboolean call_direction;
 	gint call_status;
 	gboolean call_multiparty_state;
+	gboolean is_volte_call;
 
 	int len, i;
 
@@ -529,6 +533,7 @@ static gboolean on_call_get_status_all(TelephonyCall *call,
 			}
 
 			call_multiparty_state = tcore_call_object_get_multiparty_state(call_obj);
+			is_volte_call = tcore_call_object_get_is_volte_call(call_obj);
 
 			dbg("Call handle: [%d] Call ID: [%d] Call number: [%s] Call number len: [%d]",
 				handle, call_id, call_number, len);
@@ -563,6 +568,8 @@ static gboolean on_call_get_status_all(TelephonyCall *call,
 				g_variant_new_int32(call_status));
 			g_variant_builder_add(&b, "{sv}", "call_multiparty_state",
 				g_variant_new_boolean(call_multiparty_state));
+			g_variant_builder_add(&b, "{sv}", "is_volte_call",
+				g_variant_new_boolean(is_volte_call));
 			g_variant_builder_close(&b);
 
 			/* Next Call object */

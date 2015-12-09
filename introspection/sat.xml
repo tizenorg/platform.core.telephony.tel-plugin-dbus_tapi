@@ -209,7 +209,7 @@
 		</signal>
 
 		<signal name="SetupEventList">
-			<arg type="i" name="event_cnt"/>
+			<arg type="y" name="event_cnt"/>
 			<arg type="v" name="evt_list"/>
 		</signal>
 

@@ -263,8 +263,8 @@ gboolean dbus_plugin_sap_response(struct custom_data *ctx,
 	case TRESP_SAP_REQ_CONNECT: {
 		const struct tresp_sap_req_connect *sap_conn = data;
 
-		dbg("[%s] TRESP_SAP_REQ_CONNECT (err[%d])",
-			cpname, sap_conn->result);
+		dbg("[%s] TRESP_SAP_REQ_CONNECT (status[%d])",
+			cpname, sap_conn->status);
 
 		telephony_sap_complete_connect(dbus_info->interface_object,
 			dbus_info->invocation, sap_conn->status,
@@ -286,8 +286,8 @@ gboolean dbus_plugin_sap_response(struct custom_data *ctx,
 	case TRESP_SAP_REQ_STATUS: {
 		const struct tresp_sap_req_status *sap_status = data;
 
-		dbg("[%s] TRESP_SAP_REQ_STATUS (err[%d])",
-			cpname, sap_status->result);
+		dbg("[%s] TRESP_SAP_REQ_STATUS (status[%d])",
+			cpname, sap_status->status);
 
 		telephony_sap_complete_get_status(dbus_info->interface_object,
 			dbus_info->invocation, sap_status->status);

@@ -1645,7 +1645,7 @@ GVariant* sat_manager_setup_event_list_noti(struct custom_data *ctx, const char 
 	TcorePlugin *plg = NULL;
 	GVariant *event_list = NULL;
 	gboolean rv = FALSE;
-	gint event_cnt = 0;
+	unsigned char event_cnt = 0;
 	struct treq_sat_terminal_rsp_data *tr = NULL;
 
 	dbg("interpreting event list notification");
@@ -1679,7 +1679,7 @@ GVariant* sat_manager_setup_event_list_noti(struct custom_data *ctx, const char 
 		}
 		evt_list = g_variant_builder_end(&builder);
 
-		event_list = g_variant_new("(iv)", event_cnt, evt_list);
+		event_list = g_variant_new("(yv)", event_cnt, evt_list);
 	}
 	/* send TR - does not need from application's response */
 	tr = (struct treq_sat_terminal_rsp_data *)calloc(1, sizeof(struct treq_sat_terminal_rsp_data));
@@ -1691,8 +1691,8 @@ GVariant* sat_manager_setup_event_list_noti(struct custom_data *ctx, const char 
 	memcpy((void*)&tr->terminal_rsp_data.setup_event_list.command_detail, &event_list_tlv->command_detail, sizeof(struct tel_sat_cmd_detail_info));
 	tr->terminal_rsp_data.setup_event_list.device_id.src = event_list_tlv->device_id.dest;
 	tr->terminal_rsp_data.setup_event_list.device_id.dest = event_list_tlv->device_id.src;
-	
-	if (rv == TRUE)		
+
+	if (rv == TRUE)
 		tr->terminal_rsp_data.setup_event_list.result_type = RESULT_SUCCESS;
 	else
 		tr->terminal_rsp_data.setup_event_list.result_type = RESULT_BEYOND_ME_CAPABILITIES;
@@ -4785,6 +4785,10 @@ static gboolean _sat_manager_handle_get_inkey_confirm(struct custom_data *ctx, T
 
 	case USER_CONFIRM_TIMEOUT:
 		tr->terminal_rsp_data.get_inkey.result_type = RESULT_NO_RESPONSE_FROM_USER;
+		if (q_data.cmd_data.getInkeyInd.duration.time_interval != 0) {
+			tr->terminal_rsp_data.get_inkey.duration.time_interval = q_data.cmd_data.getInkeyInd.duration.time_interval;
+			tr->terminal_rsp_data.get_inkey.duration.time_unit = q_data.cmd_data.getInkeyInd.duration.time_unit;
+		}
 		break;
 
 	case USER_CONFIRM_END:

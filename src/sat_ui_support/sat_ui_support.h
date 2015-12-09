@@ -240,8 +240,8 @@ gboolean sat_ui_support_launch_sat_ui(enum tel_sat_proactive_cmd_type cmd_type,
 	GVariant *data, enum dbus_tapi_sim_slot_id slot_id);
 gboolean sat_ui_support_exec_bip(GDBusConnection *connection,
 	const gchar *path, enum tel_sat_proactive_cmd_type cmd_type, GVariant *data);
-gboolean sat_ui_support_exec_evtdw(GDBusConnection *connection,
-	const gchar *path, enum tel_sat_proactive_cmd_type cmd_type, GVariant *data);
 gboolean sat_ui_support_storage_init(Server *server);
+gboolean sat_ui_support_launch_eventdownloader_application(GVariant *data, enum dbus_tapi_sim_slot_id slot_id);
+
 
 #endif /* __SAT_UI_SUPPORT_H__ */

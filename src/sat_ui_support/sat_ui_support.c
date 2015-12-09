@@ -32,6 +32,8 @@
 #include "sat_ui_support.h"
 
 #define CISS_APP "org.tizen.ciss"
+#define EVENT_DOWNLOADER_SLOT1 "org.tizen.sat-event-downloader"
+#define EVENT_DOWNLOADER_SLOT2 "org.tizen.sat-event-downloader-2"
 
 struct sat_ui_app_launch_data {
 	bundle *bundle_data; /**<bundle data*/
@@ -1164,6 +1166,62 @@ gboolean sat_ui_support_launch_ciss_application(enum tel_sat_proactive_cmd_type 
 	return TRUE;
 }
 
+gboolean sat_ui_support_launch_eventdownloader_application(GVariant *data, enum dbus_tapi_sim_slot_id slot_id)
+{
+	bundle *bundle_data = 0;
+	gchar *encoded_data = NULL;
+	struct tel_sat_event_list eventinfo;
+	guchar event_count;
+	GVariant *sat_event_list;
+	GVariant *unbox;
+	GVariantIter *iter;
+	unsigned int local_index = 0;
+	gint event_id = 0;
+
+	dbg("Launch SAT Event Downloader application by aul");
+	bundle_data = bundle_create();
+
+	if (slot_id == SIM_SLOT_PRIMARY) {
+		appsvc_set_pkgname(bundle_data, EVENT_DOWNLOADER_SLOT1);
+	} else if(slot_id == SIM_SLOT_SECONDARY) {
+		appsvc_set_pkgname(bundle_data, EVENT_DOWNLOADER_SLOT2);
+	} else {
+		err("wrong slot info");
+		if(bundle_data)
+			bundle_free(bundle_data);
+		return FALSE;
+	}
+	memset(&eventinfo, 0, sizeof(struct tel_sat_event_list));
+
+	dbg("sat event download type_format(%s)", g_variant_get_type_string(data));
+	g_variant_get(data, "(y@v)", &event_count, &sat_event_list);
+
+	eventinfo.event_list_cnt = event_count;
+	if (eventinfo.event_list_cnt > 0) {
+		unbox = g_variant_get_variant(sat_event_list);
+
+		g_variant_get(unbox, "ai", &iter);
+		while (g_variant_iter_loop(iter, "i", &event_id)) {
+			eventinfo.evt_list[local_index] = event_id;
+			local_index++;
+		}
+		g_variant_iter_free(iter);
+	}
+
+	encoded_data = g_base64_encode((const guchar*)&eventinfo, sizeof(struct tel_sat_event_list));
+
+	appsvc_add_data(bundle_data, "EVENT_LIST_DATA", encoded_data);
+	g_free(encoded_data);
+
+	appsvc_run_service(bundle_data, 0, NULL, NULL);
+	dbg("event downloader app is called");
+	bundle_free(bundle_data);
+
+	return TRUE;
+
+}
+
+
 gboolean sat_ui_support_launch_setting_application(enum tel_sat_proactive_cmd_type cmd_type, GVariant *data, enum dbus_tapi_sim_slot_id slot_id)
 {
 	gint rv;
@@ -1343,9 +1401,9 @@ gboolean sat_ui_support_exec_bip(GDBusConnection *connection, const gchar *path,
 		GVariant *evt_list;
 
 		dbg("setup event list type_format(%s)", g_variant_get_type_string(data));
-		g_variant_get(data, "(iv)", &event_cnt, &evt_list);
+		g_variant_get(data, "(y@v)", &event_cnt, &evt_list);
 
-		out_param = g_variant_new("(iv)", event_cnt, evt_list);
+		out_param = g_variant_new("(yv)", event_cnt, evt_list);
 		signal_name = g_strdup("SetupEventList");
 	} break;
 	default:
@@ -1363,43 +1421,3 @@ gboolean sat_ui_support_exec_bip(GDBusConnection *connection, const gchar *path,
 	return rv;
 }
 
-gboolean sat_ui_support_exec_evtdw(GDBusConnection *connection, const gchar *path, enum tel_sat_proactive_cmd_type cmd_type, GVariant *data)
-{
-	gboolean rv = FALSE;
-	gchar *signal_name = NULL;
-	GVariant *out_param = NULL;
-	gchar *interface_name = NULL;
-	gint event_cnt;
-	GVariant *evt_list;
-
-	dbg("dbus conn(%p), path(%s)", connection, path);
-
-	if (g_str_has_suffix(path , "0")) {
-		interface_name = g_strdup("org.tizen.sat-event-downloader");
-
-	} else if (g_str_has_suffix(path , "1")) {
-		interface_name = g_strdup("org.tizen.sat-event-downloader-2");
-	} else {
-		err("invalid sim slot id");
-		return FALSE;
-	}
-
-	if (cmd_type == SAT_PROATV_CMD_SETUP_EVENT_LIST) {
-		dbg("setup event list type_format(%s)", g_variant_get_type_string(data));
-		g_variant_get(data, "(iv)", &event_cnt, &evt_list);
-
-		out_param = g_variant_new("(iv)", event_cnt, evt_list);
-		signal_name = g_strdup("SetupEventList");
-	} else {
-		err("invalid cmd_type:[%d]", cmd_type);
-		g_free(interface_name);
-		return FALSE;
-	}
-
-	rv = g_dbus_connection_emit_signal(connection, interface_name, path, "org.tizen.telephony.SAT", signal_name, out_param, NULL);
-	dbg("send signal to sat-event-downloader result (%d)", rv);
-
-	g_free(interface_name);
-	g_free(signal_name);
-	return rv;
-}

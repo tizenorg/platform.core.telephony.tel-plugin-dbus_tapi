@@ -1242,7 +1242,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx,
 
 		case SAT_PROATV_CMD_SETUP_EVENT_LIST: {
 			GVariant *event_list = NULL;
-			gint event_cnt;
+			guchar event_cnt;
 			GVariant *evt_list;
 
 			event_list = sat_manager_setup_event_list_noti(ctx, cp_name,
@@ -1255,7 +1255,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx,
 			dbg("PROATV_CMD_SETUP_EVENT_LIST - type_format: [%s]",
 				g_variant_get_type_string(event_list));
 
-			g_variant_get(event_list, "(i@v)", &event_cnt, &evt_list);
+			g_variant_get(event_list, "(y@v)", &event_cnt, &evt_list);
 			telephony_sat_emit_setup_event_list(sat, event_cnt, evt_list);
 
 			/*
@@ -1274,8 +1274,7 @@ gboolean dbus_plugin_sat_notification(struct custom_data *ctx,
 				 * SAT Event Downloader should execute
 				 * event_list as well.
 				 */
-				sat_ui_support_exec_evtdw(conn, g_path,
-					SAT_PROATV_CMD_SETUP_EVENT_LIST, event_list);
+				sat_ui_support_launch_eventdownloader_application(event_list, slot_id);
 
 				sat_ui_support_exec_bip(conn, g_path,
 					SAT_PROATV_CMD_SETUP_EVENT_LIST, event_list);

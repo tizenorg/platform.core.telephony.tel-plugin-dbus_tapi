@@ -429,6 +429,9 @@
 		<!-- lac: Location Area Code -->
 		<property name="lac" type="i" access="read"/>
 
+		<!-- tac: Track Area Code -->
+		<property name="tac" type="i" access="read"/>
+
 		<!-- plmn: PLMN -->
 		<property name="plmn" type="s" access="read"/>
 

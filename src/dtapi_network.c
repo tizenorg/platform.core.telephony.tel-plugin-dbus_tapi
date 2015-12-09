@@ -966,6 +966,7 @@ gboolean dbus_plugin_setup_network_interface(TelephonyObjectSkeleton *object,
 	telephony_network_set_ims_voice_status(network, NETWORK_IMS_VOICE_UNKNOWN);
 	telephony_network_set_circuit_status(network, NETWORK_SERVICE_DOMAIN_STATUS_NO);
 	telephony_network_set_lac(network, 0);
+	telephony_network_set_tac(network, 0);
 	telephony_network_set_name_option(network, NETWORK_NAME_OPTION_NONE);
 	telephony_network_set_packet_status(network, NETWORK_SERVICE_DOMAIN_STATUS_NO);
 	telephony_network_set_sig_dbm(network, 0);
@@ -1566,12 +1567,21 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx,
 
 	case TNOTI_NETWORK_LOCATION_CELLINFO: {
 		const struct tnoti_network_location_cellinfo *location = data;
+		enum telephony_network_service_type network_service_type = NETWORK_SERVICE_TYPE_UNKNOWN;
 
 		info("[%s] NET_LOCATION_CELLINFO - LAC: [0x%x] Cell ID: [0x%x]", cp_name,
 			location->lac, location->cell_id);
 
 		/* Update properties */
-		telephony_network_set_lac(network, location->lac);
+		tcore_network_get_service_type(source, &network_service_type);
+		if (NETWORK_SERVICE_TYPE_LTE == network_service_type) {
+			telephony_network_set_lac(network, 0);
+			telephony_network_set_tac(network, location->lac);
+		} else {
+			telephony_network_set_lac(network, location->lac);
+			telephony_network_set_tac(network, 0);
+		}
+
 		telephony_network_set_cell_id(network, location->cell_id);
 
 		/* Emit signal */

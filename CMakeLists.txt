@@ -21,9 +21,6 @@ pkg_check_modules(pkgs REQUIRED
 	aul
 	appsvc
 	capi-appfw-app-manager
-	cynara-client
-	cynara-creds-gdbus
-	cynara-session
 )
 
 FOREACH(flag ${pkgs_CFLAGS})

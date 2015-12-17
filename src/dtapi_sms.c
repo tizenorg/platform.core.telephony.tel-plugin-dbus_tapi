@@ -41,14 +41,10 @@ static gboolean on_sms_send_msg(TelephonySms *sms,
 	struct treq_sms_send_msg req;
 	struct custom_data *ctx = user_data;
 	enum tcore_request_command command;
-	cynara *p_cynara = ctx->p_cynara;
 
 	int i = 0;
 	GVariantIter *iter = NULL;
 	GVariant *inner_gv = NULL;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "x"))
-		return TRUE;
 
 	memset(&req, 0x0, sizeof(struct treq_sms_send_msg));
 
@@ -103,10 +99,6 @@ static gboolean on_sms_read_msg(TelephonySms *sms,
 {
 	struct treq_sms_read_msg req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
-		return TRUE;
 
 	req.index = msg_index;
 
@@ -125,14 +117,9 @@ static gboolean on_sms_save_msg(TelephonySms *sms,
 {
 	struct treq_sms_save_msg req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
 	int i = 0;
 	GVariantIter *iter = NULL;
 	GVariant *inner_gv = NULL;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
-		return TRUE;
 
 	if (SMS_NETTYPE_3GPP == format) {
 		req.msgDataPackage.format = SMS_NETTYPE_3GPP;
@@ -185,10 +172,6 @@ static gboolean on_sms_delete_msg(TelephonySms *sms,
 {
 	struct treq_sms_delete_msg req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "x"))
-		return TRUE;
 
 	req.index = msg_index;
 
@@ -204,10 +187,6 @@ static gboolean on_sms_get_msg_count(TelephonySms *sms,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
-		return TRUE;
 
 	/* Dispatch request */
 	dtapi_dispatch_request(ctx, sms, invocation,
@@ -222,10 +201,6 @@ static gboolean on_sms_get_sca(TelephonySms *sms,
 {
 	struct treq_sms_get_sca req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
-		return TRUE;
 
 	req.index = msg_index;
 
@@ -244,10 +219,6 @@ static gboolean on_sms_set_sca(TelephonySms *sms,
 	gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
-		return TRUE;
 
 	if ((sca_length <= 0)
 			|| (sca_length > (SMS_MAX_SMS_SERVICE_CENTER_ADDR + 1))) {
@@ -296,10 +267,6 @@ static gboolean on_sms_get_cb_config(TelephonySms *sms,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
-		return TRUE;
 
 	/* Dispatch request */
 	dtapi_dispatch_request(ctx, sms, invocation,
@@ -317,7 +284,6 @@ static gboolean on_sms_set_cb_config(TelephonySms *sms,
 {
 	struct treq_sms_set_cb_config req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
 
 	GVariant *value = NULL;
 	GVariant *inner_gv = NULL;
@@ -325,9 +291,6 @@ static gboolean on_sms_set_cb_config(TelephonySms *sms,
 	GVariantIter *iter_row = NULL;
 	const gchar *key = NULL;
 	int i = 0;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
-		return TRUE;
 
 	req.net3gppType = network_type;
 	req.cbEnabled = enable_cb;
@@ -372,10 +335,6 @@ static gboolean on_sms_set_mem_status(TelephonySms *sms,
 {
 	struct treq_sms_set_mem_status req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
-		return TRUE;
 
 	req.memory_status = memory_status;
 
@@ -391,10 +350,6 @@ static gboolean on_sms_get_pref_bearer(TelephonySms *sms,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
-		return TRUE;
 
 	/* Dispatch request */
 	dtapi_dispatch_request(ctx, sms, invocation,
@@ -410,10 +365,6 @@ static gboolean on_sms_set_pref_bearer(TelephonySms *sms,
 {
 	struct treq_sms_set_pref_bearer req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
-		return TRUE;
 
 	req.svc = bearer_type;
 
@@ -433,16 +384,12 @@ static gboolean on_sms_set_delivery_report(TelephonySms *sms,
 {
 	struct treq_sms_set_delivery_report req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
 
 	guchar *decoded_sca = NULL;
 	guchar *decoded_tpdu = NULL;
 
 	gsize decoded_sca_len = 0;
 	gsize decoded_tpdu_len = 0;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
-		return TRUE;
 
 	memset(&req, 0, sizeof(struct treq_sms_set_delivery_report));
 
@@ -512,10 +459,6 @@ static gboolean on_sms_set_msg_status(TelephonySms *sms,
 {
 	struct treq_sms_set_msg_status req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
-		return TRUE;
 
 	req.index = msg_index;
 	req.msgStatus = msg_status;
@@ -534,10 +477,6 @@ static gboolean on_sms_get_sms_params(TelephonySms *sms,
 {
 	struct treq_sms_get_params req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
-		return TRUE;
 
 	req.index = msg_index;
 
@@ -561,14 +500,10 @@ static gboolean on_sms_set_sms_params(TelephonySms *sms,
 {
 	struct treq_sms_set_params req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
 
 	int i = 0;
 	GVariantIter *iter = NULL;
 	GVariant *inner_gv = NULL;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "w"))
-		return TRUE;
 
 	memset(&req, 0x0, sizeof(struct treq_sms_set_params));
 
@@ -633,10 +568,6 @@ static gboolean on_sms_get_sms_param_cnt(TelephonySms *sms,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
-		return TRUE;
 
 	/* Dispatch request */
 	dtapi_dispatch_request(ctx, sms, invocation,
@@ -653,10 +584,6 @@ static gboolean on_sms_get_sms_ready_status(TelephonySms *sms,
 	CoreObject *co_sms = NULL;
 	TcorePlugin *plugin = NULL;
 	gboolean ready_status = FALSE;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SMS, "r"))
-		return TRUE;
 
 	plugin = tcore_server_find_plugin(ctx->server, GET_CP_NAME(invocation));
 	co_sms = tcore_plugin_ref_core_object(plugin, CORE_OBJECT_TYPE_SMS);

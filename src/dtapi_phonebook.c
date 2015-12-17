@@ -87,10 +87,6 @@ static gboolean on_phonebook_get_init_status(TelephonyPhonebook *phonebook,
 	gboolean pb_status = FALSE;
 	struct tel_phonebook_support_list *list = NULL;
 	CoreObject *co_pb = NULL;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_PHONEBOOK, "r"))
-		return TRUE;
 
 	DBUS_PBM_GET_CO_PBM(invocation, co_pb, ctx->server);
 	pb_status = tcore_phonebook_get_status(co_pb);
@@ -144,10 +140,6 @@ static gboolean on_phonebook_get_count(TelephonyPhonebook *phonebook,
 	struct treq_phonebook_get_count req;
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_PHONEBOOK, "r"))
-		return TRUE;
 
 	DBUS_PBM_GET_CO_PBM(invocation, co_pb, ctx->server);
 	pb_status = tcore_phonebook_get_status(co_pb);
@@ -181,10 +173,6 @@ static gboolean on_phonebook_get_info(TelephonyPhonebook *phonebook,
 	struct treq_phonebook_get_info req;
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_PHONEBOOK, "r"))
-		return TRUE;
 
 	DBUS_PBM_GET_CO_PBM(invocation, co_pb, ctx->server);
 	pb_status = tcore_phonebook_get_status(co_pb);
@@ -219,10 +207,6 @@ static gboolean on_phonebook_get_usim_info(TelephonyPhonebook *phonebook,
 	struct custom_data *ctx = user_data;
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_PHONEBOOK, "r"))
-		return TRUE;
 
 	DBUS_PBM_GET_CO_PBM(invocation, co_pb, ctx->server);
 
@@ -259,10 +243,6 @@ static gboolean on_phonebook_read_record(TelephonyPhonebook *phonebook,
 	struct treq_phonebook_read_record req;
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_PHONEBOOK, "r"))
-		return TRUE;
 
 	DBUS_PBM_GET_CO_PBM(invocation, co_pb, ctx->server);
 	pb_status = tcore_phonebook_get_status(co_pb);
@@ -312,10 +292,6 @@ static gboolean on_phonebook_update_record(TelephonyPhonebook *phonebook,
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
 	int temp_len = 0;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_PHONEBOOK, "x"))
-		return TRUE;
 
 	DBUS_PBM_GET_CO_PBM(invocation, co_pb, ctx->server);
 	pb_status = tcore_phonebook_get_status(co_pb);
@@ -423,10 +399,6 @@ static gboolean on_phonebook_delete_record(TelephonyPhonebook *phonebook,
 	struct treq_phonebook_delete_record req;
 	CoreObject *co_pb = NULL;
 	gboolean pb_status = FALSE;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_PHONEBOOK, "x"))
-		return TRUE;
 
 	DBUS_PBM_GET_CO_PBM(invocation, co_pb, ctx->server);
 	pb_status = tcore_phonebook_get_status(co_pb);

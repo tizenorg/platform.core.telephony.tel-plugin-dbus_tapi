@@ -24,8 +24,6 @@
 #include <glib.h>
 #include <gio/gio.h>
 
-#include <cynara-client.h>
-
 #include "type/sim.h"
 
 #include "generated-code.h"
@@ -70,8 +68,6 @@ struct custom_data {
 
 	gboolean name_acquired;
 	guint owner_id;
-
-	cynara *p_cynara;
 };
 
 struct dbus_request_info {
@@ -91,7 +87,6 @@ void dtapi_deinit(TcorePlugin *p);
 
 char *dbus_plugin_get_cp_name_by_object_path(const char *object_path);
 UserRequest *dbus_plugin_macro_user_request_new(struct custom_data *ctx, void *object, GDBusMethodInvocation *invocation);
-gboolean check_access_control (cynara *p_cynara, GDBusMethodInvocation *invoc, const char *label, const char *perm);
 
 gboolean dbus_plugin_util_load_xml(char *docname, char *groupname, void **i_doc, void **i_root_node);
 void dbus_plugin_util_unload_xml(void **i_doc, void **i_root_node);

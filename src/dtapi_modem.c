@@ -36,10 +36,6 @@ static gboolean on_modem_set_power(TelephonyModem *modem,
 {
 	struct custom_data *ctx = user_data;
 	enum tcore_request_command command;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_MODEM, "x"))
-		return TRUE;
 
 	switch (mode) {
 	case MODEM_STATE_ONLINE:
@@ -76,10 +72,6 @@ static gboolean on_modem_set_flight_mode(TelephonyModem *modem,
 {
 	struct treq_modem_set_flightmode req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_MODEM, "w"))
-		return TRUE;
 
 	req.enable = enable;
 
@@ -95,10 +87,6 @@ static gboolean on_modem_get_flight_mode(TelephonyModem *modem,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
-		return TRUE;
 
 	/* Dispatch request */
 	dtapi_dispatch_request(ctx, modem, invocation,
@@ -112,10 +100,6 @@ static gboolean on_modem_get_version(TelephonyModem *modem,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
-		return TRUE;
 
 	/* Dispatch request */
 	dtapi_dispatch_request(ctx, modem, invocation,
@@ -129,10 +113,6 @@ static gboolean on_modem_get_serial_number(TelephonyModem *modem,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
-		return TRUE;
 
 	/* Dispatch request */
 	dtapi_dispatch_request(ctx, modem, invocation,
@@ -146,10 +126,6 @@ static gboolean on_modem_get_imei(TelephonyModem *modem,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
-		return TRUE;
 
 	/* Dispatch request */
 	dtapi_dispatch_request(ctx, modem, invocation,
@@ -165,10 +141,6 @@ static gboolean on_modem_set_dun_pin_ctrl(TelephonyModem *modem,
 {
 	struct treq_modem_set_dun_pin_control req;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_MODEM, "x"))
-		return TRUE;
 
 	req.signal = signal;
 	req.status = status;
@@ -185,10 +157,6 @@ static gboolean on_modem_get_device_info(TelephonyModem *modem,
 	GDBusMethodInvocation *invocation, gpointer user_data)
 {
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_MODEM, "r"))
-		return TRUE;
 
 	/* Dispatch request */
 	dtapi_dispatch_request(ctx, modem, invocation,

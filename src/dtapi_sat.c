@@ -106,10 +106,6 @@ static gboolean on_sat_get_main_menu_info(TelephonySAT *sat,
 	GVariant *icon_id = NULL;
 	GVariant *icon_list = NULL;
 #endif
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SAT, "r"))
-		return TRUE;
 
 	main_menu = __sat_get_main_menu(ctx, GET_CP_NAME(invocation));
 	if (!main_menu) {
@@ -150,10 +146,6 @@ static gboolean on_sat_send_display_status(TelephonySAT *sat,
 	struct custom_data *ctx = user_data;
 	gboolean result = FALSE;
 	gint out_param = 0;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SAT, "x"))
-		return TRUE;
 
 	cp_name = GET_CP_NAME(invocation);
 	plg = tcore_server_find_plugin(ctx->server, cp_name);
@@ -186,14 +178,10 @@ static gboolean on_sat_send_user_confirm(TelephonySAT *sat,
 	TcorePlugin *plg = NULL;
 	char *cp_name;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
 
 	gboolean result = FALSE;
 	gint out_param = 0;
 	GVariant *confirm_data = NULL;
-
-	if (!check_access_control(p_cynara, invocation, AC_SAT, "x"))
-		return TRUE;
 
 	cp_name = GET_CP_NAME(invocation);
 	plg = tcore_server_find_plugin(ctx->server, cp_name);
@@ -229,13 +217,9 @@ static gboolean on_sat_send_app_exec_result(TelephonySAT *sat,
 	TcorePlugin *plg = NULL;
 	char *cp_name;
 	struct custom_data *ctx = user_data;
-	cynara *p_cynara = ctx->p_cynara;
 
 	gboolean result = FALSE;
 	gint out_param = 0;
-
-	if (!check_access_control(p_cynara, invocation, AC_SAT, "x"))
-		return TRUE;
 
 	cp_name = GET_CP_NAME(invocation);
 	plg = tcore_server_find_plugin(ctx->server, cp_name);
@@ -267,10 +251,6 @@ static gboolean on_sat_select_menu(TelephonySAT *sat,
 {
 	struct custom_data *ctx = user_data;
 	struct treq_sat_envelop_cmd_data req;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SAT, "x"))
-		return TRUE;
 
 	memset(&req, 0x0, sizeof(struct treq_sat_envelop_cmd_data));
 
@@ -295,12 +275,7 @@ static gboolean on_sat_download_event(TelephonySAT *sat,
 {
 	gboolean b_event = FALSE;
 	struct custom_data *ctx = user_data;
-
 	struct treq_sat_envelop_cmd_data req;
-	cynara *p_cynara = ctx->p_cynara;
-
-	if (!check_access_control(p_cynara, invocation, AC_SAT, "x"))
-		return TRUE;
 
 	memset(&req, 0x0, sizeof(struct treq_sat_envelop_cmd_data));
 

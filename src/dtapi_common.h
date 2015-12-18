@@ -28,17 +28,6 @@
 
 #include "generated-code.h"
 
-#define AC_MANAGER		"telephony_framework::api_manager"
-#define AC_CALL			"telephony_framework::api_call"
-#define AC_MODEM		"telephony_framework::api_modem"
-#define AC_NETWORK		"telephony_framework::api_network"
-#define AC_PHONEBOOK		"telephony_framework::api_phonebook"
-#define AC_SAP			"telephony_framework::api_sap"
-#define AC_SAT			"telephony_framework::api_sat"
-#define AC_SIM			"telephony_framework::api_sim"
-#define AC_SMS			"telephony_framework::api_sms"
-#define AC_SS			"telephony_framework::api_ss"
-
 #define MY_DBUS_PATH		"/org/tizen/telephony"
 #define MY_DBUS_SERVICE	"org.tizen.telephony"
 

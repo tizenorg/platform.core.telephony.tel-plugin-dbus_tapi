@@ -77,7 +77,7 @@ void dtapi_deinit(TcorePlugin *p);
 char *dbus_plugin_get_cp_name_by_object_path(const char *object_path);
 UserRequest *dbus_plugin_macro_user_request_new(struct custom_data *ctx, void *object, GDBusMethodInvocation *invocation);
 
-gboolean dbus_plugin_util_load_xml(char *docname, char *groupname, void **i_doc, void **i_root_node);
+gboolean dbus_plugin_util_load_xml(const char *docname, char *groupname, void **i_doc, void **i_root_node);
 void dbus_plugin_util_unload_xml(void **i_doc, void **i_root_node);
 
 void dtapi_dispatch_request(struct custom_data *ctx,

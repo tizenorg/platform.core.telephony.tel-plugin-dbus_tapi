@@ -21,6 +21,7 @@ pkg_check_modules(pkgs REQUIRED
 	aul
 	appsvc
 	capi-appfw-app-manager
+	libtzplatform-config
 )
 
 FOREACH(flag ${pkgs_CFLAGS})

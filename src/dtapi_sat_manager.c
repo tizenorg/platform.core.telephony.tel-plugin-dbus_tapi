@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <sys/time.h>
 
+#include <tzplatform_config.h>
 #include <tcore.h>
 #include <server.h>
 #include <plugin.h>
@@ -55,7 +56,7 @@
 #define SAT_USC2_INPUT_LEN_MAX 70
 #define SAT_EVENT_DOWNLOAD_MAX 17
 
-#define LANGUAGE_XML_PATH "/opt/usr/apps/org.tizen.setting/data/langlist.xml"
+#define LANGUAGE_XML_PATH tzplatform_mkpath(TZ_SYS_RO_APP, "org.tizen.setting/def_config/langlist.xml")
 
 #define SAT_CMD_Q_CHECK(index) \
 	if (index < SAT_DEF_CMD_Q_MIN || index > SAT_DEF_CMD_Q_MAX-1) { warn("invalid index!!"); return FALSE; }

@@ -1,6 +1,6 @@
 %define major 0
 %define minor 3
-%define patchlevel 70
+%define patchlevel 71
 
 Name:           tel-plugin-dbus_tapi
 Version:        %{major}.%{minor}.%{patchlevel}
@@ -21,7 +21,7 @@ BuildRequires:  pkgconfig(gio-unix-2.0)
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(libxml-2.0)
 BuildRequires:  pkgconfig(tcore)
-
+BuildRequires:  pkgconfig(libtzplatform-config)
 
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig

@@ -91,7 +91,7 @@ enum dbus_tapi_sim_slot_id get_sim_slot_id_by_cp_name(const char *cp_name)
 	return SIM_SLOT_PRIMARY;
 }
 
-gboolean dbus_plugin_util_load_xml(char *docname, char *groupname, void **i_doc, void **i_root_node)
+gboolean dbus_plugin_util_load_xml(const char *docname, char *groupname, void **i_doc, void **i_root_node)
 {
 	xmlDocPtr *doc = (xmlDocPtr *)i_doc;
 	xmlNodePtr *root_node = (xmlNodePtr *)i_root_node;

@@ -281,6 +281,79 @@
 
 			Network registration status.
 		-->
+
+		<!--
+			GetCellId:
+			@cell_id: Cell ID (GSM / WCDMA / LTE)
+			@since_tizen 3.0
+		-->
+		<method name="GetCellId">
+			<arg direction="out" type="i" name="cell_id"/>
+		</method>
+
+		<!--
+			GetLac:
+			@lac: Location Area Code (GSM / WCDMA)
+			@since_tizen 3.0
+		-->
+		<method name="GetLac">
+			<arg direction="out" type="i" name="lac"/>
+		</method>
+
+		<!--
+			GetTac:
+			@tac: Track Area Code (LTE)
+			@since_tizen 3.0
+		-->
+		<method name="GetTac">
+			<arg direction="out" type="i" name="tac"/>
+		</method>
+
+		<!--
+			GetSystemId:
+			@system_id: System ID (CDMA)
+			@since_tizen 3.0
+		-->
+		<method name="GetSystemId">
+			<arg direction="out" type="i" name="system_id"/>
+		</method>
+
+		<!--
+			GetNetworkId:
+			@network_id: Network ID (CDMA)
+			@since_tizen 3.0
+		-->
+		<method name="GetNetworkId">
+			<arg direction="out" type="i" name="network_id"/>
+		</method>
+
+		<!--
+			GetBsId:
+			@bs_id: Base station ID (CDMA)
+			@since_tizen 3.0
+		-->
+		<method name="GetBsId">
+			<arg direction="out" type="i" name="bs_id"/>
+		</method>
+
+		<!--
+			GetBsLatitude:
+			@bs_latitude: Base station latitude (CDMA)
+			@since_tizen 3.0
+		-->
+		<method name="GetBsLatitude">
+			<arg direction="out" type="i" name="bs_latitude"/>
+		</method>
+
+		<!--
+			GetBsLongitude:
+			@bs_longitude: Base station longitude (CDMA)
+			@since_tizen 3.0
+		-->
+		<method name="GetBsLongitude">
+			<arg direction="out" type="i" name="bs_longitude"/>
+		</method>
+
 		<signal name="RegistrationStatus">
 			<arg type="i" name="circuit"/>
 			<arg type="i" name="packet"/>
@@ -420,6 +493,78 @@
 			<arg type="s" name="network_name"/>
 		</signal>
 
+		<!--
+			CellId:
+			@cell_id: Cell ID (GSM / WCDMA / LTE)
+			@since_tizen 3.0
+		-->
+		<signal name="CellId">
+			<arg type="i" name="cell_id"/>
+		</signal>
+
+		<!--
+			Lac:
+			@lac: Location Area Code (GSM / WCDMA)
+			@since_tizen 3.0
+		-->
+		<signal name="Lac">
+			<arg type="i" name="lac"/>
+		</signal>
+
+		<!--
+			Tac:
+			@tac: Track Area Code (LTE)
+			@since_tizen 3.0
+		-->
+		<signal name="Tac">
+			<arg type="i" name="tac"/>
+		</signal>
+
+		<!--
+			SystemId:
+			@system_id: System ID (CDMA)
+			@since_tizen 3.0
+		-->
+		<signal name="SystemId">
+			<arg type="i" name="system_id"/>
+		</signal>
+
+		<!--
+			NetworkId:
+			@network_id: Network ID (CDMA)
+			@since_tizen 3.0
+		-->
+		<signal name="NetworkId">
+			<arg type="i" name="network_id"/>
+		</signal>
+
+		<!--
+			BsId:
+			@bs_id: Base station ID (CDMA)
+			@since_tizen 3.0
+		-->
+		<signal name="BsId">
+			<arg type="i" name="bs_id"/>
+		</signal>
+
+		<!--
+			BsLatitude:
+			@bs_latitude: Base station latitude (CDMA)
+			@since_tizen 3.0
+		-->
+		<signal name="BsLatitude">
+			<arg type="i" name="bs_latitude"/>
+		</signal>
+
+		<!--
+			BsLongitude:
+			@bs_longitude: Base station longitude (CDMA)
+			@since_tizen 3.0
+		-->
+		<signal name="BsLongitude">
+			<arg type="i" name="bs_longitude"/>
+		</signal>
+
 		<!-- sig_dbm : Signal Strength DBM -->
 		<property name="sig_dbm" type="i" access="read"/>
 
@@ -510,6 +655,36 @@
 			0=Not available, 1=Available
 		-->
 		<property name="volte_enable" type="i" access="read"/>
+
+		<!--
+			System ID (CDMA)
+			@since_tizen 3.0
+		-->
+		<property name="system_id" type="i" access="read"/>
+
+		<!--
+			Network ID (CDMA)
+			@since_tizen 3.0
+		-->
+		<property name="network_id" type="i" access="read"/>
+
+		<!--
+			Base station ID (CDMA)
+			@since_tizen 3.0
+		-->
+		<property name="bs_id" type="i" access="read"/>
+
+		<!--
+			Base station Latitude (CDMA)
+			@since_tizen 3.0
+		-->
+		<property name="bs_latitude" type="i" access="read"/>
+
+		<!--
+			Base station Longitude (CDMA)
+			@since_tizen 3.0
+		-->
+		<property name="bs_longitude" type="i" access="read"/>
 
 	</interface>
 

@@ -776,6 +776,86 @@ static gboolean on_network_get_roaming_preference(TelephonyNetwork *network,
 	return TRUE;
 }
 
+static gboolean on_network_get_cell_id(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	int cell_id;
+	/* Get property */
+	cell_id = telephony_network_get_cell_id(network);
+	telephony_network_complete_get_cell_id(network, invocation, cell_id);
+	return TRUE;
+}
+
+static gboolean on_network_get_lac(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	int lac;
+	/* Get property */
+	lac = telephony_network_get_lac(network);
+	telephony_network_complete_get_lac(network, invocation, lac);
+	return TRUE;
+}
+
+static gboolean on_network_get_tac(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	int tac;
+	/* Get property */
+	tac = telephony_network_get_tac(network);
+	telephony_network_complete_get_tac(network, invocation, tac);
+	return TRUE;
+}
+
+static gboolean on_network_get_system_id(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	int sid;
+	/* Get property */
+	sid = telephony_network_get_system_id(network);
+	telephony_network_complete_get_system_id(network, invocation, sid);
+	return TRUE;
+}
+
+static gboolean on_network_get_network_id(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	int nid;
+	/* Get property */
+	nid = telephony_network_get_network_id(network);
+	telephony_network_complete_get_network_id(network, invocation, nid);
+	return TRUE;
+}
+
+static gboolean on_network_get_bs_id(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	int bs_id;
+	/* Get property */
+	bs_id = telephony_network_get_bs_id(network);
+	telephony_network_complete_get_bs_id(network, invocation, bs_id);
+	return TRUE;
+}
+
+static gboolean on_network_get_bs_latitude(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	int bs_latitude;
+	/* Get property */
+	bs_latitude = telephony_network_get_bs_latitude(network);
+	telephony_network_complete_get_bs_latitude(network, invocation, bs_latitude);
+	return TRUE;
+}
+
+static gboolean on_network_get_bs_longitude(TelephonyNetwork *network,
+	GDBusMethodInvocation *invocation, gpointer user_data)
+{
+	int bs_longitude;
+	/* Get property */
+	bs_longitude = telephony_network_get_bs_longitude(network);
+	telephony_network_complete_get_bs_longitude(network, invocation, bs_longitude);
+	return TRUE;
+}
+
 gboolean dbus_plugin_setup_network_interface(TelephonyObjectSkeleton *object,
 	struct custom_data *ctx)
 {
@@ -874,6 +954,38 @@ gboolean dbus_plugin_setup_network_interface(TelephonyObjectSkeleton *object,
 		"handle-get-roaming-preference",
 		G_CALLBACK(on_network_get_roaming_preference), ctx);
 
+	g_signal_connect(network,
+		"handle-get-cell-id",
+		G_CALLBACK(on_network_get_cell_id), ctx);
+
+	g_signal_connect(network,
+		"handle-get-lac",
+		G_CALLBACK(on_network_get_lac), ctx);
+
+	g_signal_connect(network,
+		"handle-get-tac",
+		G_CALLBACK(on_network_get_tac), ctx);
+
+	g_signal_connect(network,
+		"handle-get-system-id",
+		G_CALLBACK(on_network_get_system_id), ctx);
+
+	g_signal_connect(network,
+		"handle-get-network-id",
+		G_CALLBACK(on_network_get_network_id), ctx);
+
+	g_signal_connect(network,
+		"handle-get-bs-id",
+		G_CALLBACK(on_network_get_bs_id), ctx);
+
+	g_signal_connect(network,
+		"handle-get-bs-latitude",
+		G_CALLBACK(on_network_get_bs_latitude), ctx);
+
+	g_signal_connect(network,
+		"handle-get-bs-longitude",
+		G_CALLBACK(on_network_get_bs_longitude), ctx);
+
 	/*
 	 * Initialize DBUS properties
 	 */
@@ -894,6 +1006,11 @@ gboolean dbus_plugin_setup_network_interface(TelephonyObjectSkeleton *object,
 	telephony_network_set_plmn(network, NULL);
 	telephony_network_set_spn_name(network, NULL);
 	telephony_network_set_network_name(network, NULL);
+	telephony_network_set_system_id(network, -1);
+	telephony_network_set_network_id(network, -1);
+	telephony_network_set_bs_id(network, -1);
+	telephony_network_set_bs_latitude(network, 0x7FFFFFFF);
+	telephony_network_set_bs_longitude(network, 0x7FFFFFFF);
 
 	tcore_server_remove_notification_hook(ctx->server, on_hook_ps_protocol_status);
 	tcore_server_add_notification_hook(ctx->server,
@@ -1494,9 +1611,11 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx,
 		if (NETWORK_SERVICE_TYPE_LTE == network_service_type) {
 			telephony_network_set_lac(network, -1);
 			telephony_network_set_tac(network, location->lac);
+			telephony_network_emit_tac(network, location->lac);
 		} else {
 			telephony_network_set_lac(network, location->lac);
 			telephony_network_set_tac(network, -1);
+			telephony_network_emit_lac(network, location->lac);
 		}
 
 		telephony_network_set_cell_id(network, location->cell_id);
@@ -1504,6 +1623,32 @@ gboolean dbus_plugin_network_notification(struct custom_data *ctx,
 		/* Emit signal */
 		telephony_network_emit_cell_info(network,
 			location->lac, location->cell_id);
+		telephony_network_emit_cell_id(network,
+			location->cell_id);
+	}
+	break;
+
+	case TNOTI_NETWORK_LOCATION_CELLINFO_CDMA: {
+		const struct tnoti_network_location_cellinfo_cdma *location = data;
+
+		info("[%s] NET_LOCATION_CELLINFO_CDMA - System ID: [0x%x] Network ID: [0x%x] "
+			"Bs ID: [0x%x] Bs Latitude: [0x%x] Bs Longitude: [0x%x]",
+			cp_name, location->system_id, location->network_id,
+			location->bs_id, location->bs_latitude, location->bs_longitude);
+
+		/* Update properties */
+		telephony_network_set_system_id(network, location->system_id);
+		telephony_network_set_network_id(network, location->network_id);
+		telephony_network_set_bs_id(network, location->bs_id);
+		telephony_network_set_bs_latitude(network, location->bs_latitude);
+		telephony_network_set_bs_longitude(network, location->bs_longitude);
+
+		/* Emit signal */
+		telephony_network_emit_system_id(network, location->system_id);
+		telephony_network_emit_network_id(network, location->network_id);
+		telephony_network_emit_bs_id(network, location->bs_id);
+		telephony_network_emit_bs_latitude(network, location->bs_latitude);
+		telephony_network_emit_bs_longitude(network, location->bs_longitude);
 	}
 	break;
 

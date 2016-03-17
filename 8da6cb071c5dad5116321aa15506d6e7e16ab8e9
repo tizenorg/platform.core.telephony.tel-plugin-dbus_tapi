@@ -33,6 +33,14 @@ Branch: refs/heads/tizen
 Code-Review+2: JooSeok Park <jooseok.park@samsung.com>
 Verified+1: JooSeok Park <jooseok.park@samsung.com>
 Submitted-by: JooSeok Park <jooseok.park@samsung.com>
+Submitted-at: Mon, 07 Mar 2016 18:02:52 -0700
+Reviewed-on: https://review.tizen.org/gerrit/61264
+Project: platform/core/telephony/tel-plugin-dbus_tapi
+Branch: refs/heads/tizen
+
+Code-Review+2: JooSeok Park <jooseok.park@samsung.com>
+Verified+1: JooSeok Park <jooseok.park@samsung.com>
+Submitted-by: JooSeok Park <jooseok.park@samsung.com>
 Submitted-at: Mon, 07 Mar 2016 17:02:52 -0800
 Reviewed-on: https://review.tizen.org/gerrit/61264
 Project: platform/core/telephony/tel-plugin-dbus_tapi

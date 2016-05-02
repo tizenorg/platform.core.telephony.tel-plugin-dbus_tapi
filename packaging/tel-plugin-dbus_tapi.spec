@@ -1,6 +1,6 @@
 %define major 0
 %define minor 3
-%define patchlevel 72
+%define patchlevel 73
 
 Name:           tel-plugin-dbus_tapi
 Version:        %{major}.%{minor}.%{patchlevel}
@@ -54,7 +54,7 @@ cp %{SOURCE1} %{buildroot}/etc/dbus-1/system.d/telephony.conf
 
 %files
 %manifest tel-plugin-dbus_tapi.manifest
-%defattr(644,system,system,-)
+%defattr(644,telephony,telephony,-)
 #%doc COPYING
 %{_libdir}/telephony/plugins/*
 %{_datadir}/license/tel-plugin-dbus_tapi

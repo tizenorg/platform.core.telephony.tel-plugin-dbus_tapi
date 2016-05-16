@@ -218,9 +218,10 @@ static gboolean on_manager_getmodems(TelephonyManager *mgr,
 {
 	struct custom_data *ctx = user_data;
 	GSList *cp_name_list;
+	GSList *cp_name_list_temp;
 	gchar **list;
 	const char *name = NULL;
-	int count;
+	int count, index;
 
 	cp_name_list = tcore_server_get_cp_name_list(ctx->server);
 	if (cp_name_list == NULL) {
@@ -240,22 +241,23 @@ static gboolean on_manager_getmodems(TelephonyManager *mgr,
 		return TRUE;
 	}
 
-	count = 0;
-	for ( ; cp_name_list ; cp_name_list = cp_name_list->next) {
-		name = cp_name_list->data;
-		list[count] = g_strdup(name);
-		dbg("list[%d]: %s", count, list[count]);
-		count++;
+	/*
+	 * fix memory leak
+	 *  - Shouldn't move directly GSList pointer which is allocated in g_slist_append().
+	 *  - It cause memory leak.
+	 */
+	for (index = 0; index < count; index++) {
+		cp_name_list_temp = g_slist_nth(cp_name_list, index);
+		if(cp_name_list_temp == NULL)
+			continue;
+		list[index] = g_strdup(cp_name_list_temp->data);
+		dbg("list[%d]: %s", index, list[index]);
 	}
 
 	telephony_manager_complete_get_modems(mgr, invocation, (const gchar **)list);
 
 	/* Free memory */
-	for (; count >= 0; count--)
-		g_free(list[count]);
-	g_free(list);
-
-	/* Freeing the received list of CP names */
+	g_strfreev(list);
 	g_slist_free_full(cp_name_list, g_free);
 
 	return TRUE;
